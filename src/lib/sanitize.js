@@ -25,8 +25,9 @@ export function validateEmail(email) {
   return emailRegex.test(String(email).trim());
 }
 
-export const ALLOWED_TSHIRT_SIZES = ["S", "M", "L", "XL", "XXL"];
-export const ALLOWED_TRACK_SIZES = ["30", "32", "34", "36", "38", "40"];
+// These must exactly match the <option value="..."> in RegistrationForm.js
+export const ALLOWED_TSHIRT_SIZES = ["Small", "Medium", "Large", "X-large", "XX-Large"];
+export const ALLOWED_TRACK_SIZES = ["30", "32", "34", "36", "38"];
 export const ALLOWED_SPECIALITIES = [
   "Right-hand batsman",
   "Left-hand batsman",
