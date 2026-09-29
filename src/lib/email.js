@@ -189,11 +189,12 @@ export async function sendPlayerStatusEmail(player, status, notes = "") {
       return { sent: false, reason: "Invalid or dummy email" };
     }
 
+    const regNumber = player.regNumber || (player.id ? player.id.replace(/\D/g, "") : "");
     const adminEmail = getAdminContactEmail();
 
     const subject = isApproved
-      ? `🎉 Registration Approved! Welcome to Goregaon Premier League - Radhe Radhe Chashak (${player.id})`
-      : `Update on your GPL Player Application - Radhe Radhe Chashak (${player.id})`;
+      ? `🎉 Registration Approved! GPL Official Reg No: ${regNumber} - Radhe Radhe Chashak`
+      : `Update on your GPL Player Application - Radhe Radhe Chashak (Reg No: ${regNumber})`;
 
     const statusBadgeColor = isApproved ? "#16a34a" : "#dc2626";
     const statusBg = isApproved ? "#f0fdf4" : "#fef2f2";

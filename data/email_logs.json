@@ -1,5 +1,35 @@
 [
   {
+    "id": "EML-1790671918953",
+    "timestamp": "2026-09-29T08:51:58.953Z",
+    "type": "PLAYER_STATUS",
+    "recipient": "gnftn2JBJHB@BKB.VVVDF",
+    "playerId": "GPL-REG-1005",
+    "status": "RECORDED_NO_SMTP",
+    "decision": "Approved",
+    "from": "goregaonpremierleague11@gmail.com"
+  },
+  {
+    "id": "EML-1790671914803",
+    "timestamp": "2026-09-29T08:51:54.803Z",
+    "type": "PLAYER_STATUS",
+    "recipient": "gnftn2JBJHB@BKB.VVVDF",
+    "playerId": "GPL-REG-1005",
+    "status": "RECORDED_NO_SMTP",
+    "decision": "Rejected",
+    "from": "goregaonpremierleague11@gmail.com"
+  },
+  {
+    "id": "EML-1790671899101",
+    "timestamp": "2026-09-29T08:51:39.101Z",
+    "type": "PLAYER_STATUS",
+    "recipient": "gnftn2JBJHB@BKB.VVVDF",
+    "playerId": "GPL-REG-1005",
+    "status": "RECORDED_NO_SMTP",
+    "decision": "Approved",
+    "from": "goregaonpremierleague11@gmail.com"
+  },
+  {
     "id": "EML-1790598012951",
     "timestamp": "2026-09-28T12:20:12.951Z",
     "type": "ADMIN_PASSWORD_RESET_OTP",

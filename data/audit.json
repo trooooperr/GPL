@@ -1,5 +1,66 @@
 [
   {
+    "id": "AUD-1790672060973-93",
+    "timestamp": "2026-09-29T08:54:20.973Z",
+    "action": "UPDATE_RULES",
+    "details": {
+      "rulesCount": 13
+    }
+  },
+  {
+    "id": "AUD-1790671918952-455",
+    "timestamp": "2026-09-29T08:51:58.952Z",
+    "action": "UPDATE_PLAYER_STATUS",
+    "details": {
+      "playerId": "GPL-REG-1005",
+      "oldStatus": "Rejected",
+      "newStatus": "Approved",
+      "notes": ""
+    }
+  },
+  {
+    "id": "AUD-1790671914802-267",
+    "timestamp": "2026-09-29T08:51:54.803Z",
+    "action": "UPDATE_PLAYER_STATUS",
+    "details": {
+      "playerId": "GPL-REG-1005",
+      "oldStatus": "Approved",
+      "newStatus": "Rejected",
+      "notes": ""
+    }
+  },
+  {
+    "id": "AUD-1790671899100-155",
+    "timestamp": "2026-09-29T08:51:39.100Z",
+    "action": "UPDATE_PLAYER_STATUS",
+    "details": {
+      "playerId": "GPL-REG-1005",
+      "oldStatus": "Pending",
+      "newStatus": "Approved",
+      "notes": ""
+    }
+  },
+  {
+    "id": "AUD-1790671817583-458",
+    "timestamp": "2026-09-29T08:50:17.583Z",
+    "action": "UPDATE_SETTINGS",
+    "details": {
+      "updatedKeys": [
+        "upiId",
+        "upiPhone",
+        "qrCodeImage",
+        "registrationFee",
+        "maxCapacity",
+        "registrationOpen",
+        "tournamentTitle",
+        "venue",
+        "adminEmail",
+        "adminUsername",
+        "adminPassword"
+      ]
+    }
+  },
+  {
     "id": "LOG-1790599835232",
     "timestamp": "2026-09-28T12:50:35.232Z",
     "action": "TEAM_ASSIGNMENT",

@@ -18,15 +18,31 @@
     "paymentProofUrl": "/uploads/pay_proof_1790586791754_0e94bd03dceb.jpeg",
     "notes": "Ward verified",
     "registeredAt": "2026-09-28T09:13:11.762Z",
-    "paymentStatus": "Pending",
+    "paymentStatus": "Approved",
     "history": [
       {
         "timestamp": "2026-09-28T09:13:11.763Z",
         "action": "Player Registered",
         "notes": "Initial registration submitted with UTR: 564645645645645654645"
+      },
+      {
+        "timestamp": "2026-09-29T08:51:39.099Z",
+        "action": "STATUS_CHANGE_APPROVED",
+        "notes": "Status changed from Pending to Approved"
+      },
+      {
+        "timestamp": "2026-09-29T08:51:54.802Z",
+        "action": "STATUS_CHANGE_REJECTED",
+        "notes": "Status changed from Approved to Rejected"
+      },
+      {
+        "timestamp": "2026-09-29T08:51:58.952Z",
+        "action": "STATUS_CHANGE_APPROVED",
+        "notes": "Status changed from Rejected to Approved"
       }
     ],
-    "teamId": null
+    "teamId": null,
+    "regNumber": "1005"
   },
   {
     "id": "GPL-REG-1004",
@@ -90,7 +106,8 @@
         "notes": "Initial registration submitted with UTR: 42342342344"
       }
     ],
-    "teamId": null
+    "teamId": null,
+    "regNumber": "1004"
   },
   {
     "id": "GPL-REG-1001",
@@ -112,7 +129,8 @@
     "aadhaarBackUrl": "/images/doc-placeholder.svg",
     "paymentProofUrl": "/images/payment-placeholder.svg",
     "registeredAt": "2026-09-25T18:20:39.400Z",
-    "notes": "Verified Ward 51 resident"
+    "notes": "Verified Ward 51 resident",
+    "regNumber": "1001"
   },
   {
     "id": "GPL-REG-1002",
@@ -134,7 +152,8 @@
     "aadhaarBackUrl": "/images/doc-placeholder.svg",
     "paymentProofUrl": "/images/payment-placeholder.svg",
     "registeredAt": "2026-09-26T18:20:39.402Z",
-    "notes": "Under-21 category eligible"
+    "notes": "Under-21 category eligible",
+    "regNumber": "1002"
   },
   {
     "id": "GPL-REG-1003",
@@ -156,6 +175,7 @@
     "aadhaarBackUrl": "/images/doc-placeholder.svg",
     "paymentProofUrl": "/images/payment-placeholder.svg",
     "registeredAt": "2026-09-27T18:20:39.402Z",
-    "notes": "Document or payment verification issue"
+    "notes": "Document or payment verification issue",
+    "regNumber": "1003"
   }
 ]

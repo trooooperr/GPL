@@ -66,6 +66,7 @@ export default function AdminDashboard() {
   const [inspectPlayer, setInspectPlayer] = useState(null);
   const [editPlayer, setEditPlayer] = useState(null);
   const [editTeam, setEditTeam] = useState(null);
+  const [viewSquadTeam, setViewSquadTeam] = useState(null);
   const [fullScreenImage, setFullScreenImage] = useState(null); // { url, title }
   const [newRuleText, setNewRuleText] = useState("");
   const [savingSettings, setSavingSettings] = useState(false);
@@ -276,7 +277,7 @@ export default function AdminDashboard() {
         loadAllData();
       }
     } catch (err) {
-      showToast("Failed to assign franchise: " + err.message, "error");
+      showToast("Failed to assign team: " + err.message, "error");
     }
   };
 
@@ -321,7 +322,7 @@ export default function AdminDashboard() {
       if (data.success) {
         setTeams(data.teams);
         setEditTeam(null);
-        showToast("Franchise saved successfully!", "success");
+        showToast("Team saved successfully!", "success");
       }
     } catch (err) {
       showToast("Failed to save team: " + err.message, "error");
@@ -330,8 +331,8 @@ export default function AdminDashboard() {
 
   const handleDeleteTeam = (teamId) => {
     setConfirmModal({
-      title: "Delete Franchise Team",
-      message: "Are you sure you want to delete this franchise? Assigned players will be unassigned.",
+      title: "Delete Team",
+      message: "Are you sure you want to delete this team? Assigned players will be unassigned.",
       confirmText: "Delete Team",
       onConfirm: async () => {
         try {
@@ -344,7 +345,7 @@ export default function AdminDashboard() {
           if (data.success) {
             setTeams(data.teams);
             loadAllData();
-            showToast("Franchise deleted successfully!", "success");
+            showToast("Team deleted successfully!", "success");
           }
         } catch (err) {
           showToast("Failed to delete team: " + err.message, "error");
@@ -428,7 +429,7 @@ export default function AdminDashboard() {
 
   const tabItems = [
     { id: "players", label: `Players (${players.length})`, icon: Users },
-    { id: "teams", label: `Franchises (${teams.length})`, icon: Trophy },
+    { id: "teams", label: `Teams (${teams.length})`, icon: Trophy },
     { id: "sizing", label: "Kit Sizing", icon: Shirt },
     { id: "settings", label: "Payment & Settings", icon: QrCode },
     { id: "rules", label: "Rules", icon: FileText },
@@ -573,7 +574,7 @@ export default function AdminDashboard() {
                   <ExternalLink className="w-3.5 h-3.5 text-slate-300" />
                   <span>View Public Website</span>
                 </span>
-                <span className="text-[10px] text-slate-400">goregaonpremierleague.in</span>
+                <span className="text-[10px] text-slate-300">Live Portal ↗</span>
               </Link>
 
               <button
@@ -750,6 +751,9 @@ export default function AdminDashboard() {
                     <div className="flex items-start justify-between gap-2 border-b border-slate-100 pb-2.5">
                       <div>
                         <h3 className="font-bold text-slate-900 text-sm leading-tight">{player.name}</h3>
+                        <span className="text-xs font-mono font-bold text-blue-600 block mt-0.5">
+                          {player.regNumber || (player.id ? player.id.replace(/\D/g, "") : "")}
+                        </span>
                       </div>
                       <span
                         className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold inline-flex items-center gap-1 shrink-0 ${
@@ -829,7 +833,7 @@ export default function AdminDashboard() {
                       </button>
                     </div>
 
-                    {/* Franchise Selector */}
+                    {/* Team Selector */}
                     <div>
                       <select
                         value={player.teamId || ""}
@@ -911,7 +915,7 @@ export default function AdminDashboard() {
                       <th className="py-4 px-5">Payment UTR</th>
                       <th className="py-4 px-5">Documents</th>
                       <th className="py-4 px-5">Status</th>
-                      <th className="py-4 px-5">Franchise</th>
+                      <th className="py-4 px-5">Assigned Team</th>
                       <th className="py-4 px-5 text-right">Actions</th>
                     </tr>
                   </thead>
@@ -1063,15 +1067,15 @@ export default function AdminDashboard() {
           <div className="space-y-4 sm:space-y-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <div>
-                <h2 className="text-lg sm:text-xl font-bold text-[#081a36]">Tournament Franchises &amp; Squads</h2>
-                <p className="text-xs text-slate-500">Manage 10 tournament franchises, owners, captains, and auction allocations</p>
+                <h2 className="text-lg sm:text-xl font-bold text-[#081a36]">Tournament Teams &amp; Squads</h2>
+                <p className="text-xs text-slate-500">Manage 10 tournament teams, owners, captains, and auction allocations</p>
               </div>
               <button
                 onClick={() => setEditTeam({ name: "", shortCode: "", owner: "", captain: "", logo: "" })}
                 className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#0041b9] hover:bg-[#003399] text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm"
               >
                 <Plus className="w-4 h-4" />
-                <span>Add New Franchise</span>
+                <span>Add New Team</span>
               </button>
             </div>
 
@@ -1101,7 +1105,11 @@ export default function AdminDashboard() {
                       </div>
                     </div>
 
-                    <div className="space-y-1 text-xs bg-slate-50 p-3 rounded-xl border border-slate-100">
+                    <div
+                      onClick={() => setViewSquadTeam(team)}
+                      className="space-y-1 text-xs bg-slate-50 hover:bg-slate-100 p-3 rounded-xl border border-slate-100 cursor-pointer transition-colors"
+                      title="Click to view assigned team players"
+                    >
                       <div className="flex justify-between">
                         <span className="text-slate-400">Owner:</span>
                         <span className="font-bold text-slate-700">{team.owner || "N/A"}</span>
@@ -1112,20 +1120,33 @@ export default function AdminDashboard() {
                       </div>
                       <div className="flex justify-between pt-1 border-t border-slate-200">
                         <span className="text-slate-400">Squad:</span>
-                        <span className="font-mono font-bold text-[#0041b9]">{memberCount} / 14 Players</span>
+                        <span className="font-mono font-bold text-[#0041b9] flex items-center gap-1">
+                          <span>{players.filter((p) => p.teamId === team.id).length} / 14 Players</span>
+                          <span className="text-[10px] text-blue-600 font-sans font-semibold ml-1 underline">View Roster ↗</span>
+                        </span>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-2 pt-2 border-t border-slate-100">
                       <button
-                        onClick={() => setEditTeam(team)}
-                        className="flex-1 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors"
+                        type="button"
+                        onClick={() => setViewSquadTeam(team)}
+                        className="flex-1 py-2 px-3 rounded-lg bg-blue-50 hover:bg-blue-100 text-[#0041b9] text-xs font-bold transition-colors flex items-center justify-center gap-1.5"
                       >
-                        Edit Details
+                        <Users className="w-3.5 h-3.5" />
+                        <span>View Players ({players.filter((p) => p.teamId === team.id).length})</span>
                       </button>
                       <button
+                        type="button"
+                        onClick={() => setEditTeam(team)}
+                        className="py-2 px-3 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        type="button"
                         onClick={() => handleDeleteTeam(team.id)}
-                        className="p-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100"
+                        className="p-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
                         title="Delete Team"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -1248,30 +1269,18 @@ export default function AdminDashboard() {
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Registration Fee (₹ INR)
-                  </label>
-                  <input
-                    type="number"
-                    required
-                    min={1}
-                    value={settings.registrationFee || 100}
-                    onChange={(e) => setSettings({ ...settings, registrationFee: Number(e.target.value) })}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm font-mono focus:ring-2 focus:ring-[#0041b9]"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Tournament Capacity (Auto-Calculated)
-                  </label>
-                  <div className="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-slate-100/70 text-sm font-semibold text-slate-700 flex items-center justify-between">
-                    <span className="font-mono font-bold text-[#0041b9] text-base">{teams.length * 14} Players</span>
-                    <span className="text-[11px] text-slate-500 font-medium">{teams.length} Teams × 14</span>
-                  </div>
-                </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Registration Fee (₹ INR)
+                </label>
+                <input
+                  type="number"
+                  required
+                  min={1}
+                  value={settings.registrationFee || 100}
+                  onChange={(e) => setSettings({ ...settings, registrationFee: Number(e.target.value) })}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm font-mono focus:ring-2 focus:ring-[#0041b9]"
+                />
               </div>
 
               <div>
@@ -1591,8 +1600,19 @@ export default function AdminDashboard() {
                 <label className="font-bold text-slate-700 block mb-1">Full Name</label>
                 <input
                   type="text"
-                  value={editPlayer.name}
+                  value={editPlayer.name || ""}
                   onChange={(e) => setEditPlayer({ ...editPlayer, name: e.target.value })}
+                  className="w-full px-3 py-2 rounded-lg border border-slate-200"
+                />
+              </div>
+
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">Email Address</label>
+                <input
+                  type="email"
+                  placeholder="player@example.com"
+                  value={editPlayer.email || ""}
+                  onChange={(e) => setEditPlayer({ ...editPlayer, email: e.target.value })}
                   className="w-full px-3 py-2 rounded-lg border border-slate-200"
                 />
               </div>
@@ -1698,12 +1718,12 @@ export default function AdminDashboard() {
             </button>
 
             <h3 className="text-base sm:text-lg font-bold text-slate-900">
-              {editTeam.id ? `Edit Franchise: ${editTeam.name}` : "Create New Franchise Team"}
+              {editTeam.id ? `Edit Team: ${editTeam.name}` : "Create New Team"}
             </h3>
 
             <form onSubmit={handleSaveTeam} className="space-y-3 text-xs">
               <div>
-                <label className="font-bold text-slate-700 block mb-1">Franchise Name</label>
+                <label className="font-bold text-slate-700 block mb-1">Team Name</label>
                 <input
                   type="text"
                   required
@@ -1788,6 +1808,127 @@ export default function AdminDashboard() {
               </div>
 
             </form>
+
+          </div>
+        </div>
+      )}
+
+            {/* ========================================================================= */}
+      {/* MODAL: VIEW TEAM PLAYERS / SQUAD ROSTER */}
+      {/* ========================================================================= */}
+      {viewSquadTeam && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-white rounded-2xl max-w-xl w-full p-4 sm:p-6 shadow-2xl relative max-h-[90vh] flex flex-col space-y-4">
+            
+            {/* Header */}
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-slate-50 border border-slate-200 p-1 flex items-center justify-center shrink-0">
+                  {viewSquadTeam.logo ? (
+                    <img src={viewSquadTeam.logo} alt={viewSquadTeam.name} className="max-h-full max-w-full object-contain" />
+                  ) : (
+                    <Trophy className="w-6 h-6 text-[#0041b9]" />
+                  )}
+                </div>
+                <div>
+                  <h3 className="font-bold text-slate-900 text-base sm:text-lg leading-tight">{viewSquadTeam.name}</h3>
+                  <div className="flex items-center gap-2 text-xs text-slate-500 font-medium">
+                    <span className="font-mono font-bold text-blue-600">Code: {viewSquadTeam.shortCode}</span>
+                    <span>•</span>
+                    <span className="font-bold text-emerald-700">
+                      {players.filter((p) => p.teamId === viewSquadTeam.id).length} / 14 Players Assigned
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setViewSquadTeam(null)}
+                className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-100"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Squad List */}
+            <div className="flex-1 overflow-y-auto py-1 space-y-2 max-h-[55vh] pr-1">
+              {players.filter((p) => p.teamId === viewSquadTeam.id).length === 0 ? (
+                <div className="text-center py-10 text-slate-400 space-y-2 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                  <Users className="w-8 h-8 mx-auto text-slate-300" />
+                  <p className="text-xs font-bold text-slate-600">No players assigned to this team yet.</p>
+                  <p className="text-[11px] text-slate-400 max-w-xs mx-auto">
+                    Go to the Registrations tab to assign approved auction pool players to {viewSquadTeam.name}.
+                  </p>
+                </div>
+              ) : (
+                players
+                  .filter((p) => p.teamId === viewSquadTeam.id)
+                  .map((player, idx) => (
+                    <div
+                      key={player.id}
+                      className="p-3 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between gap-3 text-xs hover:bg-slate-100/80 transition-colors"
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <span className="w-6 h-6 rounded-full bg-blue-100 text-[#0041b9] font-mono font-bold text-[11px] flex items-center justify-center shrink-0">
+                          {idx + 1}
+                        </span>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-bold text-slate-900 truncate">{player.name}</h4>
+                            <span className="font-mono font-bold text-blue-600 text-[11px]">
+                              #{player.regNumber || (player.id ? player.id.replace(/\D/g, "") : "")}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 text-[11px] text-slate-500 flex-wrap mt-0.5">
+                            <span className="font-medium text-slate-700">{player.speciality}</span>
+                            <span>•</span>
+                            <span>{player.ward}</span>
+                            <span>•</span>
+                            <span className="font-mono font-semibold">T:{player.tshirtSize} | P:{player.trackSize}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setInspectPlayer(player);
+                          }}
+                          className="p-1.5 rounded-lg bg-blue-50 text-[#0041b9] hover:bg-blue-100 transition-colors"
+                          title="View Full Profile"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            handleAssignTeam(player.id, "");
+                          }}
+                          className="p-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
+                          title="Remove from Team"
+                        >
+                          <UserX className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+              <div className="text-slate-500 text-[11px]">
+                Owner: <span className="font-bold text-slate-700">{viewSquadTeam.owner || "N/A"}</span> • Captain: <span className="font-bold text-slate-700">{viewSquadTeam.captain || "N/A"}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setViewSquadTeam(null)}
+                className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold"
+              >
+                Close
+              </button>
+            </div>
 
           </div>
         </div>

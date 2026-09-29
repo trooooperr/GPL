@@ -143,6 +143,7 @@ class Database {
       if (mongoRegs && mongoRegs.length > 0) {
         this.registrations = mongoRegs.map(r => ({
           id: r.id,
+          regNumber: r.regNumber || (r.id ? r.id.replace(/\D/g, "") : ""),
           name: r.name,
           email: r.email,
           phone: r.phone,
@@ -326,10 +327,16 @@ class Database {
 
   addRegistration(playerData) {
     this.reloadRegistrationsFromDisk();
-    const id = `GPL-${Date.now().toString().slice(-4)}${Math.floor(100 + Math.random() * 900)}`;
+    const maxRegNum = this.registrations.reduce((max, r) => {
+      const num = parseInt(r.regNumber || (r.id ? r.id.replace(/\D/g, "") : "0"), 10);
+      return !isNaN(num) && num > max ? num : max;
+    }, 1000);
+    const regNumber = String(maxRegNum + 1);
+    const id = `GPL-REG-${regNumber}`;
 
     const newRegistration = {
       id,
+      regNumber,
       name: playerData.name,
       email: playerData.email || "",
       phone: playerData.phone,

@@ -41,6 +41,7 @@ export async function connectToDatabase() {
 
 // Mongoose Schemas
 const RegistrationSchema = new mongoose.Schema({
+  regNumber: { type: String },
   id: { type: String, required: true, unique: true },
   name: { type: String, required: true },
   email: String,
