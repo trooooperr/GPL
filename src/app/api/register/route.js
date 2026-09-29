@@ -45,13 +45,19 @@ async function saveFileLocally(file, prefix = "file") {
   const bytes = await file.arrayBuffer();
   const buffer = Buffer.from(bytes);
 
-  const ext = path.extname(file.name).toLowerCase() || ".jpg";
-  const safeExt = [".jpg", ".jpeg", ".png", ".webp"].includes(ext) ? ext : ".jpg";
-  const uniqueName = `${prefix}_${Date.now()}_${crypto.randomBytes(6).toString("hex")}${safeExt}`;
-  const savePath = path.join(UPLOADS_DIR, uniqueName);
+  try {
+    const ext = path.extname(file.name).toLowerCase() || ".jpg";
+    const safeExt = [".jpg", ".jpeg", ".png", ".webp"].includes(ext) ? ext : ".jpg";
+    const uniqueName = `${prefix}_${Date.now()}_${crypto.randomBytes(6).toString("hex")}${safeExt}`;
+    const savePath = path.join(UPLOADS_DIR, uniqueName);
 
-  await fs.promises.writeFile(savePath, buffer);
-  return `/uploads/${uniqueName}`;
+    await fs.promises.writeFile(savePath, buffer);
+    return `/uploads/${uniqueName}`;
+  } catch (diskErr) {
+    // Vercel serverless read-only disk fallback to Base64 data URI
+    const mime = file.type || "image/jpeg";
+    return `data:${mime};base64,${buffer.toString("base64")}`;
+  }
 }
 
 export async function POST(request) {

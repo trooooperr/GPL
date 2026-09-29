@@ -392,7 +392,8 @@ class Database {
     const approved = this.registrations.filter(r => r.paymentStatus === "Approved").length;
     const pending = this.registrations.filter(r => r.paymentStatus === "Pending").length;
     const rejected = this.registrations.filter(r => r.paymentStatus === "Rejected").length;
-    const remainingSlots = Math.max(0, maxCapacity - total);
+    const activeRegistrations = this.registrations.filter(r => r.paymentStatus !== "Rejected").length;
+    const remainingSlots = Math.max(0, maxCapacity - activeRegistrations);
 
     return {
       maxCapacity,

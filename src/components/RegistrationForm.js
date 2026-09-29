@@ -297,7 +297,7 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
         ) : (
           <form
             onSubmit={handleSubmit}
-            className="bg-white/80 backdrop-blur-md rounded-2xl sm:rounded-3xl border border-slate-200/90 shadow-xl p-6 sm:p-10 space-y-6"
+            className="bg-white/95 backdrop-blur-md rounded-2xl sm:rounded-3xl border border-slate-200/90 shadow-xl p-4 sm:p-8 md:p-10 space-y-5 sm:space-y-6 overflow-hidden"
           >
             {errorMsg && (
               <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm flex items-center gap-3 animate-shake">
@@ -345,9 +345,9 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
               </div>
             </div>
 
-            {/* Line 2: Phone and DOB (2-Column Full Width) */}
+            {/* Line 2: Phone and DOB (2-Column Full Width with iOS Safari width constraint) */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-              <div>
+              <div className="min-w-0">
                 <label className="block text-xs font-bold text-slate-700 mb-1.5">
                   Phone <span className="text-red-500">*</span>
                 </label>
@@ -357,7 +357,7 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
                   maxLength={10}
                   value={formData.phone}
                   onChange={(e) => handleFieldChange("phone", e.target.value)}
-                  className={`w-full px-4 py-2.5 rounded-lg border bg-white text-slate-900 text-sm focus:outline-none transition-all ${
+                  className={`w-full max-w-full min-w-0 px-4 py-2.5 rounded-lg border bg-white text-slate-900 text-sm focus:outline-none transition-all ${
                     fieldErrors.phone ? "border-red-500 ring-2 ring-red-200" : "border-slate-300 focus:ring-2 focus:ring-[#0041b9]"
                   }`}
                 />
@@ -366,7 +366,7 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
                 )}
               </div>
 
-              <div>
+              <div className="min-w-0">
                 <label className="block text-xs font-bold text-slate-700 mb-1.5">
                   DOB <span className="text-red-500">*</span>
                 </label>
@@ -374,9 +374,10 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
                   type="date"
                   value={formData.dob}
                   onChange={(e) => handleFieldChange("dob", e.target.value)}
-                  className={`w-full px-4 py-2.5 rounded-lg border bg-white text-slate-900 text-sm focus:outline-none transition-all ${
+                  className={`w-full max-w-full min-w-0 appearance-none px-3.5 py-2.5 rounded-lg border bg-white text-slate-900 text-sm focus:outline-none transition-all ${
                     fieldErrors.dob ? "border-red-500 ring-2 ring-red-200" : "border-slate-300 focus:ring-2 focus:ring-[#0041b9]"
                   }`}
+                  style={{ WebkitAppearance: "none", minWidth: 0, boxSizing: "border-box" }}
                 />
                 {fieldErrors.dob && (
                   <p className="text-[11px] text-red-600 font-medium mt-1">{fieldErrors.dob}</p>
