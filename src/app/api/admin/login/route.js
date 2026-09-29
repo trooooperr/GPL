@@ -5,6 +5,7 @@ import { rateLimiter, getClientIp } from "@/lib/rate-limit";
 export const dynamic = "force-dynamic";
 
 export async function POST(request) {
+  await dbReady;
   try {
     const clientIp = getClientIp(request);
     

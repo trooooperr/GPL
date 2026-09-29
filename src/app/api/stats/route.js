@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { db, dbReady } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
+  await dbReady;
   try {
     const stats = db.getStats();
     return NextResponse.json({

@@ -261,7 +261,7 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
             </div>
 
             <span className="px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-mono font-bold tracking-wider inline-block mb-2 border border-emerald-200">
-              REGISTRATION ID: {successData.registrationId}
+              REGISTRATION NUMBER: {successData.registrationNumber}
             </span>
 
             <h3 className="text-2xl font-black text-slate-900 mb-2">

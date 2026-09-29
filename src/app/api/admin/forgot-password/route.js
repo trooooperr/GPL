@@ -1,26 +1,25 @@
 import { NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
 import crypto from "crypto";
-import { db } from "@/lib/db.js";
+import { db, dbReady } from "@/lib/db.js";
 import { sendAdminPasswordResetOtp, getAdminContactEmail } from "@/lib/email.js";
 import { rateLimiter, getClientIp } from "@/lib/rate-limit.js";
 
 export const dynamic = "force-dynamic";
 
-const OTP_FILE = path.join(process.cwd(), "data", "reset_otp.json");
+// In-memory OTP store (works on both local and Vercel serverless)
+// On Vercel, each invocation shares the same module scope within a warm function
+if (!global.__gplOtpStore) {
+  global.__gplOtpStore = {};
+}
 
 export async function POST(request) {
+  await dbReady;
   try {
     const clientIp = getClientIp(request);
-    // Limit: 4 attempts per 10 minutes
     const limitStatus = rateLimiter.check(`admin_forgot_pw_${clientIp}`, 4, 600);
     if (!limitStatus.allowed) {
       return NextResponse.json(
-        {
-          success: false,
-          error: `Too many requests. Please wait ${Math.ceil(limitStatus.resetInSeconds / 60)} minutes before requesting another code.`
-        },
+        { success: false, error: `Too many requests. Please wait ${Math.ceil(limitStatus.resetInSeconds / 60)} minutes before requesting another code.` },
         { status: 429 }
       );
     }
@@ -33,23 +32,18 @@ export async function POST(request) {
       );
     }
 
-    // Generate cryptographically random 6-digit OTP
     const otpCode = crypto.randomInt(100000, 999999).toString();
-    const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
+    const expiresAt = Date.now() + 10 * 60 * 1000;
 
-    const otpData = {
+    global.__gplOtpStore = {
       code: otpCode,
       email: adminEmail,
       expiresAt,
       createdAt: new Date().toISOString()
     };
 
-    fs.writeFileSync(OTP_FILE, JSON.stringify(otpData, null, 2), "utf-8");
-
-    // Send email to admin
     await sendAdminPasswordResetOtp(otpCode, adminEmail);
 
-    // Mask email for user privacy (e.g. g***e@gmail.com)
     const [userPart, domain] = adminEmail.split("@");
     const maskedUser = userPart.length > 2
       ? `${userPart[0]}***${userPart[userPart.length - 1]}`
@@ -59,8 +53,7 @@ export async function POST(request) {
     return NextResponse.json({
       success: true,
       message: `A 6-digit verification code has been dispatched to ${maskedEmail}`,
-      maskedEmail,
-      devOtp: !process.env.GMAIL_USER ? otpCode : undefined
+      maskedEmail
     });
   } catch (error) {
     console.error("Forgot password error:", error);

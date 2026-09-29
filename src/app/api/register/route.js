@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { db, dbReady } from "@/lib/db";
 import { rateLimiter, getClientIp } from "@/lib/rate-limit";
 import { sendRegistrationNotificationEmail } from "@/lib/email";
 import {
@@ -61,6 +61,7 @@ async function saveFileLocally(file, prefix = "file") {
 }
 
 export async function POST(request) {
+  await dbReady;
   try {
     // 1. Rate Limiting Check
     const clientIp = getClientIp(request);
@@ -182,7 +183,7 @@ export async function POST(request) {
     return NextResponse.json({
       success: true,
       message: "Registration successful! Your application has been submitted for verification.",
-      registrationId: newPlayer.id,
+      registrationNumber: newPlayer.regNumber,
       player: {
         id: newPlayer.id,
         name: newPlayer.name,

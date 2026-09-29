@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { db, dbReady } from "@/lib/db";
 import { verifyAuthCookie } from "@/lib/auth";
 import { sendPlayerStatusEmail } from "@/lib/email";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request) {
+  await dbReady;
   const isAuthed = await verifyAuthCookie(request);
   if (!isAuthed) {
     return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
@@ -19,6 +20,7 @@ export async function GET(request) {
 }
 
 export async function POST(request) {
+  await dbReady;
   const isAuthed = await verifyAuthCookie(request);
   if (!isAuthed) {
     return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });

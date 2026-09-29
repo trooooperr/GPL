@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 import { verifyAuthCookie } from "@/lib/auth";
-import { db } from "@/lib/db";
+import { db, dbReady } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request) {
+  await dbReady;
   try {
     const isAuthed = await verifyAuthCookie(request);
     if (!isAuthed) {
@@ -16,7 +17,7 @@ export async function GET(request) {
     const teamMap = new Map(teams.map(t => [t.id, t.name]));
 
     const headers = [
-      "Registration ID",
+      "Registration Number",
       "Player Name",
       "Mobile Phone",
       "Email Address",

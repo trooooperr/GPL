@@ -1,24 +1,17 @@
 import { NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
-import { db } from "@/lib/db.js";
+import { db, dbReady } from "@/lib/db.js";
 import { rateLimiter, getClientIp } from "@/lib/rate-limit.js";
 
 export const dynamic = "force-dynamic";
 
-const OTP_FILE = path.join(process.cwd(), "data", "reset_otp.json");
-
 export async function POST(request) {
+  await dbReady;
   try {
     const clientIp = getClientIp(request);
-    // Limit: 5 attempts per 15 minutes
     const limitStatus = rateLimiter.check(`admin_reset_pw_${clientIp}`, 5, 900);
     if (!limitStatus.allowed) {
       return NextResponse.json(
-        {
-          success: false,
-          error: `Too many attempts. Please wait ${Math.ceil(limitStatus.resetInSeconds / 60)} minutes.`
-        },
+        { success: false, error: `Too many attempts. Please wait ${Math.ceil(limitStatus.resetInSeconds / 60)} minutes.` },
         { status: 429 }
       );
     }
@@ -39,17 +32,17 @@ export async function POST(request) {
       );
     }
 
-    if (!fs.existsSync(OTP_FILE)) {
+    const otpData = global.__gplOtpStore || {};
+
+    if (!otpData.code) {
       return NextResponse.json(
         { success: false, error: "No active verification code found. Please request a new OTP." },
         { status: 400 }
       );
     }
 
-    const otpData = JSON.parse(fs.readFileSync(OTP_FILE, "utf-8"));
-
     if (Date.now() > otpData.expiresAt) {
-      try { fs.unlinkSync(OTP_FILE); } catch (e) {}
+      global.__gplOtpStore = {};
       return NextResponse.json(
         { success: false, error: "Verification code has expired. Please request a new OTP." },
         { status: 400 }
@@ -63,11 +56,9 @@ export async function POST(request) {
       );
     }
 
-    // OTP is valid! Update admin password in settings
+    // OTP is valid! Update admin password
     db.updateSettings({ adminPassword: newPassword.trim() });
-
-    // Clean up OTP file
-    try { fs.unlinkSync(OTP_FILE); } catch (e) {}
+    global.__gplOtpStore = {};
 
     return NextResponse.json({
       success: true,

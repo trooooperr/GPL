@@ -164,6 +164,9 @@ export const INITIAL_TEAMS = [
   }
 ];
 
+let _mongoReadyResolve;
+const _mongoReadyPromise = new Promise(r => { _mongoReadyResolve = r; });
+
 class Database {
   constructor() {
     this.registrations = [];
@@ -173,6 +176,7 @@ class Database {
     this.auditLogs = [];
     this.initialized = false;
     this.mongoConnected = false;
+    this._mongoSynced = false;
     this.init();
   }
 
@@ -203,7 +207,10 @@ class Database {
     if (process.env.MONGODB_URI) {
       this.syncWithMongo().catch(err => {
         console.warn("[MongoDB Sync Notice] Running with local data while Mongo initializes:", err.message);
+        _mongoReadyResolve();
       });
+    } else {
+      _mongoReadyResolve();
     }
   }
 
@@ -283,8 +290,11 @@ class Database {
       }
 
       console.log(`[MongoDB] Synced ${this.teams.length} teams, ${this.registrations.length} registrations, settings & rules.`);
+      this._mongoSynced = true;
     } catch (err) {
       console.error("[MongoDB Sync Error]:", err.message);
+    } finally {
+      _mongoReadyResolve();
     }
   }
 
@@ -342,9 +352,11 @@ class Database {
   }
 
   reloadSettingsFromDisk() {
+    if (this._mongoSynced) return; // MongoDB is source of truth
     try {
       if (fs.existsSync(SETTINGS_FILE)) {
-        this.settings = JSON.parse(fs.readFileSync(SETTINGS_FILE, "utf-8"));
+        const data = JSON.parse(fs.readFileSync(SETTINGS_FILE, "utf-8"));
+        if (data && Object.keys(data).length > 0) this.settings = data;
       }
     } catch (e) {}
   }
@@ -444,9 +456,9 @@ class Database {
     const maxRegNum = this.registrations.reduce((max, r) => {
       const num = parseInt(r.regNumber || (r.id ? r.id.replace(/\D/g, "") : "0"), 10);
       return !isNaN(num) && num > max ? num : max;
-    }, 1000);
+    }, 0);
     const regNumber = String(maxRegNum + 1);
-    const id = `GPL-REG-${regNumber}`;
+    const id = `GPL-REG-${Date.now()}-${Math.floor(Math.random()*1000)}`;
 
     const newRegistration = {
       id,
@@ -574,17 +586,21 @@ class Database {
   }
 
   reloadTeamsFromDisk() {
+    if (this._mongoSynced) return; // MongoDB is source of truth
     try {
       if (fs.existsSync(TEAMS_FILE)) {
-        this.teams = JSON.parse(fs.readFileSync(TEAMS_FILE, "utf-8"));
+        const data = JSON.parse(fs.readFileSync(TEAMS_FILE, "utf-8"));
+        if (data && data.length > 0) this.teams = data;
       }
     } catch (e) {}
   }
 
   reloadRegistrationsFromDisk() {
+    if (this._mongoSynced) return; // MongoDB is source of truth
     try {
       if (fs.existsSync(REGISTRATIONS_FILE)) {
-        this.registrations = JSON.parse(fs.readFileSync(REGISTRATIONS_FILE, "utf-8"));
+        const data = JSON.parse(fs.readFileSync(REGISTRATIONS_FILE, "utf-8"));
+        if (data && data.length > 0) this.registrations = data;
       }
     } catch (e) {}
   }
@@ -718,3 +734,4 @@ class Database {
 }
 
 export const db = new Database();
+export const dbReady = _mongoReadyPromise;
