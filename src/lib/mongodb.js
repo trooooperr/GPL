@@ -9,6 +9,9 @@ if (!cached) {
 }
 
 export async function connectToDatabase() {
+  if (!process.env.MONGODB_URI) {
+    return null;
+  }
   if (cached.conn) {
     return cached.conn;
   }

@@ -51,10 +51,123 @@ export const INITIAL_RULES = [
   "Foul language or misbehavior with the management or umpire will lead to penalty of 5 runs"
 ];
 
+export const INITIAL_TEAMS = [
+  {
+    "id": "team-1",
+    "name": "Colony Super Kings",
+    "shortCode": "CSK",
+    "owner": "Mohsin Bhai & Ballu Bhai",
+    "captain": "Colony Captain",
+    "established": "2024",
+    "championships": 2,
+    "logo": "/images/teams/team-csk.png",
+    "members": []
+  },
+  {
+    "id": "team-2",
+    "name": "Koyna Knight Rider",
+    "shortCode": "KKR",
+    "owner": "Koyna Sports Club",
+    "captain": "Knight Captain",
+    "established": "2024",
+    "championships": 1,
+    "logo": "/images/teams/team-kkr.png",
+    "members": []
+  },
+  {
+    "id": "team-3",
+    "name": "Gogtewadi Titans",
+    "shortCode": "GT",
+    "owner": "Gogtewadi Group",
+    "captain": "Titans Captain",
+    "established": "2024",
+    "championships": 1,
+    "logo": "/images/teams/team-gt.png",
+    "members": []
+  },
+  {
+    "id": "team-4",
+    "name": "Durgabhavani Capital",
+    "shortCode": "DC",
+    "owner": "Durgabhavani Mitra Mandal",
+    "captain": "Capital Captain",
+    "established": "2024",
+    "championships": 0,
+    "logo": "/images/teams/team-dc.png",
+    "members": []
+  },
+  {
+    "id": "team-5",
+    "name": "Radhe Radhe",
+    "shortCode": "RR",
+    "owner": "Radhe Radhe Committee",
+    "captain": "Radhe Captain",
+    "established": "2024",
+    "championships": 2,
+    "logo": "/images/teams/team-rr.png",
+    "members": []
+  },
+  {
+    "id": "team-6",
+    "name": "Murli Chawl Indians",
+    "shortCode": "MI",
+    "owner": "Murli Chawl Group",
+    "captain": "Indians Captain",
+    "established": "2024",
+    "championships": 1,
+    "logo": "/images/teams/team-mi.png",
+    "members": []
+  },
+  {
+    "id": "team-7",
+    "name": "Royal Challengers Bhimnagar",
+    "shortCode": "RCB",
+    "owner": "Bhimnagar Sports Club",
+    "captain": "Challengers Captain",
+    "established": "2024",
+    "championships": 0,
+    "logo": "/images/teams/team-rcb.png",
+    "members": []
+  },
+  {
+    "id": "team-8",
+    "name": "Sunrisers Hanuman Tekdi",
+    "shortCode": "SRH",
+    "owner": "Hanuman Tekdi Group",
+    "captain": "Sunrisers Captain",
+    "established": "2024",
+    "championships": 1,
+    "logo": "/images/teams/team-srh.png",
+    "members": []
+  },
+  {
+    "id": "team-9",
+    "name": "Panch Bawdi Kings",
+    "shortCode": "PBKS",
+    "owner": "Panch Bawdi Youth Club",
+    "captain": "Kings Captain",
+    "established": "2024",
+    "championships": 0,
+    "logo": "/images/teams/team-pbks.png",
+    "members": []
+  },
+  {
+    "id": "team-10",
+    "name": "Vitt Bhatti Super Giants",
+    "shortCode": "VBSG",
+    "owner": "Vitt Bhatti Sports",
+    "captain": "Giants Captain",
+    "established": "2024",
+    "championships": 1,
+    "logo": "/images/teams/team-vbsg.png",
+    "members": []
+  }
+];
+
 class Database {
   constructor() {
     this.registrations = [];
-    this.teams = [];
+    this.teams = JSON.parse(JSON.stringify(INITIAL_TEAMS));
     this.settings = { ...INITIAL_SETTINGS };
     this.rules = [...INITIAL_RULES];
     this.auditLogs = [];

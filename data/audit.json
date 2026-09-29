@@ -1,5 +1,109 @@
 [
   {
+    "id": "AUD-1790672447374-549",
+    "timestamp": "2026-09-29T09:00:47.374Z",
+    "action": "DELETE_PLAYER",
+    "details": {
+      "playerId": "GPL-REG-1001",
+      "name": "Aakash Vinod Sharma"
+    }
+  },
+  {
+    "id": "AUD-1790672445606-459",
+    "timestamp": "2026-09-29T09:00:45.606Z",
+    "action": "DELETE_PLAYER",
+    "details": {
+      "playerId": "GPL-REG-1004",
+      "name": "Alok Kumar Gupta"
+    }
+  },
+  {
+    "id": "AUD-1790672443587-878",
+    "timestamp": "2026-09-29T09:00:43.587Z",
+    "action": "DELETE_PLAYER",
+    "details": {
+      "playerId": "GPL-REG-1005",
+      "name": "ngfgngfngfn"
+    }
+  },
+  {
+    "id": "AUD-1790672392608-732",
+    "timestamp": "2026-09-29T08:59:52.608Z",
+    "action": "UPDATE_PLAYER_STATUS",
+    "details": {
+      "playerId": "GPL-REG-1005",
+      "oldStatus": "Approved",
+      "newStatus": "Rejected",
+      "notes": ""
+    }
+  },
+  {
+    "id": "AUD-1790672391957-337",
+    "timestamp": "2026-09-29T08:59:51.957Z",
+    "action": "UPDATE_PLAYER_STATUS",
+    "details": {
+      "playerId": "GPL-REG-1005",
+      "oldStatus": "Rejected",
+      "newStatus": "Approved",
+      "notes": ""
+    }
+  },
+  {
+    "id": "AUD-1790672390922-917",
+    "timestamp": "2026-09-29T08:59:50.922Z",
+    "action": "UPDATE_PLAYER_STATUS",
+    "details": {
+      "playerId": "GPL-REG-1005",
+      "oldStatus": "Approved",
+      "newStatus": "Rejected",
+      "notes": ""
+    }
+  },
+  {
+    "id": "AUD-1790672389306-91",
+    "timestamp": "2026-09-29T08:59:49.306Z",
+    "action": "UPDATE_PLAYER_STATUS",
+    "details": {
+      "playerId": "GPL-REG-1005",
+      "oldStatus": "Rejected",
+      "newStatus": "Approved",
+      "notes": ""
+    }
+  },
+  {
+    "id": "AUD-1790672387392-839",
+    "timestamp": "2026-09-29T08:59:47.392Z",
+    "action": "UPDATE_PLAYER_STATUS",
+    "details": {
+      "playerId": "GPL-REG-1005",
+      "oldStatus": "Approved",
+      "newStatus": "Rejected",
+      "notes": ""
+    }
+  },
+  {
+    "id": "AUD-1790672386827-471",
+    "timestamp": "2026-09-29T08:59:46.827Z",
+    "action": "UPDATE_PLAYER_STATUS",
+    "details": {
+      "playerId": "GPL-REG-1005",
+      "oldStatus": "Rejected",
+      "newStatus": "Approved",
+      "notes": ""
+    }
+  },
+  {
+    "id": "AUD-1790672384363-497",
+    "timestamp": "2026-09-29T08:59:44.363Z",
+    "action": "UPDATE_PLAYER_STATUS",
+    "details": {
+      "playerId": "GPL-REG-1005",
+      "oldStatus": "Approved",
+      "newStatus": "Rejected",
+      "notes": ""
+    }
+  },
+  {
     "id": "AUD-1790672060973-93",
     "timestamp": "2026-09-29T08:54:20.973Z",
     "action": "UPDATE_RULES",
