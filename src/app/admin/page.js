@@ -750,7 +750,6 @@ export default function AdminDashboard() {
                     <div className="flex items-start justify-between gap-2 border-b border-slate-100 pb-2.5">
                       <div>
                         <h3 className="font-bold text-slate-900 text-sm leading-tight">{player.name}</h3>
-                        <span className="text-[11px] font-mono text-slate-400 block">{player.id}</span>
                       </div>
                       <span
                         className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold inline-flex items-center gap-1 shrink-0 ${
@@ -776,55 +775,57 @@ export default function AdminDashboard() {
                     <div className="grid grid-cols-2 gap-2 text-xs bg-slate-50 p-2.5 rounded-xl border border-slate-100">
                       <div>
                         <span className="text-[10px] uppercase font-bold text-slate-400 block">Phone</span>
-                        <a href={`tel:${player.phone}`} className="font-semibold text-blue-600 truncate block">
+                        <a href={`tel:${player.phone}`} className="font-semibold text-blue-600 block">
                           {player.phone}
                         </a>
                       </div>
                       <div>
                         <span className="text-[10px] uppercase font-bold text-slate-400 block">Ward &amp; Role</span>
-                        <span className="font-semibold text-slate-800 truncate block">
+                        <span className="font-semibold text-slate-800 text-[11px] block leading-snug break-words">
                           {player.ward} • {player.speciality}
                         </span>
                       </div>
                       <div>
                         <span className="text-[10px] uppercase font-bold text-slate-400 block">Kit Sizing</span>
-                        <span className="font-mono font-bold text-slate-700">
+                        <span className="font-mono font-bold text-slate-700 text-[11px]">
                           T: {player.tshirtSize} | P: {player.trackSize}
                         </span>
                       </div>
                       <div>
-                        <span className="text-[10px] uppercase font-bold text-slate-400 block">UTR / Amount</span>
-                        <span className="font-mono font-bold text-slate-800 truncate block">
-                          {player.utrNumber || "N/A"} (₹{player.amount || 100})
+                        <span className="text-[10px] uppercase font-bold text-slate-400 block">UTR &amp; Amount</span>
+                        <span className="font-mono font-bold text-slate-800 text-[11px] block break-all leading-tight">
+                          {player.utrNumber || "N/A"} <span className="text-emerald-700 font-sans font-bold">(₹{player.amount || 100})</span>
                         </span>
                       </div>
                     </div>
 
-                    {/* Documents Lightbox Row */}
-                    <div className="flex items-center gap-2 pt-1">
-                      <span className="text-[10px] font-bold uppercase text-slate-400 shrink-0">Docs:</span>
+                    {/* Documents Lightbox Row (3 columns, guaranteed 0 horizontal overflow) */}
+                    <div className="grid grid-cols-3 gap-1.5 pt-1">
                       <button
+                        type="button"
                         onClick={() => setFullScreenImage({ url: player.aadhaarFrontUrl, title: `Aadhaar Front - ${player.name}` })}
-                        className="px-2 py-1 rounded-lg bg-blue-50 text-[#0041b9] text-[11px] font-semibold border border-blue-100 hover:bg-blue-100 flex items-center gap-1"
+                        className="py-1.5 px-1 rounded-lg bg-blue-50 text-[#0041b9] text-[11px] font-semibold border border-blue-100 hover:bg-blue-100 flex items-center justify-center gap-1 transition-colors min-w-0"
                       >
-                        <FileCheck className="w-3 h-3" />
-                        <span>Aadhaar F</span>
+                        <FileCheck className="w-3 h-3 shrink-0" />
+                        <span className="truncate">Aadhaar F</span>
                       </button>
 
                       <button
+                        type="button"
                         onClick={() => setFullScreenImage({ url: player.aadhaarBackUrl, title: `Aadhaar Back - ${player.name}` })}
-                        className="px-2 py-1 rounded-lg bg-blue-50 text-[#0041b9] text-[11px] font-semibold border border-blue-100 hover:bg-blue-100 flex items-center gap-1"
+                        className="py-1.5 px-1 rounded-lg bg-blue-50 text-[#0041b9] text-[11px] font-semibold border border-blue-100 hover:bg-blue-100 flex items-center justify-center gap-1 transition-colors min-w-0"
                       >
-                        <FileCheck className="w-3 h-3" />
-                        <span>Aadhaar B</span>
+                        <FileCheck className="w-3 h-3 shrink-0" />
+                        <span className="truncate">Aadhaar B</span>
                       </button>
 
                       <button
+                        type="button"
                         onClick={() => setFullScreenImage({ url: player.paymentProofUrl, title: `Payment Receipt - ${player.name}` })}
-                        className="px-2 py-1 rounded-lg bg-purple-50 text-purple-700 text-[11px] font-semibold border border-purple-100 hover:bg-purple-100 flex items-center gap-1"
+                        className="py-1.5 px-1 rounded-lg bg-purple-50 text-purple-700 text-[11px] font-semibold border border-purple-100 hover:bg-purple-100 flex items-center justify-center gap-1 transition-colors min-w-0"
                       >
-                        <CreditCard className="w-3 h-3" />
-                        <span>Receipt</span>
+                        <CreditCard className="w-3 h-3 shrink-0" />
+                        <span className="truncate">Receipt</span>
                       </button>
                     </div>
 
@@ -1357,22 +1358,27 @@ export default function AdminDashboard() {
               ))}
             </div>
 
-            {/* Add Rule Input */}
-            <div className="pt-2 flex gap-2">
-              <input
-                type="text"
-                placeholder="Enter new tournament regulation rule..."
+            {/* Add Rule Textarea (3 lines) */}
+            <div className="pt-3 border-t border-slate-100 space-y-2">
+              <label className="text-xs font-bold text-slate-700 block">Add New Tournament Rule</label>
+              <textarea
+                rows={3}
+                placeholder="Type new tournament rule here (e.g. Batsman must wear mandatory helmet while batting)..."
                 value={newRuleText}
                 onChange={(e) => setNewRuleText(e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter") handleAddRule(); }}
-                className="flex-1 px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-xs sm:text-sm focus:ring-2 focus:ring-[#0041b9]"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-[#0041b9] outline-none resize-none leading-relaxed bg-slate-50 focus:bg-white transition-all"
               />
-              <button
-                onClick={handleAddRule}
-                className="px-4 py-2.5 rounded-xl bg-[#0041b9] hover:bg-[#003399] text-white font-bold text-xs shadow-sm shrink-0"
-              >
-                Add Rule
-              </button>
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={handleAddRule}
+                  disabled={!newRuleText.trim()}
+                  className="w-full sm:w-auto px-5 py-2.5 bg-[#0041b9] hover:bg-[#003399] disabled:bg-slate-300 disabled:cursor-not-allowed text-white rounded-xl font-bold text-xs transition-all shadow-xs flex items-center justify-center gap-1.5"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Add Rule</span>
+                </button>
+              </div>
             </div>
 
           </div>
@@ -1388,29 +1394,50 @@ export default function AdminDashboard() {
               <p className="text-xs text-slate-500">Immutable trace of all administrative status changes, team assignments, and logins</p>
             </div>
 
-            <div className="space-y-2 max-h-[600px] overflow-y-auto pr-1">
-              {logs.map((log) => (
-                <div
-                  key={log.id}
-                  className="p-3 rounded-xl bg-slate-50 border border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-xs"
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="px-2 py-0.5 rounded-md bg-slate-200 font-mono text-[10px] font-bold text-slate-700">
-                      {log.action}
-                    </span>
-                    <span className="text-slate-800 font-medium truncate max-w-xs sm:max-w-md">
-                      {JSON.stringify(log.details)}
-                    </span>
+            <div className="space-y-2.5 max-h-[600px] overflow-y-auto pr-1">
+              {logs.map((log) => {
+                const isApproval = log.action === "STATUS_UPDATED" && log.details?.status === "Approved";
+                const isReject = log.action === "STATUS_UPDATED" && log.details?.status === "Rejected";
+                const isDelete = log.action?.includes("DELETED");
+
+                let badgeClass = "bg-slate-100 text-slate-700 border-slate-200";
+                if (isApproval) badgeClass = "bg-emerald-50 text-emerald-700 border-emerald-200";
+                else if (isReject || isDelete) badgeClass = "bg-red-50 text-red-700 border-red-200";
+                else if (log.action === "PLAYER_REGISTERED") badgeClass = "bg-blue-50 text-blue-700 border-blue-200";
+                else if (log.action?.includes("SETTINGS")) badgeClass = "bg-purple-50 text-purple-700 border-purple-200";
+                else if (log.action?.includes("TEAM")) badgeClass = "bg-amber-50 text-amber-700 border-amber-200";
+
+                let detailsDisplay = "";
+                if (typeof log.details === "object" && log.details !== null) {
+                  detailsDisplay = Object.entries(log.details)
+                    .map(([k, v]) => `${k}: ${typeof v === "object" ? JSON.stringify(v) : v}`)
+                    .join(" • ");
+                } else {
+                  detailsDisplay = String(log.details || "");
+                }
+
+                return (
+                  <div
+                    key={log.id}
+                    className="p-3 rounded-xl bg-slate-50 hover:bg-slate-100/70 border border-slate-100 transition-all space-y-1.5 text-xs"
+                  >
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      <span className={`px-2 py-0.5 rounded-md border font-mono text-[10px] font-bold ${badgeClass}`}>
+                        {log.action}
+                      </span>
+                      <span className="text-[10px] text-slate-400 font-mono">
+                        {new Date(log.timestamp).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}
+                      </span>
+                    </div>
+                    <div className="text-slate-700 font-mono text-[11px] bg-white p-2 rounded-lg border border-slate-100/80 break-words leading-relaxed">
+                      {detailsDisplay || "No additional payload"}
+                    </div>
                   </div>
-                  <span className="text-[10px] text-slate-400 font-mono shrink-0">
-                    {new Date(log.timestamp).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}
-                  </span>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
-
       </main>
 
       {/* ========================================================================= */}
@@ -1692,8 +1719,8 @@ export default function AdminDashboard() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
-                <div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="sm:col-span-1">
                   <label className="font-bold text-slate-700 block mb-1">Short Code (3 Letters)</label>
                   <input
                     type="text"
@@ -1702,15 +1729,15 @@ export default function AdminDashboard() {
                     placeholder="CSK"
                     value={editTeam.shortCode || ""}
                     onChange={(e) => setEditTeam({ ...editTeam, shortCode: e.target.value.toUpperCase() })}
-                    className="w-full px-3 py-2 rounded-lg border border-slate-200 font-mono"
+                    className="w-full px-3 py-2 rounded-lg border border-slate-200 font-mono uppercase"
                   />
                 </div>
 
-                <div>
+                <div className="sm:col-span-2">
                   <label className="font-bold text-slate-700 block mb-1">Team Owner</label>
                   <input
                     type="text"
-                    placeholder="Owner name"
+                    placeholder="Owner name(s)"
                     value={editTeam.owner || ""}
                     onChange={(e) => setEditTeam({ ...editTeam, owner: e.target.value })}
                     className="w-full px-3 py-2 rounded-lg border border-slate-200"
