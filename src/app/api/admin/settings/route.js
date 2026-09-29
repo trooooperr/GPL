@@ -1,34 +1,38 @@
 import { NextResponse } from "next/server";
-import { db, dbReady } from "@/lib/db";
 import { verifyAuthCookie } from "@/lib/auth";
+import { connectToDatabase, MongoSetting } from "@/lib/mongodb";
+import { INITIAL_SETTINGS } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request) {
-  await dbReady;
   const isAuthed = await verifyAuthCookie(request);
-  if (!isAuthed) {
-    return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+  if (!isAuthed) return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+  try {
+    await connectToDatabase();
+    const doc = await MongoSetting.findOne({ key: "global_settings" }).lean();
+    const settings = doc?.value || INITIAL_SETTINGS;
+    return NextResponse.json({ success: true, settings });
+  } catch (e) {
+    return NextResponse.json({ success: false, error: e.message }, { status: 500 });
   }
-
-  return NextResponse.json({
-    success: true,
-    settings: db.getSettings()
-  });
 }
 
 export async function POST(request) {
-  await dbReady;
   const isAuthed = await verifyAuthCookie(request);
-  if (!isAuthed) {
-    return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
-  }
-
+  if (!isAuthed) return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
   try {
+    await connectToDatabase();
     const body = await request.json();
-    const updated = db.updateSettings(body);
-    return NextResponse.json({ success: true, settings: updated });
-  } catch (err) {
-    return NextResponse.json({ success: false, error: err.message }, { status: 400 });
+    const existing = await MongoSetting.findOne({ key: "global_settings" }).lean();
+    const merged = { ...(existing?.value || INITIAL_SETTINGS), ...body };
+    await MongoSetting.findOneAndUpdate(
+      { key: "global_settings" },
+      { key: "global_settings", value: merged },
+      { upsert: true }
+    );
+    return NextResponse.json({ success: true, settings: merged });
+  } catch (e) {
+    return NextResponse.json({ success: false, error: e.message }, { status: 500 });
   }
 }

@@ -1,23 +1,22 @@
 import { NextResponse } from "next/server";
-import { db, dbReady } from "@/lib/db";
 import { connectToDatabase, MongoRegistration } from "@/lib/mongodb";
+import { INITIAL_SETTINGS } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  await dbReady;
   try {
-    const conn = await connectToDatabase();
-    if (conn) {
-      const regs = await MongoRegistration.find().lean();
-      db.registrations = regs; // sync in-memory
-    }
-  } catch (e) {}
-
-  return NextResponse.json({
-    success: true,
-    stats: db.getStats()
-  }, {
-    headers: { "Cache-Control": "no-store" }
-  });
+    await connectToDatabase();
+    const players = await MongoRegistration.find().lean();
+    const total = players.length;
+    const approved = players.filter(p => p.paymentStatus === "Approved").length;
+    const rejected = players.filter(p => p.paymentStatus === "Rejected").length;
+    const pending = players.filter(p => p.paymentStatus === "Pending").length;
+    return NextResponse.json({
+      success: true,
+      stats: { totalRegistrations: total, approved, rejected, pending, available: 140 - approved }
+    }, { headers: { "Cache-Control": "no-store" } });
+  } catch (e) {
+    return NextResponse.json({ success: true, stats: { totalRegistrations: 0, approved: 0, rejected: 0, pending: 0, available: 140 } });
+  }
 }

@@ -72,6 +72,9 @@ export default function AdminDashboard() {
   const [savingSettings, setSavingSettings] = useState(false);
   const [settingsMsg, setSettingsMsg] = useState("");
   const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [actionLoading, setActionLoading] = useState({}); // { [key]: true } for per-button loading
+  const [savingRules, setSavingRules] = useState(false);
+  const [savingTeam, setSavingTeam] = useState(false);
 
   const loadAllData = async () => {
     try {
@@ -181,6 +184,20 @@ export default function AdminDashboard() {
     }, 4000);
   };
 
+  // Refresh all data from MongoDB
+  const refreshData = async () => {
+    try {
+      const [rPlayers, rTeams, rStats] = await Promise.all([
+        fetch("/api/admin/players").then(r => r.json()),
+        fetch("/api/admin/teams").then(r => r.json()),
+        fetch("/api/stats").then(r => r.json()),
+      ]);
+      if (rPlayers.success) setPlayers(rPlayers.players || []);
+      if (rTeams.success) setTeams(rTeams.teams || []);
+      if (rStats.success) setStats(rStats.stats);
+    } catch (e) { console.error("Refresh error:", e); }
+  };
+
   const handleLogout = async () => {
     await fetch("/api/admin/logout", { method: "POST" });
     router.push("/admin/login");
@@ -188,6 +205,8 @@ export default function AdminDashboard() {
 
   // --- PLAYER ACTIONS ---
   const handleUpdateStatus = async (playerId, newStatus) => {
+    const key = `status_${playerId}_${newStatus}`;
+    setActionLoading(prev => ({ ...prev, [key]: true }));
     try {
       const res = await fetch("/api/admin/players", {
         method: "POST",
@@ -196,17 +215,16 @@ export default function AdminDashboard() {
       });
       const data = await res.json();
       if (data.success) {
-        setPlayers((prev) =>
-          prev.map((p) => (p.id === playerId ? { ...p, paymentStatus: newStatus } : p))
-        );
-        if (inspectPlayer && inspectPlayer.id === playerId) {
-          setInspectPlayer(null);
-        }
-        if (data.stats) setStats(data.stats);
+        await refreshData();
+        if (inspectPlayer && inspectPlayer.id === playerId) setInspectPlayer(null);
         showToast(`Registration marked as ${newStatus}!`, "success");
+      } else {
+        showToast(data.error || "Failed to update status", "error");
       }
     } catch (err) {
       showToast("Failed to update status: " + err.message, "error");
+    } finally {
+      setActionLoading(prev => { const n = {...prev}; delete n[key]; return n; });
     }
   };
 
@@ -263,6 +281,8 @@ export default function AdminDashboard() {
   };
 
   const handleAssignTeam = async (playerId, teamId) => {
+    const key = `assign_${playerId}`;
+    setActionLoading(prev => ({ ...prev, [key]: true }));
     try {
       const res = await fetch("/api/admin/teams", {
         method: "POST",
@@ -307,6 +327,7 @@ export default function AdminDashboard() {
 
   // --- TEAM SAVE & LOGO UPLOAD ---
   const handleSaveTeam = async (e) => {
+    setSavingTeam(true);
     e.preventDefault();
     try {
       const res = await fetch("/api/admin/teams", {
@@ -376,6 +397,7 @@ export default function AdminDashboard() {
 
   // --- RULES MANAGER ---
   const handleAddRule = async () => {
+    setSavingRules(true);
     if (!newRuleText.trim()) return;
     const updated = [...rules, newRuleText.trim()];
     try {
@@ -491,7 +513,7 @@ export default function AdminDashboard() {
             <a
               href="/api/admin/export"
               download
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#0041b9] hover:bg-[#003399] text-white text-xs font-semibold shadow-sm transition-all active:scale-98"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#0041b9] hover:bg-[#003399] text-white text-xs font-semibold shadow-sm transition-all active:scale-98 cursor-pointer"
             >
               <Download className="w-3.5 h-3.5" />
               <span>Export CSV</span>
@@ -499,7 +521,7 @@ export default function AdminDashboard() {
 
             <button
               onClick={handleLogout}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-300 hover:text-red-200 text-xs font-semibold border border-red-500/20 transition-colors"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-300 hover:text-red-200 text-xs font-semibold border border-red-500/20 transition-colors cursor-pointer"
               title="Logout"
             >
               <LogOut className="w-3.5 h-3.5" />
@@ -512,7 +534,7 @@ export default function AdminDashboard() {
             <a
               href="/api/admin/export"
               download
-              className="p-2 rounded-lg bg-[#0041b9] text-white text-xs"
+              className="p-2 rounded-lg bg-[#0041b9] text-white text-xs cursor-pointer"
               title="Export CSV"
             >
               <Download className="w-4 h-4" />
@@ -579,7 +601,7 @@ export default function AdminDashboard() {
 
               <button
                 onClick={handleLogout}
-                className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-red-600/80 hover:bg-red-600 text-white text-xs font-bold transition-colors shadow-sm"
+                className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-red-600/80 hover:bg-red-600 text-white text-xs font-bold transition-colors shadow-sm cursor-pointer"
               >
                 <LogOut className="w-4 h-4" />
                 <span>Logout Admin Console</span>
@@ -808,7 +830,7 @@ export default function AdminDashboard() {
                       <button
                         type="button"
                         onClick={() => setFullScreenImage({ url: player.aadhaarFrontUrl, title: `Aadhaar Front - ${player.name}` })}
-                        className="py-1.5 px-1 rounded-lg bg-blue-50 text-[#0041b9] text-[11px] font-semibold border border-blue-100 hover:bg-blue-100 flex items-center justify-center gap-1 transition-colors min-w-0"
+                        className="py-1.5 px-1 rounded-lg bg-blue-50 text-[#0041b9] text-[11px] font-semibold border border-blue-100 hover:bg-blue-100 flex items-center justify-center gap-1 transition-colors min-w-0 cursor-pointer"
                       >
                         <FileCheck className="w-3 h-3 shrink-0" />
                         <span className="truncate">Aadhaar F</span>
@@ -817,7 +839,7 @@ export default function AdminDashboard() {
                       <button
                         type="button"
                         onClick={() => setFullScreenImage({ url: player.aadhaarBackUrl, title: `Aadhaar Back - ${player.name}` })}
-                        className="py-1.5 px-1 rounded-lg bg-blue-50 text-[#0041b9] text-[11px] font-semibold border border-blue-100 hover:bg-blue-100 flex items-center justify-center gap-1 transition-colors min-w-0"
+                        className="py-1.5 px-1 rounded-lg bg-blue-50 text-[#0041b9] text-[11px] font-semibold border border-blue-100 hover:bg-blue-100 flex items-center justify-center gap-1 transition-colors min-w-0 cursor-pointer"
                       >
                         <FileCheck className="w-3 h-3 shrink-0" />
                         <span className="truncate">Aadhaar B</span>
@@ -838,6 +860,7 @@ export default function AdminDashboard() {
                       <select
                         value={player.teamId || ""}
                         onChange={(e) => handleAssignTeam(player.id, e.target.value)}
+                        disabled={actionLoading[`assign_${player.id}`]}
                         className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-semibold text-slate-700"
                       >
                         <option value="">— Unassigned (Auction Pool) —</option>
@@ -863,7 +886,7 @@ export default function AdminDashboard() {
                       {player.paymentStatus !== "Rejected" && (
                         <button
                           onClick={() => handleUpdateStatus(player.id, "Rejected")}
-                          className="flex-1 py-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition-all shadow-xs"
+                          className="flex-1 py-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
                         >
                           Reject
                         </button>
@@ -879,7 +902,7 @@ export default function AdminDashboard() {
 
                       <button
                         onClick={() => setInspectPlayer(player)}
-                        className="p-1.5 rounded-lg bg-blue-50 text-[#0041b9] hover:bg-blue-100"
+                        className="p-1.5 rounded-lg bg-blue-50 text-[#0041b9] hover:bg-blue-100 cursor-pointer"
                         title="Inspect Player"
                       >
                         <Eye className="w-4 h-4" />
@@ -887,7 +910,7 @@ export default function AdminDashboard() {
 
                       <button
                         onClick={() => handleDeletePlayer(player.id)}
-                        className="p-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100"
+                        className="p-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 cursor-pointer"
                         title="Delete Player"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -944,14 +967,14 @@ export default function AdminDashboard() {
                               <div className="flex items-center gap-1.5">
                                 <button
                                   onClick={() => setFullScreenImage({ url: player.aadhaarFrontUrl, title: `Aadhaar Front - ${player.name}` })}
-                                  className="p-1 rounded bg-blue-50 text-[#0041b9] hover:bg-blue-100 font-mono text-[10px] px-1.5"
+                                  className="p-1 rounded bg-blue-50 text-[#0041b9] hover:bg-blue-100 font-mono text-[10px] px-1.5 cursor-pointer"
                                   title="Aadhaar Front"
                                 >
                                   AF
                                 </button>
                                 <button
                                   onClick={() => setFullScreenImage({ url: player.aadhaarBackUrl, title: `Aadhaar Back - ${player.name}` })}
-                                  className="p-1 rounded bg-blue-50 text-[#0041b9] hover:bg-blue-100 font-mono text-[10px] px-1.5"
+                                  className="p-1 rounded bg-blue-50 text-[#0041b9] hover:bg-blue-100 font-mono text-[10px] px-1.5 cursor-pointer"
                                   title="Aadhaar Back"
                                 >
                                   AB
@@ -989,6 +1012,7 @@ export default function AdminDashboard() {
                               <select
                                 value={player.teamId || ""}
                                 onChange={(e) => handleAssignTeam(player.id, e.target.value)}
+                        disabled={actionLoading[`assign_${player.id}`]}
                                 className="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50 text-xs font-semibold text-slate-700"
                               >
                                 <option value="">— Unassigned —</option>
@@ -1013,7 +1037,7 @@ export default function AdminDashboard() {
                                 {player.paymentStatus !== "Rejected" && (
                                   <button
                                     onClick={() => handleUpdateStatus(player.id, "Rejected")}
-                                    className="p-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100"
+                                    className="p-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 cursor-pointer"
                                     title="Reject Player"
                                   >
                                     <UserX className="w-4 h-4" />
@@ -1021,7 +1045,7 @@ export default function AdminDashboard() {
                                 )}
                                 <button
                                   onClick={() => setInspectPlayer(player)}
-                                  className="p-1.5 rounded-lg bg-blue-50 text-[#0041b9] hover:bg-blue-100"
+                                  className="p-1.5 rounded-lg bg-blue-50 text-[#0041b9] hover:bg-blue-100 cursor-pointer"
                                   title="Inspect Documents"
                                 >
                                   <Eye className="w-4 h-4" />
@@ -1035,7 +1059,7 @@ export default function AdminDashboard() {
                                 </button>
                                 <button
                                   onClick={() => handleDeletePlayer(player.id)}
-                                  className="p-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100"
+                                  className="p-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 cursor-pointer"
                                   title="Delete Registration"
                                 >
                                   <Trash2 className="w-4 h-4" />
@@ -1072,7 +1096,7 @@ export default function AdminDashboard() {
               </div>
               <button
                 onClick={() => setEditTeam({ name: "", shortCode: "", owner: "", captain: "", logo: "" })}
-                className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#0041b9] hover:bg-[#003399] text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm"
+                className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#0041b9] hover:bg-[#003399] text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
                 <span>Add New Team</span>
@@ -1131,7 +1155,7 @@ export default function AdminDashboard() {
                       <button
                         type="button"
                         onClick={() => setViewSquadTeam(team)}
-                        className="flex-1 py-2 px-3 rounded-lg bg-blue-50 hover:bg-blue-100 text-[#0041b9] text-xs font-bold transition-colors flex items-center justify-center gap-1.5"
+                        className="flex-1 py-2 px-3 rounded-lg bg-blue-50 hover:bg-blue-100 text-[#0041b9] text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
                       >
                         <Users className="w-3.5 h-3.5" />
                         <span>View Players ({players.filter((p) => p.teamId === team.id).length})</span>
@@ -1146,7 +1170,7 @@ export default function AdminDashboard() {
                       <button
                         type="button"
                         onClick={() => handleDeleteTeam(team.id)}
-                        className="p-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
+                        className="p-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors cursor-pointer"
                         title="Delete Team"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -1174,7 +1198,7 @@ export default function AdminDashboard() {
               <a
                 href="/api/admin/export"
                 download
-                className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#0041b9] text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm"
+                className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#0041b9] text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm cursor-pointer"
               >
                 <Download className="w-4 h-4" />
                 <span>Export Sizing Sheet</span>
@@ -1317,7 +1341,7 @@ export default function AdminDashboard() {
                 <button
                   type="submit"
                   disabled={savingSettings}
-                  className="w-full py-3 rounded-xl bg-[#0041b9] hover:bg-[#003399] disabled:bg-slate-400 text-white font-bold text-sm shadow-md transition-all active:scale-98"
+                  className="w-full py-3 rounded-xl bg-[#0041b9] hover:bg-[#003399] disabled:bg-slate-400 text-white font-bold text-sm shadow-md transition-all active:scale-98 cursor-pointer"
                 >
                   {savingSettings ? "Saving Settings..." : "Save Tournament Settings"}
                 </button>
@@ -1346,7 +1370,7 @@ export default function AdminDashboard() {
                   className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-3 text-xs"
                 >
                   <div className="flex items-start gap-2.5">
-                    <span className="w-5 h-5 rounded-full bg-blue-100 text-[#0041b9] font-bold text-[10px] flex items-center justify-center shrink-0 mt-0.5">
+                    <span className="w-5 h-5 rounded-full bg-blue-100 text-[#0041b9] font-bold text-[10px] flex items-center justify-center shrink-0 mt-0.5 cursor-pointer">
                       {idx + 1}
                     </span>
                     <span className="text-slate-800 leading-relaxed font-medium">{rule}</span>
@@ -1459,7 +1483,7 @@ export default function AdminDashboard() {
             </button>
 
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-blue-100 text-[#0041b9] flex items-center justify-center font-bold text-lg">
+              <div className="w-12 h-12 rounded-full bg-blue-100 text-[#0041b9] flex items-center justify-center font-bold text-lg cursor-pointer">
                 {inspectPlayer.name[0]}
               </div>
               <div>
@@ -1541,7 +1565,7 @@ export default function AdminDashboard() {
               </button>
               <button
                 onClick={() => handleUpdateStatus(inspectPlayer.id, "Rejected")}
-                className="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold shadow-xs"
+                className="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold shadow-xs cursor-pointer"
               >
                 Reject Player
               </button>
@@ -1692,7 +1716,7 @@ export default function AdminDashboard() {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2 rounded-lg bg-[#0041b9] hover:bg-[#003399] text-white font-bold"
+                  className="flex-1 py-2 rounded-lg bg-[#0041b9] hover:bg-[#003399] text-white font-bold cursor-pointer"
                 >
                   Save Changes
                 </button>
@@ -1801,7 +1825,7 @@ export default function AdminDashboard() {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2 rounded-lg bg-[#0041b9] hover:bg-[#003399] text-white font-bold"
+                  className="flex-1 py-2 rounded-lg bg-[#0041b9] hover:bg-[#003399] text-white font-bold cursor-pointer"
                 >
                   Save Team
                 </button>
@@ -1869,7 +1893,7 @@ export default function AdminDashboard() {
                       className="p-3 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between gap-3 text-xs hover:bg-slate-100/80 transition-colors"
                     >
                       <div className="flex items-center gap-3 min-w-0">
-                        <span className="w-6 h-6 rounded-full bg-blue-100 text-[#0041b9] font-mono font-bold text-[11px] flex items-center justify-center shrink-0">
+                        <span className="w-6 h-6 rounded-full bg-blue-100 text-[#0041b9] font-mono font-bold text-[11px] flex items-center justify-center shrink-0 cursor-pointer">
                           {idx + 1}
                         </span>
                         <div className="min-w-0">
@@ -1895,7 +1919,7 @@ export default function AdminDashboard() {
                           onClick={() => {
                             setInspectPlayer(player);
                           }}
-                          className="p-1.5 rounded-lg bg-blue-50 text-[#0041b9] hover:bg-blue-100 transition-colors"
+                          className="p-1.5 rounded-lg bg-blue-50 text-[#0041b9] hover:bg-blue-100 transition-colors cursor-pointer"
                           title="View Full Profile"
                         >
                           <Eye className="w-4 h-4" />
@@ -1905,7 +1929,7 @@ export default function AdminDashboard() {
                           onClick={() => {
                             handleAssignTeam(player.id, "");
                           }}
-                          className="p-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
+                          className="p-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors cursor-pointer"
                           title="Remove from Team"
                         >
                           <UserX className="w-4 h-4" />
@@ -1940,7 +1964,7 @@ export default function AdminDashboard() {
       {confirmModal && (
         <div className="fixed inset-0 z-60 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
           <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl relative text-center space-y-4">
-            <div className="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center mx-auto">
+            <div className="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center mx-auto cursor-pointer">
               <AlertTriangle className="w-6 h-6" />
             </div>
             <div>
@@ -1959,7 +1983,7 @@ export default function AdminDashboard() {
                   confirmModal.onConfirm();
                   setConfirmModal(null);
                 }}
-                className="flex-1 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white font-bold text-xs"
+                className="flex-1 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white font-bold text-xs cursor-pointer"
               >
                 {confirmModal.confirmText || "Confirm"}
               </button>
