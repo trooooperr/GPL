@@ -734,4 +734,8 @@ class Database {
 }
 
 export const db = new Database();
-export const dbReady = _mongoReadyPromise;
+// dbReady with 5s timeout - never hang the page
+export const dbReady = Promise.race([
+  _mongoReadyPromise,
+  new Promise(r => setTimeout(r, 5000))
+]);
