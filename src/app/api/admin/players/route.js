@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { db, dbReady } from "@/lib/db";
 import { verifyAuthCookie } from "@/lib/auth";
 import { sendPlayerStatusEmail } from "@/lib/email";
+import { connectToDatabase, MongoRegistration } from "@/lib/mongodb";
 
 export const dynamic = "force-dynamic";
 
@@ -10,6 +11,27 @@ export async function GET(request) {
   const isAuthed = await verifyAuthCookie(request);
   if (!isAuthed) {
     return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const conn = await connectToDatabase();
+    if (conn) {
+      const players = await MongoRegistration.find().sort({ registeredAt: -1 }).lean();
+      const mapped = players.map(r => ({
+        id: r.id, regNumber: r.regNumber, name: r.name, email: r.email,
+        phone: r.phone, dob: r.dob, age: r.age, ward: r.ward,
+        speciality: r.speciality, tshirtSize: r.tshirtSize, trackSize: r.trackSize,
+        utrNumber: r.utrNumber, amount: r.amount, paymentStatus: r.paymentStatus,
+        photoUrl: r.photoUrl, aadhaarFrontUrl: r.aadhaarFrontUrl,
+        aadhaarBackUrl: r.aadhaarBackUrl, paymentProofUrl: r.paymentProofUrl,
+        teamId: r.teamId, notes: r.notes, registeredAt: r.registeredAt, history: r.history || []
+      }));
+      // Update in-memory for consistency
+      db.registrations = mapped;
+      return NextResponse.json({ success: true, players: mapped, stats: db.getStats() });
+    }
+  } catch (e) {
+    console.error("[Players GET MongoDB Error]:", e.message);
   }
 
   return NextResponse.json({
