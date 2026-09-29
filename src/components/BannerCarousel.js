@@ -7,7 +7,7 @@ export default function BannerCarousel() {
         <img
           src="/images/gpl-banner.jpg"
           alt="GPL Season 4 - The Biggest Cricket Festival - Radhe Radhe Chashak"
-          className="w-full h-auto min-h-[190px] sm:min-h-0 block object-cover sm:object-contain object-center m-0 p-0"
+          className="w-full h-auto block object-contain object-center m-0 p-0"
           loading="eager"
           decoding="async"
         />
