@@ -273,9 +273,7 @@ class Database {
     this.reloadRegistrationsFromDisk();
     this.reloadSettingsFromDisk();
     const totalTeams = this.teams && this.teams.length > 0 ? this.teams.length : 10;
-    const maxCapacity = (Number(this.settings.maxCapacity) && Number(this.settings.maxCapacity) !== 168)
-      ? Number(this.settings.maxCapacity)
-      : totalTeams * 14;
+    const maxCapacity = totalTeams * 14;
     const total = this.registrations.length;
     const approved = this.registrations.filter(r => r.paymentStatus === "Approved").length;
     const pending = this.registrations.filter(r => r.paymentStatus === "Pending").length;
