@@ -1,0 +1,194 @@
+[
+  {
+    "id": "LOG-1790599835232",
+    "timestamp": "2026-09-28T12:50:35.232Z",
+    "action": "TEAM_ASSIGNMENT",
+    "details": {
+      "playerId": "GPL-REG-1004",
+      "teamId": null
+    }
+  },
+  {
+    "id": "LOG-1790598013046",
+    "timestamp": "2026-09-28T12:20:13.046Z",
+    "action": "SETTINGS_UPDATED",
+    "details": {
+      "upiId": "shahbazkhandm@okhdfcbank",
+      "upiPhone": "9820000000"
+    }
+  },
+  {
+    "id": "LOG-1790586791764",
+    "timestamp": "2026-09-28T09:13:11.764Z",
+    "action": "PLAYER_REGISTERED",
+    "details": {
+      "id": "GPL-REG-1005",
+      "name": "ngfgngfngfn",
+      "phone": "3535435435"
+    }
+  },
+  {
+    "id": "LOG-1790581511289",
+    "timestamp": "2026-09-28T07:45:11.289Z",
+    "action": "PLAYER_EDITED",
+    "details": {
+      "id": "GPL-REG-1004",
+      "name": "Alok Kumar Gupta"
+    }
+  },
+  {
+    "id": "LOG-1790580896674",
+    "timestamp": "2026-09-28T07:34:56.674Z",
+    "action": "TEAM_ASSIGNMENT",
+    "details": {
+      "playerId": "GPL-REG-1001",
+      "teamId": null
+    }
+  },
+  {
+    "id": "LOG-1790580893805",
+    "timestamp": "2026-09-28T07:34:53.805Z",
+    "action": "TEAM_ASSIGNMENT",
+    "details": {
+      "playerId": "GPL-REG-1001",
+      "teamId": "team-7"
+    }
+  },
+  {
+    "id": "LOG-1790580670393",
+    "timestamp": "2026-09-28T07:31:10.393Z",
+    "action": "TEAM_ASSIGNMENT",
+    "details": {
+      "playerId": "GPL-REG-1004",
+      "teamId": "team-1"
+    }
+  },
+  {
+    "id": "LOG-1790578913906",
+    "timestamp": "2026-09-28T07:01:53.906Z",
+    "action": "STATUS_UPDATED",
+    "details": {
+      "id": "GPL-REG-1004",
+      "name": "Alok Kumar Gupta",
+      "oldStatus": "Rejected",
+      "newStatus": "Approved"
+    }
+  },
+  {
+    "id": "LOG-1790578909929",
+    "timestamp": "2026-09-28T07:01:49.929Z",
+    "action": "STATUS_UPDATED",
+    "details": {
+      "id": "GPL-REG-1004",
+      "name": "Alok Kumar Gupta",
+      "oldStatus": "Rejected",
+      "newStatus": "Rejected"
+    }
+  },
+  {
+    "id": "LOG-1790576032466",
+    "timestamp": "2026-09-28T06:13:52.466Z",
+    "action": "STATUS_UPDATED",
+    "details": {
+      "id": "GPL-REG-1004",
+      "name": "Alok Kumar Gupta",
+      "oldStatus": "Approved",
+      "newStatus": "Rejected"
+    }
+  },
+  {
+    "id": "LOG-1790576031847",
+    "timestamp": "2026-09-28T06:13:51.847Z",
+    "action": "STATUS_UPDATED",
+    "details": {
+      "id": "GPL-REG-1004",
+      "name": "Alok Kumar Gupta",
+      "oldStatus": "Approved",
+      "newStatus": "Approved"
+    }
+  },
+  {
+    "id": "LOG-1790576030352",
+    "timestamp": "2026-09-28T06:13:50.352Z",
+    "action": "STATUS_UPDATED",
+    "details": {
+      "id": "GPL-REG-1004",
+      "name": "Alok Kumar Gupta",
+      "oldStatus": "Approved",
+      "newStatus": "Approved"
+    }
+  },
+  {
+    "id": "LOG-1790576028522",
+    "timestamp": "2026-09-28T06:13:48.522Z",
+    "action": "STATUS_UPDATED",
+    "details": {
+      "id": "GPL-REG-1004",
+      "name": "Alok Kumar Gupta",
+      "oldStatus": "Pending",
+      "newStatus": "Approved"
+    }
+  },
+  {
+    "id": "LOG-1790575942719",
+    "timestamp": "2026-09-28T06:12:22.719Z",
+    "action": "PLAYER_REGISTERED",
+    "details": {
+      "id": "GPL-REG-1004",
+      "name": "Alok Kumar Gupta",
+      "phone": "9305628738"
+    }
+  },
+  {
+    "id": "LOG-1790574488642",
+    "timestamp": "2026-09-28T05:48:08.642Z",
+    "action": "PLAYER_DELETED",
+    "details": {
+      "id": "GPL-REG-1004",
+      "name": "Siddhesh Ramesh Kadam"
+    }
+  },
+  {
+    "id": "LOG-1790572299487",
+    "timestamp": "2026-09-28T05:11:39.487Z",
+    "action": "RULES_UPDATED",
+    "details": {
+      "totalRules": 12
+    }
+  },
+  {
+    "id": "LOG-1790572275077",
+    "timestamp": "2026-09-28T05:11:15.077Z",
+    "action": "RULES_UPDATED",
+    "details": {
+      "totalRules": 13
+    }
+  },
+  {
+    "id": "LOG-1790572076441",
+    "timestamp": "2026-09-28T05:07:56.441Z",
+    "action": "TEAM_DELETED",
+    "details": {
+      "id": "team-2",
+      "name": "Thunder Striker"
+    }
+  },
+  {
+    "id": "LOG-1790572034539",
+    "timestamp": "2026-09-28T05:07:14.539Z",
+    "action": "TEAM_DELETED",
+    "details": {
+      "id": "team-1",
+      "name": "Flying Eagles"
+    }
+  },
+  {
+    "id": "LOG-1790570571809",
+    "timestamp": "2026-09-28T04:42:51.809Z",
+    "action": "SETTINGS_UPDATED",
+    "details": {
+      "upiId": "shahbazkhandm@okhdfcbank",
+      "upiPhone": "9820000000"
+    }
+  }
+]

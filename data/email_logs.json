@@ -1,0 +1,10 @@
+[
+  {
+    "id": "EML-1790598012951",
+    "timestamp": "2026-09-28T12:20:12.951Z",
+    "type": "ADMIN_PASSWORD_RESET_OTP",
+    "recipient": "goregaonpremierleague@gmail.com",
+    "status": "RECORDED_NO_SMTP",
+    "otp": "656229"
+  }
+]

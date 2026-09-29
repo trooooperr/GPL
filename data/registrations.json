@@ -1,0 +1,161 @@
+[
+  {
+    "id": "GPL-REG-1005",
+    "name": "ngfgngfngfn",
+    "email": "gnftn2JBJHB@BKB.VVVDF",
+    "phone": "3535435435",
+    "dob": "2026-10-02",
+    "age": 1,
+    "ward": "Ward 51",
+    "speciality": "Right-hand batsman",
+    "tshirtSize": "XL",
+    "trackSize": "34",
+    "utrNumber": "564645645645645654645",
+    "amount": 100,
+    "photoUrl": "/images/avatar-placeholder.svg",
+    "aadhaarFrontUrl": "/uploads/aadhaar_f_1790586791745_cff41d426ff6.jpeg",
+    "aadhaarBackUrl": "/uploads/aadhaar_b_1790586791753_7623d62a5179.jpeg",
+    "paymentProofUrl": "/uploads/pay_proof_1790586791754_0e94bd03dceb.jpeg",
+    "notes": "Ward verified",
+    "registeredAt": "2026-09-28T09:13:11.762Z",
+    "paymentStatus": "Pending",
+    "history": [
+      {
+        "timestamp": "2026-09-28T09:13:11.763Z",
+        "action": "Player Registered",
+        "notes": "Initial registration submitted with UTR: 564645645645645654645"
+      }
+    ],
+    "teamId": null
+  },
+  {
+    "id": "GPL-REG-1004",
+    "name": "Alok Kumar Gupta",
+    "email": "alokgupta1605@gmail.com",
+    "phone": "9305628738",
+    "dob": "2026-09-07",
+    "age": 24,
+    "ward": "Ward 51",
+    "speciality": "Left-hand bowler",
+    "tshirtSize": "XL",
+    "trackSize": "32",
+    "utrNumber": "42342342344",
+    "amount": 100,
+    "photoUrl": "/images/avatar-placeholder.svg",
+    "aadhaarFrontUrl": "/uploads/aadhaar_f_1790575942713_d30ee249d7eb.jpeg",
+    "aadhaarBackUrl": "/uploads/aadhaar_b_1790575942717_9a33df90fcf6.jpeg",
+    "paymentProofUrl": "/uploads/pay_proof_1790575942718_348b65f2cdd1.png",
+    "notes": "Ward verified",
+    "registeredAt": "2026-09-28T06:12:22.718Z",
+    "paymentStatus": "Approved",
+    "history": [
+      {
+        "timestamp": "2026-09-28T07:45:11.288Z",
+        "action": "Admin Edited Player Details",
+        "notes": "Fields updated by Admin"
+      },
+      {
+        "timestamp": "2026-09-28T07:01:53.905Z",
+        "action": "Status changed from Rejected to Approved",
+        "notes": "Updated by Admin"
+      },
+      {
+        "timestamp": "2026-09-28T07:01:49.926Z",
+        "action": "Status changed from Rejected to Rejected",
+        "notes": "Updated by Admin"
+      },
+      {
+        "timestamp": "2026-09-28T06:13:52.464Z",
+        "action": "Status changed from Approved to Rejected",
+        "notes": "Updated by Admin"
+      },
+      {
+        "timestamp": "2026-09-28T06:13:51.846Z",
+        "action": "Status changed from Approved to Approved",
+        "notes": "Updated by Admin"
+      },
+      {
+        "timestamp": "2026-09-28T06:13:50.351Z",
+        "action": "Status changed from Approved to Approved",
+        "notes": "Updated by Admin"
+      },
+      {
+        "timestamp": "2026-09-28T06:13:48.521Z",
+        "action": "Status changed from Pending to Approved",
+        "notes": "Updated by Admin"
+      },
+      {
+        "timestamp": "2026-09-28T06:12:22.719Z",
+        "action": "Player Registered",
+        "notes": "Initial registration submitted with UTR: 42342342344"
+      }
+    ],
+    "teamId": null
+  },
+  {
+    "id": "GPL-REG-1001",
+    "name": "Aakash Vinod Sharma",
+    "email": "aakash.sharma@example.com",
+    "phone": "9820112233",
+    "dob": "2000-06-15",
+    "age": 24,
+    "ward": "Ward 51",
+    "speciality": "Right-hand all-rounder",
+    "tshirtSize": "L",
+    "trackSize": "32",
+    "paymentStatus": "Approved",
+    "utrNumber": "UPI492817293812",
+    "amount": 100,
+    "teamId": null,
+    "photoUrl": "/images/avatar-placeholder.svg",
+    "aadhaarFrontUrl": "/images/doc-placeholder.svg",
+    "aadhaarBackUrl": "/images/doc-placeholder.svg",
+    "paymentProofUrl": "/images/payment-placeholder.svg",
+    "registeredAt": "2026-09-25T18:20:39.400Z",
+    "notes": "Verified Ward 51 resident"
+  },
+  {
+    "id": "GPL-REG-1002",
+    "name": "Suraj Ramesh Patil",
+    "email": "suraj.patil@example.com",
+    "phone": "9819234567",
+    "dob": "2004-11-20",
+    "age": 20,
+    "ward": "Ward 54",
+    "speciality": "Right-hand batsman",
+    "tshirtSize": "M",
+    "trackSize": "30",
+    "paymentStatus": "Approved",
+    "utrNumber": "UPI881927364512",
+    "amount": 100,
+    "teamId": null,
+    "photoUrl": "/images/avatar-placeholder.svg",
+    "aadhaarFrontUrl": "/images/doc-placeholder.svg",
+    "aadhaarBackUrl": "/images/doc-placeholder.svg",
+    "paymentProofUrl": "/images/payment-placeholder.svg",
+    "registeredAt": "2026-09-26T18:20:39.402Z",
+    "notes": "Under-21 category eligible"
+  },
+  {
+    "id": "GPL-REG-1003",
+    "name": "Irfan Munir Shaikh",
+    "email": "irfan.shaikh@example.com",
+    "phone": "9768345678",
+    "dob": "1998-03-08",
+    "age": 26,
+    "ward": "Ward 51",
+    "speciality": "Left-hand bowler",
+    "tshirtSize": "XL",
+    "trackSize": "34",
+    "paymentStatus": "Rejected",
+    "utrNumber": "UPI392817264819",
+    "amount": 100,
+    "teamId": null,
+    "photoUrl": "/images/avatar-placeholder.svg",
+    "aadhaarFrontUrl": "/images/doc-placeholder.svg",
+    "aadhaarBackUrl": "/images/doc-placeholder.svg",
+    "paymentProofUrl": "/images/payment-placeholder.svg",
+    "registeredAt": "2026-09-27T18:20:39.402Z",
+    "notes": "Document or payment verification issue"
+  }
+]
