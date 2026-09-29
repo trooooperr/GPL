@@ -1,5 +1,13 @@
 import fs from "fs";
 import path from "path";
+import {
+  connectToDatabase,
+  MongoRegistration,
+  MongoTeam,
+  MongoSetting,
+  MongoRule,
+  MongoAudit
+} from "./mongodb";
 
 const DATA_DIR = path.join(process.cwd(), "data");
 const REGISTRATIONS_FILE = path.join(DATA_DIR, "registrations.json");
@@ -8,9 +16,11 @@ const SETTINGS_FILE = path.join(DATA_DIR, "settings.json");
 const RULES_FILE = path.join(DATA_DIR, "rules.json");
 const AUDIT_FILE = path.join(DATA_DIR, "audit.json");
 
-if (!fs.existsSync(DATA_DIR)) {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
-}
+try {
+  if (!fs.existsSync(DATA_DIR)) {
+    fs.mkdirSync(DATA_DIR, { recursive: true });
+  }
+} catch (e) {}
 
 export const INITIAL_SETTINGS = {
   upiId: "shahbazkhandm@okhdfcbank",
@@ -20,7 +30,10 @@ export const INITIAL_SETTINGS = {
   maxCapacity: 140,
   registrationOpen: true,
   tournamentTitle: "Goregaon Premier League - Radhe Radhe Chashak",
-  venue: "Sambhaji Maidan, Goregaon East, Mumbai"
+  venue: "Sambhaji Maidan, Goregaon East, Mumbai",
+  adminEmail: "goregaonpremierleague@gmail.com",
+  adminUsername: "admin",
+  adminPassword: "GPL@AdminNew2026"
 };
 
 export const INITIAL_RULES = [
@@ -38,290 +51,231 @@ export const INITIAL_RULES = [
   "Foul language or misbehavior with the management or umpire will lead to penalty of 5 runs"
 ];
 
-export const INITIAL_TEAMS = [
-  {
-    id: "team-1",
-    name: "Colony Super Kings",
-    shortCode: "CSK",
-    owner: "Mohsin Bhai & Ballu Bhai",
-    captain: "Colony Captain",
-    established: "2024",
-    championships: 2,
-    logo: "/images/teams/team-csk.png",
-    members: []
-  },
-  {
-    id: "team-2",
-    name: "Koyna Knight Rider",
-    shortCode: "KKR",
-    owner: "Koyna Sports Club",
-    captain: "Knight Captain",
-    established: "2024",
-    championships: 1,
-    logo: "/images/teams/team-kkr.png",
-    members: []
-  },
-  {
-    id: "team-3",
-    name: "Gogtewadi Titans",
-    shortCode: "GT",
-    owner: "Gogtewadi Group",
-    captain: "Titans Captain",
-    established: "2024",
-    championships: 1,
-    logo: "/images/teams/team-gt.png",
-    members: []
-  },
-  {
-    id: "team-4",
-    name: "Durgabhavani Capital",
-    shortCode: "DC",
-    owner: "Durgabhavani Mitra Mandal",
-    captain: "Capital Captain",
-    established: "2024",
-    championships: 0,
-    logo: "/images/teams/team-dc.png",
-    members: []
-  },
-  {
-    id: "team-5",
-    name: "Radhe Radhe",
-    shortCode: "RR",
-    owner: "Radhe Radhe Committee",
-    captain: "Radhe Captain",
-    established: "2024",
-    championships: 2,
-    logo: "/images/teams/team-rr.png",
-    members: []
-  },
-  {
-    id: "team-6",
-    name: "Murli Chawl Indians",
-    shortCode: "MI",
-    owner: "Murli Chawl Group",
-    captain: "Indians Captain",
-    established: "2024",
-    championships: 1,
-    logo: "/images/teams/team-mi.png",
-    members: []
-  },
-  {
-    id: "team-7",
-    name: "Royal Challengers Bhimnagar",
-    shortCode: "RCB",
-    owner: "Bhimnagar Sports Club",
-    captain: "Challengers Captain",
-    established: "2024",
-    championships: 0,
-    logo: "/images/teams/team-rcb.png",
-    members: []
-  },
-  {
-    id: "team-8",
-    name: "Sunrisers Hanuman Tekdi",
-    shortCode: "SRH",
-    owner: "Hanuman Tekdi Group",
-    captain: "Sunrisers Captain",
-    established: "2024",
-    championships: 1,
-    logo: "/images/teams/team-srh.png",
-    members: []
-  },
-  {
-    id: "team-9",
-    name: "Panch Bawdi Kings",
-    shortCode: "PBKS",
-    owner: "Panch Bawdi Youth Club",
-    captain: "Kings Captain",
-    established: "2024",
-    championships: 0,
-    logo: "/images/teams/team-pbks.png",
-    members: []
-  },
-  {
-    id: "team-10",
-    name: "Vitt Bhatti Super Giants",
-    shortCode: "VBSG",
-    owner: "Vitt Bhatti Sports",
-    captain: "Giants Captain",
-    established: "2024",
-    championships: 1,
-    logo: "/images/teams/team-vbsg.png",
-    members: []
-  }
-];
-
-class DatabaseManager {
+class Database {
   constructor() {
     this.registrations = [];
-    this.teams = [...INITIAL_TEAMS];
+    this.teams = [];
     this.settings = { ...INITIAL_SETTINGS };
     this.rules = [...INITIAL_RULES];
     this.auditLogs = [];
+    this.initialized = false;
+    this.mongoConnected = false;
     this.init();
   }
 
   init() {
-    // Registrations
-    try {
-      if (fs.existsSync(REGISTRATIONS_FILE)) {
-        const raw = fs.readFileSync(REGISTRATIONS_FILE, "utf8");
-        this.registrations = JSON.parse(raw);
-      } else {
-        this.registrations = [];
-        this.persistRegistrationsSync();
-      }
-    } catch (err) {
-      this.registrations = [];
-    }
-
-    // Teams
-    try {
-      if (fs.existsSync(TEAMS_FILE)) {
-        const raw = fs.readFileSync(TEAMS_FILE, "utf8");
-        const parsed = JSON.parse(raw);
-        this.teams = Array.isArray(parsed) && parsed.length > 0 ? parsed : [...INITIAL_TEAMS];
-      } else {
-        this.teams = [...INITIAL_TEAMS];
-        this.persistTeamsSync();
-      }
-    } catch (err) {
-      this.teams = [...INITIAL_TEAMS];
-    }
-
-    // Settings
     try {
       if (fs.existsSync(SETTINGS_FILE)) {
-        const raw = fs.readFileSync(SETTINGS_FILE, "utf8");
-        this.settings = { ...INITIAL_SETTINGS, ...JSON.parse(raw) };
-      } else {
-        this.settings = { ...INITIAL_SETTINGS };
-        this.persistSettingsSync();
+        this.settings = JSON.parse(fs.readFileSync(SETTINGS_FILE, "utf-8"));
       }
-    } catch (err) {
-      this.settings = { ...INITIAL_SETTINGS };
-    }
-
-    // Rules
-    try {
       if (fs.existsSync(RULES_FILE)) {
-        const raw = fs.readFileSync(RULES_FILE, "utf8");
-        const parsed = JSON.parse(raw);
-        this.rules = Array.isArray(parsed) && parsed.length > 0 ? parsed : [...INITIAL_RULES];
-      } else {
-        this.rules = [...INITIAL_RULES];
-        this.persistRulesSync();
+        this.rules = JSON.parse(fs.readFileSync(RULES_FILE, "utf-8"));
+      }
+      if (fs.existsSync(TEAMS_FILE)) {
+        this.teams = JSON.parse(fs.readFileSync(TEAMS_FILE, "utf-8"));
+      }
+      if (fs.existsSync(REGISTRATIONS_FILE)) {
+        this.registrations = JSON.parse(fs.readFileSync(REGISTRATIONS_FILE, "utf-8"));
+      }
+      if (fs.existsSync(AUDIT_FILE)) {
+        this.auditLogs = JSON.parse(fs.readFileSync(AUDIT_FILE, "utf-8"));
       }
     } catch (err) {
-      this.rules = [...INITIAL_RULES];
+      console.warn("[Local DB Warning] Could not read files, using defaults:", err.message);
     }
 
-    // Audit Logs
+    this.initialized = true;
+
+    // Connect to MongoDB asynchronously if MONGODB_URI is provided
+    if (process.env.MONGODB_URI) {
+      this.syncWithMongo().catch(err => {
+        console.warn("[MongoDB Sync Notice] Running with local data while Mongo initializes:", err.message);
+      });
+    }
+  }
+
+  async syncWithMongo() {
+    const conn = await connectToDatabase();
+    if (!conn) return;
+    this.mongoConnected = true;
+
     try {
-      if (fs.existsSync(AUDIT_FILE)) {
-        const raw = fs.readFileSync(AUDIT_FILE, "utf8");
-        this.auditLogs = JSON.parse(raw);
+      // 1. Sync Settings
+      const mongoSettings = await MongoSetting.findOne({ key: "global_settings" }).lean();
+      if (mongoSettings && mongoSettings.value) {
+        this.settings = { ...this.settings, ...mongoSettings.value };
       } else {
-        this.auditLogs = [];
+        await MongoSetting.findOneAndUpdate(
+          { key: "global_settings" },
+          { key: "global_settings", value: this.settings },
+          { upsert: true }
+        );
       }
+
+      // 2. Sync Rules
+      const mongoRules = await MongoRule.findOne().lean();
+      if (mongoRules && mongoRules.rules && mongoRules.rules.length > 0) {
+        this.rules = mongoRules.rules;
+      } else {
+        await MongoRule.create({ rules: this.rules });
+      }
+
+      // 3. Sync Teams
+      const mongoTeams = await MongoTeam.find().lean();
+      if (mongoTeams && mongoTeams.length > 0) {
+        this.teams = mongoTeams.map(t => ({
+          id: t.id,
+          name: t.name,
+          shortCode: t.shortCode,
+          owner: t.owner,
+          captain: t.captain,
+          established: t.established,
+          championships: t.championships,
+          logo: t.logo,
+          members: t.members || []
+        }));
+      } else if (this.teams.length > 0) {
+        await MongoTeam.insertMany(this.teams);
+      }
+
+      // 4. Sync Registrations
+      const mongoRegs = await MongoRegistration.find().lean();
+      if (mongoRegs && mongoRegs.length > 0) {
+        this.registrations = mongoRegs.map(r => ({
+          id: r.id,
+          name: r.name,
+          email: r.email,
+          phone: r.phone,
+          dob: r.dob,
+          age: r.age,
+          ward: r.ward,
+          speciality: r.speciality,
+          tshirtSize: r.tshirtSize,
+          trackSize: r.trackSize,
+          utrNumber: r.utrNumber,
+          amount: r.amount,
+          paymentStatus: r.paymentStatus,
+          photoUrl: r.photoUrl,
+          aadhaarFrontUrl: r.aadhaarFrontUrl,
+          aadhaarBackUrl: r.aadhaarBackUrl,
+          paymentProofUrl: r.paymentProofUrl,
+          teamId: r.teamId,
+          notes: r.notes,
+          registeredAt: r.registeredAt || r.createdAt,
+          history: r.history || []
+        }));
+      } else if (this.registrations.length > 0) {
+        await MongoRegistration.insertMany(this.registrations);
+      }
+
+      console.log(`[MongoDB] Synced ${this.teams.length} teams, ${this.registrations.length} registrations, settings & rules.`);
     } catch (err) {
-      this.auditLogs = [];
+      console.error("[MongoDB Sync Error]:", err.message);
     }
   }
 
   persistRegistrationsSync() {
     try {
-      const tempPath = `${REGISTRATIONS_FILE}.tmp.${Date.now()}`;
-      fs.writeFileSync(tempPath, JSON.stringify(this.registrations, null, 2), "utf8");
-      fs.renameSync(tempPath, REGISTRATIONS_FILE);
-    } catch (e) {
-      console.error("Failed to persist registrations:", e);
-    }
+      fs.writeFileSync(REGISTRATIONS_FILE, JSON.stringify(this.registrations, null, 2));
+    } catch (e) {}
   }
 
   persistTeamsSync() {
     try {
-      const tempPath = `${TEAMS_FILE}.tmp.${Date.now()}`;
-      fs.writeFileSync(tempPath, JSON.stringify(this.teams, null, 2), "utf8");
-      fs.renameSync(tempPath, TEAMS_FILE);
-    } catch (e) {
-      console.error("Failed to persist teams:", e);
-    }
+      fs.writeFileSync(TEAMS_FILE, JSON.stringify(this.teams, null, 2));
+    } catch (e) {}
   }
 
   persistSettingsSync() {
     try {
-      const tempPath = `${SETTINGS_FILE}.tmp.${Date.now()}`;
-      fs.writeFileSync(tempPath, JSON.stringify(this.settings, null, 2), "utf8");
-      fs.renameSync(tempPath, SETTINGS_FILE);
-    } catch (e) {
-      console.error("Failed to persist settings:", e);
-    }
+      fs.writeFileSync(SETTINGS_FILE, JSON.stringify(this.settings, null, 2));
+    } catch (e) {}
   }
 
   persistRulesSync() {
     try {
-      const tempPath = `${RULES_FILE}.tmp.${Date.now()}`;
-      fs.writeFileSync(tempPath, JSON.stringify(this.rules, null, 2), "utf8");
-      fs.renameSync(tempPath, RULES_FILE);
-    } catch (e) {
-      console.error("Failed to persist rules:", e);
-    }
+      fs.writeFileSync(RULES_FILE, JSON.stringify(this.rules, null, 2));
+    } catch (e) {}
   }
 
-  logAudit(action, details) {
-    const entry = {
-      id: `LOG-${Date.now()}`,
+  logAudit(action, details = {}) {
+    const log = {
+      id: `AUD-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
       timestamp: new Date().toISOString(),
       action,
       details
     };
-    this.auditLogs.unshift(entry);
-    if (this.auditLogs.length > 500) this.auditLogs.pop();
+    this.auditLogs.unshift(log);
+    if (this.auditLogs.length > 200) {
+      this.auditLogs = this.auditLogs.slice(0, 200);
+    }
     try {
-      fs.writeFileSync(AUDIT_FILE, JSON.stringify(this.auditLogs, null, 2), "utf8");
+      fs.writeFileSync(AUDIT_FILE, JSON.stringify(this.auditLogs, null, 2));
     } catch (e) {}
+
+    // Async MongoDB audit log
+    if (process.env.MONGODB_URI) {
+      MongoAudit.create(log).catch(() => {});
+    }
   }
 
   getAuditLogs() {
     return this.auditLogs;
   }
 
-  // --- SETTINGS ---
   getSettings() {
     return this.settings;
   }
 
+  reloadSettingsFromDisk() {
+    try {
+      if (fs.existsSync(SETTINGS_FILE)) {
+        this.settings = JSON.parse(fs.readFileSync(SETTINGS_FILE, "utf-8"));
+      }
+    } catch (e) {}
+  }
+
   updateSettings(newSettings) {
-    this.settings = {
-      ...this.settings,
-      ...newSettings
-    };
+    this.settings = { ...this.settings, ...newSettings };
     this.persistSettingsSync();
-    this.logAudit("SETTINGS_UPDATED", { upiId: this.settings.upiId, upiPhone: this.settings.upiPhone });
+    this.logAudit("UPDATE_SETTINGS", { updatedKeys: Object.keys(newSettings) });
+
+    if (process.env.MONGODB_URI) {
+      MongoSetting.findOneAndUpdate(
+        { key: "global_settings" },
+        { key: "global_settings", value: this.settings },
+        { upsert: true }
+      ).catch(e => console.error("[MongoDB Settings Update Error]:", e.message));
+    }
+
     return this.settings;
   }
 
-  // --- RULES ---
   getRules() {
     return this.rules;
   }
 
   updateRules(newRules) {
-    if (Array.isArray(newRules)) {
-      this.rules = newRules.filter(r => r && r.trim().length > 0);
-      this.persistRulesSync();
-      this.logAudit("RULES_UPDATED", { totalRules: this.rules.length });
+    this.rules = newRules;
+    this.persistRulesSync();
+    this.logAudit("UPDATE_RULES", { rulesCount: newRules.length });
+
+    if (process.env.MONGODB_URI) {
+      MongoRule.findOneAndUpdate({}, { rules: newRules }, { upsert: true })
+        .catch(e => console.error("[MongoDB Rules Update Error]:", e.message));
     }
+
     return this.rules;
   }
 
-  // --- STATS ---
   getStats() {
     this.reloadTeamsFromDisk();
     this.reloadRegistrationsFromDisk();
+    this.reloadSettingsFromDisk();
     const totalTeams = this.teams && this.teams.length > 0 ? this.teams.length : 10;
-    const maxCapacity = (Number(this.settings.maxCapacity) && Number(this.settings.maxCapacity) !== 168) ? Number(this.settings.maxCapacity) : totalTeams * 14;
+    const maxCapacity = (Number(this.settings.maxCapacity) && Number(this.settings.maxCapacity) !== 168)
+      ? Number(this.settings.maxCapacity)
+      : totalTeams * 14;
     const total = this.registrations.length;
     const approved = this.registrations.filter(r => r.paymentStatus === "Approved").length;
     const pending = this.registrations.filter(r => r.paymentStatus === "Pending").length;
@@ -338,26 +292,33 @@ class DatabaseManager {
       isFull: remainingSlots === 0,
       totalTeams: this.teams.length,
       registrationFee: this.settings.registrationFee || 100,
-      upiId: this.settings.upiId,
-      upiPhone: this.settings.upiPhone,
-      qrCodeImage: this.settings.qrCodeImage
+      upiId: this.settings.upiId || "shahbazkhandm@okhdfcbank"
     };
   }
 
   getSizingMatrix() {
-    const tshirts = { S: 0, M: 0, L: 0, XL: 0, XXL: 0 };
-    const tracks = { "30": 0, "32": 0, "34": 0, "36": 0, "38": 0, "40": 0 };
+    const matrix = {
+      tshirts: { Small: 0, Medium: 0, Large: 0, "X-large": 0, "XX-Large": 0 },
+      tracks: { "30": 0, "32": 0, "34": 0, "36": 0, "38": 0 },
+      totalApproved: 0
+    };
 
-    for (const r of this.registrations) {
-      if (tshirts[r.tshirtSize] !== undefined) tshirts[r.tshirtSize]++;
-      if (tracks[r.trackSize] !== undefined) tracks[r.trackSize]++;
+    for (const reg of this.registrations) {
+      if (reg.paymentStatus === "Approved") {
+        matrix.totalApproved++;
+        if (matrix.tshirts[reg.tshirtSize] !== undefined) {
+          matrix.tshirts[reg.tshirtSize]++;
+        }
+        if (matrix.tracks[reg.trackSize] !== undefined) {
+          matrix.tracks[reg.trackSize]++;
+        }
+      }
     }
-
-    return { tshirts, tracks, totalPlayers: this.registrations.length };
+    return matrix;
   }
 
-  // --- REGISTRATIONS ---
   getAllRegistrations() {
+    this.reloadRegistrationsFromDisk();
     return this.registrations;
   }
 
@@ -366,110 +327,137 @@ class DatabaseManager {
   }
 
   addRegistration(playerData) {
-    const maxCap = Number(this.settings.maxCapacity) || 168;
-    if (this.registrations.length >= maxCap) {
-      throw new Error(`Tournament registration is now full (${maxCap}/${maxCap} spots filled).`);
-    }
+    this.reloadRegistrationsFromDisk();
+    const id = `GPL-${Date.now().toString().slice(-4)}${Math.floor(100 + Math.random() * 900)}`;
 
-    const duplicate = this.registrations.find(
-      r => r.phone === playerData.phone || (playerData.email && r.email && r.email.toLowerCase() === playerData.email.toLowerCase())
-    );
-    if (duplicate) {
-      throw new Error(`A player with phone ${playerData.phone} is already registered.`);
-    }
-
-    const regId = `GPL-REG-${1000 + this.registrations.length + 1}`;
-    const newPlayer = {
-      id: regId,
-      ...playerData,
+    const newRegistration = {
+      id,
+      name: playerData.name,
+      email: playerData.email || "",
+      phone: playerData.phone,
+      dob: playerData.dob || "",
+      age: playerData.age || 24,
+      ward: playerData.ward || "Ward 51",
+      speciality: playerData.speciality || "Right-hand batsman",
+      tshirtSize: playerData.tshirtSize || "Medium",
+      trackSize: playerData.trackSize || "32",
+      utrNumber: playerData.utrNumber || "",
+      amount: playerData.amount || 100,
+      paymentStatus: "Pending",
+      photoUrl: playerData.photoUrl || "/images/avatar-placeholder.svg",
+      aadhaarFrontUrl: playerData.aadhaarFrontUrl || "/images/doc-placeholder.svg",
+      aadhaarBackUrl: playerData.aadhaarBackUrl || "/images/doc-placeholder.svg",
+      paymentProofUrl: playerData.paymentProofUrl || "/images/payment-placeholder.svg",
+      teamId: null,
+      notes: playerData.notes || "",
       registeredAt: new Date().toISOString(),
-      paymentStatus: playerData.paymentStatus || "Pending",
       history: [
         {
           timestamp: new Date().toISOString(),
-          action: "Player Registered",
-          notes: `Initial registration submitted with UTR: ${playerData.utrNumber || "N/A"}`
+          action: "REGISTERED",
+          notes: "Player self-registered via public portal"
         }
-      ],
-      teamId: playerData.teamId || null
+      ]
     };
 
-    this.registrations.unshift(newPlayer);
+    this.registrations.unshift(newRegistration);
     this.persistRegistrationsSync();
-    this.logAudit("PLAYER_REGISTERED", { id: regId, name: playerData.name, phone: playerData.phone });
-    return newPlayer;
+    this.logAudit("NEW_REGISTRATION", { playerId: id, name: playerData.name, phone: playerData.phone });
+
+    // Save to MongoDB
+    if (process.env.MONGODB_URI) {
+      MongoRegistration.create(newRegistration)
+        .catch(e => console.error("[MongoDB Add Registration Error]:", e.message));
+    }
+
+    return newRegistration;
   }
 
-  updatePlayer(id, updatedFields) {
-    const playerIndex = this.registrations.findIndex(r => r.id === id);
-    if (playerIndex === -1) return null;
+  updateRegistrationStatus(id, status, notes = "") {
+    this.reloadRegistrationsFromDisk();
+    const index = this.registrations.findIndex(r => r.id === id);
+    if (index === -1) return null;
 
-    const oldPlayer = this.registrations[playerIndex];
-    const updated = {
-      ...oldPlayer,
-      ...updatedFields,
-      id: oldPlayer.id // lock ID
-    };
+    const prevStatus = this.registrations[index].paymentStatus;
+    this.registrations[index].paymentStatus = status;
+    if (notes) {
+      this.registrations[index].notes = notes;
+    }
 
-    if (!updated.history) updated.history = [];
-    updated.history.unshift({
+    if (!this.registrations[index].history) {
+      this.registrations[index].history = [];
+    }
+
+    this.registrations[index].history.push({
       timestamp: new Date().toISOString(),
-      action: "Admin Edited Player Details",
-      notes: `Fields updated by Admin`
-    });
-
-    this.registrations[playerIndex] = updated;
-    this.persistRegistrationsSync();
-    this.logAudit("PLAYER_EDITED", { id, name: updated.name });
-    return updated;
-  }
-
-  updateRegistrationStatus(id, status, notes) {
-    const player = this.registrations.find(r => r.id === id);
-    if (!player) return null;
-
-    const oldStatus = player.paymentStatus;
-    player.paymentStatus = status;
-    if (notes !== undefined) player.notes = notes;
-
-    if (!player.history) player.history = [];
-    player.history.unshift({
-      timestamp: new Date().toISOString(),
-      action: `Status changed from ${oldStatus} to ${status}`,
-      notes: notes || "Updated by Admin"
+      action: `STATUS_CHANGE_${status.toUpperCase()}`,
+      notes: notes || `Status changed from ${prevStatus} to ${status}`
     });
 
     this.persistRegistrationsSync();
-    this.logAudit("STATUS_UPDATED", { id, name: player.name, oldStatus, newStatus: status });
-    return player;
+    this.logAudit("UPDATE_PLAYER_STATUS", { playerId: id, oldStatus: prevStatus, newStatus: status, notes });
+
+    // Update in MongoDB
+    if (process.env.MONGODB_URI) {
+      MongoRegistration.findOneAndUpdate(
+        { id },
+        { paymentStatus: status, notes, history: this.registrations[index].history }
+      ).catch(e => console.error("[MongoDB Status Update Error]:", e.message));
+    }
+
+    return this.registrations[index];
+  }
+
+  updatePlayer(id, updateData) {
+    this.reloadRegistrationsFromDisk();
+    const index = this.registrations.findIndex(r => r.id === id);
+    if (index === -1) return null;
+
+    this.registrations[index] = { ...this.registrations[index], ...updateData };
+    this.persistRegistrationsSync();
+    this.logAudit("EDIT_PLAYER", { playerId: id, updatedFields: Object.keys(updateData) });
+
+    if (process.env.MONGODB_URI) {
+      MongoRegistration.findOneAndUpdate({ id }, updateData)
+        .catch(e => console.error("[MongoDB Player Edit Error]:", e.message));
+    }
+
+    return this.registrations[index];
   }
 
   deletePlayer(id) {
-    const idx = this.registrations.findIndex(r => r.id === id);
-    if (idx === -1) return false;
+    this.reloadRegistrationsFromDisk();
+    const index = this.registrations.findIndex(r => r.id === id);
+    if (index === -1) return false;
 
-    const deleted = this.registrations[idx];
-    this.registrations.splice(idx, 1);
-
-    // remove from any team
-    for (const t of this.teams) {
-      t.members = t.members.filter(m => m !== id);
-    }
-    this.persistTeamsSync();
+    const removed = this.registrations.splice(index, 1)[0];
     this.persistRegistrationsSync();
-    this.logAudit("PLAYER_DELETED", { id, name: deleted.name });
+
+    // Remove from assigned team if any
+    for (const team of this.teams) {
+      if (team.members && team.members.includes(id)) {
+        team.members = team.members.filter(mId => mId !== id);
+        this.persistTeamsSync();
+        if (process.env.MONGODB_URI) {
+          MongoTeam.findOneAndUpdate({ id: team.id }, { members: team.members }).catch(() => {});
+        }
+      }
+    }
+
+    this.logAudit("DELETE_PLAYER", { playerId: id, name: removed.name });
+
+    if (process.env.MONGODB_URI) {
+      MongoRegistration.findOneAndDelete({ id })
+        .catch(e => console.error("[MongoDB Delete Player Error]:", e.message));
+    }
+
     return true;
   }
-
 
   reloadTeamsFromDisk() {
     try {
       if (fs.existsSync(TEAMS_FILE)) {
-        const raw = fs.readFileSync(TEAMS_FILE, "utf8");
-        const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          this.teams = parsed;
-        }
+        this.teams = JSON.parse(fs.readFileSync(TEAMS_FILE, "utf-8"));
       }
     } catch (e) {}
   }
@@ -477,95 +465,137 @@ class DatabaseManager {
   reloadRegistrationsFromDisk() {
     try {
       if (fs.existsSync(REGISTRATIONS_FILE)) {
-        const raw = fs.readFileSync(REGISTRATIONS_FILE, "utf8");
-        const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed)) {
-          this.registrations = parsed;
-        }
+        this.registrations = JSON.parse(fs.readFileSync(REGISTRATIONS_FILE, "utf-8"));
       }
     } catch (e) {}
   }
 
-  // --- TEAMS ---
   getAllTeams() {
     this.reloadTeamsFromDisk();
-    const playerMap = new Map(this.registrations.map(r => [r.id, r]));
-    const teamsList = this.teams && this.teams.length > 0 ? this.teams : INITIAL_TEAMS;
-    return teamsList.map(team => ({
-      ...team,
-      memberDetails: (team.members || []).map(mid => playerMap.get(mid)).filter(Boolean)
-    }));
+    this.reloadRegistrationsFromDisk();
+    return this.teams.map(team => {
+      const memberIds = team.members || [];
+      const memberDetails = memberIds
+        .map(id => this.registrations.find(r => r.id === id))
+        .filter(Boolean);
+
+      return {
+        ...team,
+        members: memberIds,
+        memberDetails
+      };
+    });
   }
 
   addTeam(teamData) {
+    this.reloadTeamsFromDisk();
+    const id = teamData.id || `team-${Date.now()}`;
     const newTeam = {
-      id: `team-${Date.now()}`,
-      name: teamData.name || "New Team",
-      shortCode: teamData.shortCode || "NT",
-      owner: teamData.owner || "Team Owner",
-      captain: teamData.captain || "Team Captain",
+      id,
+      name: teamData.name,
+      shortCode: teamData.shortCode || teamData.name.slice(0, 3).toUpperCase(),
+      owner: teamData.owner || "TBD",
+      captain: teamData.captain || "TBD",
       established: teamData.established || "2026",
       championships: Number(teamData.championships) || 0,
-      logo: teamData.logo || "/images/teams/team-flying-eagles.png",
+      logo: teamData.logo || "/images/teams/team-csk.png",
       members: []
     };
+
     this.teams.push(newTeam);
     this.persistTeamsSync();
-    this.logAudit("TEAM_CREATED", { id: newTeam.id, name: newTeam.name });
+    this.logAudit("ADD_TEAM", { teamId: id, name: newTeam.name });
+
+    if (process.env.MONGODB_URI) {
+      MongoTeam.create(newTeam).catch(e => console.error("[MongoDB Add Team Error]:", e.message));
+    }
+
     return newTeam;
   }
 
-  updateTeam(id, updatedFields) {
-    const team = this.teams.find(t => t.id === id);
-    if (!team) return null;
-    Object.assign(team, updatedFields, { id });
+  updateTeam(id, updateData) {
+    this.reloadTeamsFromDisk();
+    const index = this.teams.findIndex(t => t.id === id);
+    if (index === -1) return null;
+
+    this.teams[index] = { ...this.teams[index], ...updateData };
     this.persistTeamsSync();
-    this.logAudit("TEAM_UPDATED", { id, name: team.name });
-    return team;
+    this.logAudit("UPDATE_TEAM", { teamId: id, name: this.teams[index].name });
+
+    if (process.env.MONGODB_URI) {
+      MongoTeam.findOneAndUpdate({ id }, updateData)
+        .catch(e => console.error("[MongoDB Update Team Error]:", e.message));
+    }
+
+    return this.teams[index];
   }
 
   deleteTeam(id) {
-    const idx = this.teams.findIndex(t => t.id === id);
-    if (idx === -1) return false;
-    const deleted = this.teams[idx];
-    this.teams.splice(idx, 1);
+    this.reloadTeamsFromDisk();
+    const index = this.teams.findIndex(t => t.id === id);
+    if (index === -1) return false;
 
-    // unassign members
-    for (const r of this.registrations) {
-      if (r.teamId === id) r.teamId = null;
+    const removed = this.teams.splice(index, 1)[0];
+    this.persistTeamsSync();
+
+    // Reset assigned players' teamId
+    for (const reg of this.registrations) {
+      if (reg.teamId === id) {
+        reg.teamId = null;
+      }
     }
     this.persistRegistrationsSync();
-    this.persistTeamsSync();
-    this.logAudit("TEAM_DELETED", { id, name: deleted.name });
+
+    this.logAudit("DELETE_TEAM", { teamId: id, name: removed.name });
+
+    if (process.env.MONGODB_URI) {
+      MongoTeam.findOneAndDelete({ id }).catch(() => {});
+      MongoRegistration.updateMany({ teamId: id }, { teamId: null }).catch(() => {});
+    }
+
     return true;
   }
 
-  assignPlayerToTeam(playerId, teamId) {
-    const player = this.registrations.find(r => r.id === playerId);
-    if (!player) throw new Error("Player not found");
+  assignPlayerToTeam(teamId, playerId) {
+    this.reloadTeamsFromDisk();
+    this.reloadRegistrationsFromDisk();
 
+    const teamIndex = this.teams.findIndex(t => t.id === teamId);
+    const playerIndex = this.registrations.findIndex(r => r.id === playerId);
+
+    if (teamIndex === -1 || playerIndex === -1) {
+      return { success: false, message: "Team or Player not found" };
+    }
+
+    // Remove from previous team
     for (const t of this.teams) {
-      t.members = t.members.filter(m => m !== playerId);
+      if (t.members && t.members.includes(playerId)) {
+        t.members = t.members.filter(mId => mId !== playerId);
+      }
     }
 
-    if (teamId) {
-      const team = this.teams.find(t => t.id === teamId);
-      if (!team) throw new Error("Target team not found");
-      if (!team.members.includes(playerId)) {
-        team.members.push(playerId);
-      }
-      player.teamId = teamId;
-    } else {
-      player.teamId = null;
+    if (!this.teams[teamIndex].members) {
+      this.teams[teamIndex].members = [];
     }
+
+    if (this.teams[teamIndex].members.length >= 14) {
+      return { success: false, message: "Team squad is already full (14/14 players limit reached)." };
+    }
+
+    this.teams[teamIndex].members.push(playerId);
+    this.registrations[playerIndex].teamId = teamId;
 
     this.persistTeamsSync();
     this.persistRegistrationsSync();
-    this.logAudit("TEAM_ASSIGNMENT", { playerId, teamId });
-    return { player, teams: this.teams };
+    this.logAudit("ASSIGN_PLAYER_TEAM", { playerId, teamId, teamName: this.teams[teamIndex].name });
+
+    if (process.env.MONGODB_URI) {
+      MongoTeam.findOneAndUpdate({ id: teamId }, { members: this.teams[teamIndex].members }).catch(() => {});
+      MongoRegistration.findOneAndUpdate({ id: playerId }, { teamId }).catch(() => {});
+    }
+
+    return { success: true, team: this.teams[teamIndex], player: this.registrations[playerIndex] };
   }
 }
 
-const globalForDb = globalThis;
-export const db = new DatabaseManager();
-globalForDb.__gplDatabase = db;
+export const db = new Database();

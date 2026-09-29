@@ -16,7 +16,7 @@ export default function TeamsGrid({ teams = [] }) {
             Radhe Radhe Chashak 
           </p>
           <h2 className="text-2xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight">
-            Goregaon Premier League Teams
+            GPL Teams
           </h2>
         </div>
 

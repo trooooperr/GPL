@@ -61,7 +61,7 @@ export default function PrizesSection({ stats, settings }) {
         {/* Section Header */}
         <div className="text-center max-w-5xl mx-auto mb-6 sm:mb-12 lg:mb-16 space-y-1.5 sm:space-y-2">
           <p className="text-xs sm:text-sm md:text-base font-semibold text-slate-600 tracking-wide">
-            Radhe Radhe Chashak Goregaon Premier League
+            Goregaon Premier League
           </p>
           <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-[32px] font-extrabold text-[#091e42] tracking-tight sm:whitespace-nowrap">
             Features &amp; Awards
