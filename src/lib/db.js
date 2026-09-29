@@ -182,20 +182,26 @@ class Database {
 
   init() {
     try {
+      // Only load from disk if file has actual data (not empty arrays)
       if (fs.existsSync(SETTINGS_FILE)) {
-        this.settings = JSON.parse(fs.readFileSync(SETTINGS_FILE, "utf-8"));
+        const s = JSON.parse(fs.readFileSync(SETTINGS_FILE, "utf-8"));
+        if (s && Object.keys(s).length > 0) this.settings = s;
       }
       if (fs.existsSync(RULES_FILE)) {
-        this.rules = JSON.parse(fs.readFileSync(RULES_FILE, "utf-8"));
+        const r = JSON.parse(fs.readFileSync(RULES_FILE, "utf-8"));
+        if (r && r.length > 0) this.rules = r;
       }
       if (fs.existsSync(TEAMS_FILE)) {
-        this.teams = JSON.parse(fs.readFileSync(TEAMS_FILE, "utf-8"));
+        const t = JSON.parse(fs.readFileSync(TEAMS_FILE, "utf-8"));
+        if (t && t.length > 0) this.teams = t;
       }
       if (fs.existsSync(REGISTRATIONS_FILE)) {
-        this.registrations = JSON.parse(fs.readFileSync(REGISTRATIONS_FILE, "utf-8"));
+        const reg = JSON.parse(fs.readFileSync(REGISTRATIONS_FILE, "utf-8"));
+        if (reg && reg.length > 0) this.registrations = reg;
       }
       if (fs.existsSync(AUDIT_FILE)) {
-        this.auditLogs = JSON.parse(fs.readFileSync(AUDIT_FILE, "utf-8"));
+        const a = JSON.parse(fs.readFileSync(AUDIT_FILE, "utf-8"));
+        if (a && a.length > 0) this.auditLogs = a;
       }
     } catch (err) {
       console.warn("[Local DB Warning] Could not read files, using defaults:", err.message);
