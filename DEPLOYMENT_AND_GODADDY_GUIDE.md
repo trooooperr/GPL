@@ -48,13 +48,13 @@ In your Vercel Dashboard > Project > **Settings** > **Environment Variables**, a
 
 ## Part 3: Linking Your GoDaddy Domain to Vercel
 
-Once your domain is purchased on GoDaddy (e.g., `goregaonpremierleague.com`):
+Once your domain is purchased on GoDaddy (e.g., `goregaonpremierleague.in`):
 
 ### Step 1: Add Domain in Vercel
 1. Open your Vercel project dashboard.
 2. Go to **Settings** → **Domains**.
-3. Type your domain: `goregaonpremierleague.com` and click **Add**.
-4. Select the recommended option: `Redirect goregaonpremierleague.com to www.goregaonpremierleague.com` (or vice-versa).
+3. Type your domain: `goregaonpremierleague.in` and click **Add**.
+4. Select the recommended option: `Redirect goregaonpremierleague.in to www.goregaonpremierleague.in` (or vice-versa).
 
 ### Step 2: Configure DNS Records in GoDaddy
 1. Log into your [GoDaddy Account](https://dcc.godaddy.com/manage/dns).
@@ -70,4 +70,4 @@ Once your domain is purchased on GoDaddy (e.g., `goregaonpremierleague.com`):
 
 ### Step 3: Verification & Automatic SSL
 - Within 5 to 30 minutes, Vercel will verify the DNS records, display a green checkmark, and automatically issue an **SSL Certificate (HTTPS)** for your domain.
-- Your website is now live worldwide at `https://goregaonpremierleague.com`!
+- Your website is now live worldwide at `https://goregaonpremierleague.in`!
