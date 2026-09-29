@@ -213,7 +213,7 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
       const result = await res.json();
 
       if (!res.ok || !result.success) {
-        throw new Error(result.error || "Registration submission failed.");
+        throw new Error(result.message || result.error || "Registration submission failed. Please check your details and try again.");
       }
 
       setSuccessData(result);
