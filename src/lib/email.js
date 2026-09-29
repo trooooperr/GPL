@@ -64,7 +64,7 @@ export function getAdminContactEmail() {
     settings.adminEmail ||
     process.env.ADMIN_NOTIFICATION_EMAIL ||
     process.env.GMAIL_USER ||
-    "goregaonpremierleague@gmail.com"
+    "goregaonpremierleague11@gmail.com"
   );
 }
 

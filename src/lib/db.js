@@ -31,7 +31,7 @@ export const INITIAL_SETTINGS = {
   registrationOpen: true,
   tournamentTitle: "Goregaon Premier League - Radhe Radhe Chashak",
   venue: "Sambhaji Maidan, Goregaon East, Mumbai",
-  adminEmail: "goregaonpremierleague@gmail.com",
+  adminEmail: "goregaonpremierleague11@gmail.com",
   adminUsername: "admin",
   adminPassword: "GPL@AdminNew2026"
 };

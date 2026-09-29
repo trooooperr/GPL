@@ -51,7 +51,7 @@ export default function AdminDashboard() {
     upiId: "shahbazkhandm@okhdfcbank",
     registrationFee: 100,
     maxCapacity: 140,
-    adminEmail: "goregaonpremierleague@gmail.com"
+    adminEmail: "goregaonpremierleague11@gmail.com"
   });
   const [sizing, setSizing] = useState(null);
   const [logs, setLogs] = useState([]);
@@ -1290,7 +1290,7 @@ export default function AdminDashboard() {
                 <input
                   type="email"
                   required
-                  value={settings.adminEmail || "goregaonpremierleague@gmail.com"}
+                  value={settings.adminEmail || "goregaonpremierleague11@gmail.com"}
                   onChange={(e) => setSettings({ ...settings, adminEmail: e.target.value })}
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm focus:ring-2 focus:ring-[#0041b9]"
                 />
