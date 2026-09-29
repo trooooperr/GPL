@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { dbReady } from "@/lib/db";
 import { authenticateAdmin, signAdminToken, COOKIE_NAME } from "@/lib/auth";
 import { rateLimiter, getClientIp } from "@/lib/rate-limit";
 

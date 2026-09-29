@@ -1,4 +1,4 @@
-import { db } from "@/lib/db";
+import { db, dbReady } from "@/lib/db";
 import Navbar from "@/components/Navbar";
 import BannerCarousel from "@/components/BannerCarousel";
 import Hero from "@/components/Hero";
@@ -17,7 +17,8 @@ export const metadata = {
   keywords: ["Goregaon Premier League", "GPL", "Radhe Radhe Chashak", "Mohsin Patel & Balram Gupta (Ballu)", "Ward 51", "Ward 54", "Sambhaji Maidan"]
 };
 
-export default function Home() {
+export default async function Home() {
+  await dbReady;
   const stats = db.getStats();
   const teams = db.getAllTeams();
   const rules = db.getRules();
