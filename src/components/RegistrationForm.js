@@ -269,7 +269,7 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
             </h3>
 
             <p className="text-sm text-slate-600 max-w-md mx-auto mb-6">
-              Thank you, <strong>{successData.player?.name}</strong>. Your registration for Goregaon Premier League (Ward 51-54) has been recorded. Tournament organizers will verify your Aadhaar document and payment screenshot before the official player auction.
+              Thank you, <strong>{successData.player?.name}</strong>! Your GPL registration is recorded. You will be notified on your registered email once verified.
             </p>
 
             <button
