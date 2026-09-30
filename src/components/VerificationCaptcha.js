@@ -23,7 +23,10 @@ export default function VerificationCaptcha({ isOpen, onClose, onSuccess }) {
 
   useEffect(() => {
     if (isOpen) {
-      generateNewChallenge();
+      const timer = setTimeout(() => {
+        generateNewChallenge();
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, [isOpen, generateNewChallenge]);
 
