@@ -2,6 +2,9 @@ import mongoose from "mongoose";
 
 const MONGODB_URI = process.env.MONGODB_URI;
 
+// Disable Mongoose query buffering globally to prevent 10s black hole timeouts
+mongoose.set("bufferCommands", false);
+
 let cached = global.mongoose;
 
 if (!cached) {
@@ -10,42 +13,51 @@ if (!cached) {
 
 export async function connectToDatabase() {
   if (!MONGODB_URI) {
-    console.warn("[MongoDB] No MONGODB_URI environment variable provided.");
+    console.warn("[MongoDB] No MONGODB_URI provided in environment.");
     return null;
   }
 
-  if (cached.conn && mongoose.connection.readyState === 1) {
-    return cached.conn;
+  // If already connected and ready, return existing connection
+  if (mongoose.connection && mongoose.connection.readyState === 1) {
+    return mongoose;
   }
 
-  if (!cached.promise) {
-    const opts = {
-      bufferCommands: true,
-      serverSelectionTimeoutMS: 10000,
-      connectTimeoutMS: 10000,
-      maxPoolSize: 10,
-    };
-
-    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongooseInstance) => {
-      console.log("[MongoDB] Connected successfully to Atlas cluster");
-      return mongooseInstance;
-    }).catch((err) => {
-      console.error("[MongoDB Connect Error]:", err.message);
+  // If currently connecting, wait for it
+  if (mongoose.connection && mongoose.connection.readyState === 2 && cached.promise) {
+    try {
+      await cached.promise;
+      return mongoose;
+    } catch (e) {
       cached.promise = null;
-      cached.conn = null;
-      throw err;
-    });
+    }
   }
+
+  // Clear stale connection cache
+  cached.conn = null;
+  cached.promise = null;
+
+  const opts = {
+    bufferCommands: false, // Never buffer commands if disconnected
+    serverSelectionTimeoutMS: 3000, // Fast 3s timeout
+    connectTimeoutMS: 3000,
+    socketTimeoutMS: 5000,
+    maxPoolSize: 10,
+  };
 
   try {
+    cached.promise = mongoose.connect(MONGODB_URI, opts);
     cached.conn = await cached.promise;
+    console.log("[MongoDB] Connected successfully to Atlas cluster");
     return cached.conn;
-  } catch (e) {
+  } catch (err) {
+    console.error("[MongoDB Connect Warning]:", err.message);
     cached.promise = null;
     cached.conn = null;
     return null;
   }
 }
+
+const schemaOptions = { timestamps: true, bufferCommands: false };
 
 // Mongoose Schemas
 const RegistrationSchema = new mongoose.Schema({
@@ -77,7 +89,7 @@ const RegistrationSchema = new mongoose.Schema({
       notes: String
     }
   ]
-}, { timestamps: true });
+}, schemaOptions);
 
 const TeamSchema = new mongoose.Schema({
   id: { type: String, required: true, unique: true },
@@ -85,27 +97,27 @@ const TeamSchema = new mongoose.Schema({
   shortCode: String,
   owner: String,
   captain: String,
-  established: { type: String, default: "2026" },
+  established: { type: String, default: "2024" },
   championships: { type: Number, default: 0 },
   logo: String,
   members: [String]
-}, { timestamps: true });
+}, schemaOptions);
 
 const SettingSchema = new mongoose.Schema({
   key: { type: String, required: true, unique: true },
   value: mongoose.Schema.Types.Mixed
-}, { timestamps: true });
+}, schemaOptions);
 
 const RuleSchema = new mongoose.Schema({
   rules: [String]
-}, { timestamps: true });
+}, schemaOptions);
 
 const AuditSchema = new mongoose.Schema({
   id: String,
   timestamp: String,
   action: String,
   details: mongoose.Schema.Types.Mixed
-}, { timestamps: true });
+}, schemaOptions);
 
 export const MongoRegistration = mongoose.models.Registration || mongoose.model("Registration", RegistrationSchema);
 export const MongoTeam = mongoose.models.Team || mongoose.model("Team", TeamSchema);

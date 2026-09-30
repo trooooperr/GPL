@@ -2,10 +2,12 @@ import { NextResponse } from "next/server";
 import { rateLimiter, getClientIp } from "@/lib/rate-limit";
 import { sendRegistrationNotificationEmail } from "@/lib/email";
 import { connectToDatabase, MongoRegistration, MongoSetting } from "@/lib/mongodb";
+import { db, INITIAL_SETTINGS } from "@/lib/db";
 import {
   sanitizeText, validatePhone, formatPhone, validateEmail,
   ALLOWED_TSHIRT_SIZES, ALLOWED_TRACK_SIZES, ALLOWED_SPECIALITIES
 } from "@/lib/sanitize";
+import mongoose from "mongoose";
 import crypto from "crypto";
 
 export const dynamic = "force-dynamic";
@@ -20,7 +22,6 @@ const NO_CACHE_HEADERS = {
 export async function POST(request) {
   try {
     const clientIp = getClientIp(request);
-    // Generous limit: 60 registrations per 5 min per IP to prevent accidental lockouts
     const limitStatus = rateLimiter.check(`reg_${clientIp}`, 60, 300);
     if (!limitStatus.allowed) {
       return NextResponse.json({
@@ -109,19 +110,28 @@ export async function POST(request) {
     const aadhaarBackUrl = (await extractImageUrl(bodyData.aadhaarBack)) || "/images/doc-placeholder.svg";
     const paymentProofUrl = (await extractImageUrl(bodyData.paymentProof)) || "/images/payment-placeholder.svg";
 
-    // Connect to MongoDB
-    await connectToDatabase();
+    // Fast connection check with 3s timeout
+    const conn = await connectToDatabase();
+    const isMongoReady = conn && mongoose.connection.readyState === 1;
 
-    let settings = {};
-    try {
-      const settingsDoc = await MongoSetting.findOne({ key: "global_settings" }).lean();
-      if (settingsDoc && settingsDoc.value) settings = settingsDoc.value;
-    } catch (e) {}
+    let settings = INITIAL_SETTINGS;
+    if (isMongoReady) {
+      try {
+        const settingsDoc = await MongoSetting.findOne({ key: "global_settings" }).lean().catch(() => null);
+        if (settingsDoc && settingsDoc.value) settings = { ...INITIAL_SETTINGS, ...settingsDoc.value };
+      } catch (e) {}
+    } else if (db) {
+      settings = db.getSettings();
+    }
 
     let regNumber = "1";
     try {
-      const count = await MongoRegistration.countDocuments();
-      regNumber = String(count + 1);
+      if (isMongoReady) {
+        const count = await MongoRegistration.countDocuments().catch(() => 0);
+        regNumber = String(count + 1);
+      } else if (db) {
+        regNumber = String(db.getAllRegistrations().length + 1);
+      }
     } catch (e) {
       regNumber = String(Date.now()).slice(-4);
     }
@@ -159,12 +169,20 @@ export async function POST(request) {
       ]
     };
 
-    await MongoRegistration.create(newPlayer);
+    // Save to Mongo if ready, and always save to memory DB
+    if (isMongoReady) {
+      await MongoRegistration.create(newPlayer).catch((err) => {
+        console.warn("[MongoRegistration.create fallback]:", err.message);
+      });
+    }
+    if (db) {
+      try { db.addRegistration(newPlayer); } catch (e) {}
+    }
 
-    // Send email notification non-blocking with 2.5s timeout so submission completes ultra-fast
+    // Send email notification non-blocking with 2s timeout
     Promise.race([
       sendRegistrationNotificationEmail(newPlayer),
-      new Promise((_, reject) => setTimeout(() => reject(new Error("Email timeout")), 2500))
+      new Promise((_, reject) => setTimeout(() => reject(new Error("Email timeout")), 2000))
     ]).catch((err) => {
       console.warn("[Register Email Notice]:", err.message);
     });

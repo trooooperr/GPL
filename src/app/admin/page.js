@@ -9,6 +9,7 @@ import {
   Download,
   Search,
   CheckCircle2,
+  Loader2,
   XCircle,
   Clock,
   LogOut,
@@ -37,6 +38,7 @@ import {
   FileCheck
 } from "lucide-react";
 import QRCode from "qrcode";
+import { INITIAL_RULES } from "@/lib/constants";
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -48,7 +50,7 @@ export default function AdminDashboard() {
   const [teams, setTeams] = useState([]);
   const [toast, setToast] = useState(null);
   const [confirmModal, setConfirmModal] = useState(null);
-  const [rules, setRules] = useState([]);
+  const [rules, setRules] = useState(INITIAL_RULES);
   const [settings, setSettings] = useState({
     upiId: "shahbazkhandm@okhdfcbank",
     registrationFee: 100,
@@ -103,7 +105,7 @@ export default function AdminDashboard() {
 
       const resRules = await fetch("/api/admin/rules", { cache: "no-store" });
       const dataRules = await resRules.json();
-      if (dataRules.success) setRules(dataRules.rules || []);
+      if (dataRules.success && Array.isArray(dataRules.rules) && dataRules.rules.length > 0) setRules(dataRules.rules);
 
       const resSizing = await fetch("/api/admin/sizing", { cache: "no-store" });
       const dataSizing = await resSizing.json();
@@ -144,7 +146,7 @@ export default function AdminDashboard() {
 
         const resRules = await fetch("/api/admin/rules", { cache: "no-store" });
         const dataRules = await resRules.json();
-        if (isMounted && dataRules.success) setRules(dataRules.rules || []);
+        if (isMounted && dataRules.success && Array.isArray(dataRules.rules) && dataRules.rules.length > 0) setRules(dataRules.rules);
 
         const resSizing = await fetch("/api/admin/sizing", { cache: "no-store" });
         const dataSizing = await resSizing.json();
@@ -1942,15 +1944,24 @@ export default function AdminDashboard() {
                 <button
                   type="button"
                   onClick={() => setEditTeam(null)}
-                  className="flex-1 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold"
+                  disabled={savingTeam}
+                  className="flex-1 py-2.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2 rounded-lg bg-[#0041b9] hover:bg-[#003399] text-white font-bold cursor-pointer"
+                  disabled={savingTeam}
+                  className="flex-1 py-2.5 rounded-lg bg-[#0041b9] hover:bg-[#003399] disabled:bg-[#0041b9]/70 text-white font-bold text-xs cursor-pointer transition-all active:scale-98 flex items-center justify-center gap-1.5 disabled:cursor-not-allowed shadow-md"
                 >
-                  Save Team
+                  {savingTeam ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Saving Team...</span>
+                    </>
+                  ) : (
+                    <span>Save Team</span>
+                  )}
                 </button>
               </div>
 
