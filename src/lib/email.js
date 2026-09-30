@@ -49,7 +49,10 @@ function getTransporter() {
         auth: {
           user: process.env.GMAIL_USER,
           pass: process.env.GMAIL_APP_PASSWORD || process.env.GMAIL_PASSWORD
-        }
+        },
+        connectionTimeout: 3500,
+        socketTimeout: 4000,
+        greetingTimeout: 3000
       }),
       fromEmail: process.env.GMAIL_USER
     };

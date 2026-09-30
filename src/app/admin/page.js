@@ -20,6 +20,8 @@ import {
   FileText,
   Plus,
   Trash2,
+  ArrowUp,
+  ArrowDown,
   Edit,
   Check,
   UploadCloud,
@@ -69,6 +71,8 @@ export default function AdminDashboard() {
   const [viewSquadTeam, setViewSquadTeam] = useState(null);
   const [fullScreenImage, setFullScreenImage] = useState(null); // { url, title }
   const [newRuleText, setNewRuleText] = useState("");
+  const [editingRuleIdx, setEditingRuleIdx] = useState(null);
+  const [editingRuleText, setEditingRuleText] = useState("");
   const [savingSettings, setSavingSettings] = useState(false);
   const [settingsMsg, setSettingsMsg] = useState("");
   const [uploadingLogo, setUploadingLogo] = useState(false);
@@ -295,9 +299,12 @@ export default function AdminDashboard() {
           prev.map((p) => (p.id === playerId ? { ...p, teamId: teamId || null } : p))
         );
         loadAllData();
+        showToast("Team assignment updated!", "success");
       }
     } catch (err) {
       showToast("Failed to assign team: " + err.message, "error");
+    } finally {
+      setActionLoading(prev => { const n = { ...prev }; delete n[key]; return n; });
     }
   };
 
@@ -437,6 +444,60 @@ export default function AdminDashboard() {
       if (data.success) setRules(data.rules);
     } catch (err) {
       showToast("Failed to delete rule: " + err.message, "error");
+    }
+  };
+
+  const handleStartEditRule = (idx, text) => {
+    setEditingRuleIdx(idx);
+    setEditingRuleText(text);
+  };
+
+  const handleCancelEditRule = () => {
+    setEditingRuleIdx(null);
+    setEditingRuleText("");
+  };
+
+  const handleSaveEditRule = async (idx) => {
+    if (!editingRuleText.trim()) return;
+    const updated = [...rules];
+    updated[idx] = editingRuleText.trim();
+    try {
+      const res = await fetch("/api/admin/rules", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rules: updated }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setRules(data.rules);
+        setEditingRuleIdx(null);
+        setEditingRuleText("");
+        showToast("Rule updated successfully!", "success");
+      }
+    } catch (err) {
+      showToast("Failed to update rule: " + err.message, "error");
+    }
+  };
+
+  const handleMoveRule = async (idx, direction) => {
+    const targetIdx = direction === "up" ? idx - 1 : idx + 1;
+    if (targetIdx < 0 || targetIdx >= rules.length) return;
+    const updated = [...rules];
+    const temp = updated[idx];
+    updated[idx] = updated[targetIdx];
+    updated[targetIdx] = temp;
+    try {
+      const res = await fetch("/api/admin/rules", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rules: updated }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setRules(data.rules);
+      }
+    } catch (err) {
+      showToast("Failed to move rule: " + err.message, "error");
     }
   };
 
@@ -1378,19 +1439,72 @@ export default function AdminDashboard() {
                   key={idx}
                   className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-3 text-xs"
                 >
-                  <div className="flex items-start gap-2.5">
-                    <span className="w-5 h-5 rounded-full bg-blue-100 text-[#0041b9] font-bold text-[10px] flex items-center justify-center shrink-0 mt-0.5 cursor-pointer">
-                      {idx + 1}
-                    </span>
-                    <span className="text-slate-800 leading-relaxed font-medium">{rule}</span>
-                  </div>
-                  <button
-                    onClick={() => handleDeleteRule(idx)}
-                    className="p-1 text-slate-400 hover:text-red-600 rounded"
-                    title="Delete Rule"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
+                  {editingRuleIdx === idx ? (
+                    <div className="flex-1 flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={editingRuleText}
+                        onChange={(e) => setEditingRuleText(e.target.value)}
+                        className="flex-1 px-3 py-1.5 rounded-lg border border-blue-400 bg-white text-slate-800 text-xs focus:outline-none"
+                        autoFocus
+                      />
+                      <button
+                        onClick={() => handleSaveEditRule(idx)}
+                        className="p-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg cursor-pointer"
+                        title="Save Rule"
+                      >
+                        <Check className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={handleCancelEditRule}
+                        className="p-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg cursor-pointer"
+                        title="Cancel"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex items-start gap-2.5 flex-1 pr-2">
+                        <span className="w-5 h-5 rounded-full bg-blue-100 text-[#0041b9] font-bold text-[10px] flex items-center justify-center shrink-0 mt-0.5">
+                          {idx + 1}
+                        </span>
+                        <span className="text-slate-800 leading-relaxed font-medium">{rule}</span>
+                      </div>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <button
+                          onClick={() => handleMoveRule(idx, "up")}
+                          disabled={idx === 0}
+                          className="p-1 text-slate-400 hover:text-slate-700 disabled:opacity-30 rounded cursor-pointer"
+                          title="Move Up"
+                        >
+                          <ArrowUp className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => handleMoveRule(idx, "down")}
+                          disabled={idx === rules.length - 1}
+                          className="p-1 text-slate-400 hover:text-slate-700 disabled:opacity-30 rounded cursor-pointer"
+                          title="Move Down"
+                        >
+                          <ArrowDown className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => handleStartEditRule(idx, rule)}
+                          className="p-1 text-slate-400 hover:text-[#0041b9] rounded cursor-pointer"
+                          title="Edit Rule"
+                        >
+                          <Edit className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteRule(idx)}
+                          className="p-1 text-slate-400 hover:text-red-600 rounded cursor-pointer"
+                          title="Delete Rule"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </>
+                  )}
                 </div>
               ))}
             </div>

@@ -6,12 +6,6 @@ import crypto from "crypto";
 
 export const dynamic = "force-dynamic";
 
-const UPLOADS_DIR = path.join(process.cwd(), "public", "uploads");
-
-if (!fs.existsSync(UPLOADS_DIR)) {
-  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
-}
-
 export async function POST(request) {
   const isAuthed = await verifyAuthCookie(request);
   if (!isAuthed) {
@@ -32,11 +26,25 @@ export async function POST(request) {
 
     const ext = path.extname(file.name).toLowerCase() || ".png";
     const safeExt = [".jpg", ".jpeg", ".png", ".webp", ".svg"].includes(ext) ? ext : ".png";
+    const mime = safeExt === ".png" ? "image/png" : safeExt === ".svg" ? "image/svg+xml" : safeExt === ".webp" ? "image/webp" : "image/jpeg";
+    const dataUrl = `data:${mime};base64,${buffer.toString("base64")}`;
     const uniqueName = `${prefix}_${Date.now()}_${crypto.randomBytes(4).toString("hex")}${safeExt}`;
-    const savePath = path.join(UPLOADS_DIR, uniqueName);
 
-    await fs.promises.writeFile(savePath, buffer);
-    const fileUrl = `/uploads/${uniqueName}`;
+    let fileUrl = dataUrl;
+
+    try {
+      const uploadsDir = path.join(process.cwd(), "public", "uploads");
+      if (!fs.existsSync(uploadsDir)) {
+        fs.mkdirSync(uploadsDir, { recursive: true });
+      }
+      const savePath = path.join(uploadsDir, uniqueName);
+      await fs.promises.writeFile(savePath, buffer);
+      fileUrl = `/uploads/${uniqueName}`;
+    } catch (fsErr) {
+      // On Vercel / read-only filesystem, use the dataUrl
+      console.warn("[Upload FS Warning - Using DataURI]:", fsErr.message);
+      fileUrl = dataUrl;
+    }
 
     return NextResponse.json({
       success: true,

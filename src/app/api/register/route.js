@@ -9,66 +9,66 @@ import {
 import crypto from "crypto";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB limit
-
-async function fileToBase64(file) {
-  if (!file) return null;
-  if (typeof file === "string") {
-    if (file.startsWith("data:image/") || file.startsWith("/images/")) return file;
-    return null;
-  }
-  if (!file.name && !file.size) return null;
-  if (file.size > MAX_FILE_SIZE) {
-    throw new Error(`File "${file.name || 'upload'}" exceeds size limit.`);
-  }
-
-  const bytes = await file.arrayBuffer();
-  const buffer = Buffer.from(bytes);
-  const mime = (file.type && file.type.startsWith("image/")) ? file.type : "image/jpeg";
-  return `data:${mime};base64,${buffer.toString("base64")}`;
-}
+const NO_CACHE_HEADERS = {
+  "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+  "Pragma": "no-cache",
+  "Expires": "0"
+};
 
 export async function POST(request) {
   try {
     const clientIp = getClientIp(request);
-    const limitStatus = rateLimiter.check(`reg_${clientIp}`, 15, 300);
+    // Generous limit: 60 registrations per 5 min per IP to prevent accidental lockouts
+    const limitStatus = rateLimiter.check(`reg_${clientIp}`, 60, 300);
     if (!limitStatus.allowed) {
       return NextResponse.json({
         success: false,
-        message: `Too many registration attempts. Please retry in ${limitStatus.resetInSeconds} seconds.`
-      }, { status: 429 });
+        message: "Too many registration attempts. Please wait a moment and try again."
+      }, { status: 429, headers: NO_CACHE_HEADERS });
     }
 
-    const formData = await request.formData();
-    const name = sanitizeText(formData.get("name"), 100);
-    const email = sanitizeText(formData.get("email"), 120);
-    const phoneRaw = sanitizeText(formData.get("phone"), 20);
-    const dob = sanitizeText(formData.get("dob"), 20);
-    const ward = sanitizeText(formData.get("ward"), 50);
-    const speciality = sanitizeText(formData.get("speciality"), 50);
-    const tshirtSize = sanitizeText(formData.get("tshirtSize"), 10);
-    const trackSize = sanitizeText(formData.get("trackSize"), 10);
-    const utrNumber = sanitizeText(formData.get("utrNumber"), 50);
+    let bodyData = {};
+    const contentType = request.headers.get("content-type") || "";
+
+    if (contentType.includes("application/json")) {
+      bodyData = await request.json();
+    } else {
+      const formData = await request.formData();
+      for (const [key, value] of formData.entries()) {
+        bodyData[key] = value;
+      }
+    }
+
+    const name = sanitizeText(bodyData.name, 100);
+    const email = sanitizeText(bodyData.email, 120);
+    const phoneRaw = sanitizeText(bodyData.phone, 20);
+    const dob = sanitizeText(bodyData.dob, 20);
+    const ward = sanitizeText(bodyData.ward, 50);
+    const speciality = sanitizeText(bodyData.speciality, 50);
+    const tshirtSize = sanitizeText(bodyData.tshirtSize, 20);
+    const trackSize = sanitizeText(bodyData.trackSize, 20);
+    const utrNumber = sanitizeText(bodyData.utrNumber, 50);
 
     if (!name || name.length < 2) {
-      return NextResponse.json({ success: false, message: "Please enter your full name." }, { status: 400 });
+      return NextResponse.json({ success: false, message: "Please enter your full name." }, { status: 400, headers: NO_CACHE_HEADERS });
     }
     if (!validatePhone(phoneRaw)) {
-      return NextResponse.json({ success: false, message: "Please enter a valid 10-digit mobile number." }, { status: 400 });
+      return NextResponse.json({ success: false, message: "Please enter a valid 10-digit mobile number." }, { status: 400, headers: NO_CACHE_HEADERS });
     }
     const phone = formatPhone(phoneRaw);
     if (email && !validateEmail(email)) {
-      return NextResponse.json({ success: false, message: "Please enter a valid email address." }, { status: 400 });
+      return NextResponse.json({ success: false, message: "Please enter a valid email address." }, { status: 400, headers: NO_CACHE_HEADERS });
     }
     if (tshirtSize && tshirtSize !== "—Please choose an option—" && !ALLOWED_TSHIRT_SIZES.includes(tshirtSize)) {
-      return NextResponse.json({ success: false, message: "Please select a valid T-shirt size." }, { status: 400 });
+      return NextResponse.json({ success: false, message: "Please select a valid T-shirt size." }, { status: 400, headers: NO_CACHE_HEADERS });
     }
     if (trackSize && trackSize !== "—Please choose an option—" && !ALLOWED_TRACK_SIZES.includes(trackSize)) {
-      return NextResponse.json({ success: false, message: "Please select a valid Track Pant size." }, { status: 400 });
+      return NextResponse.json({ success: false, message: "Please select a valid Track Pant size." }, { status: 400, headers: NO_CACHE_HEADERS });
     }
     if (speciality && !ALLOWED_SPECIALITIES.includes(speciality)) {
-      return NextResponse.json({ success: false, message: "Please select a valid cricket speciality." }, { status: 400 });
+      return NextResponse.json({ success: false, message: "Please select a valid cricket speciality." }, { status: 400, headers: NO_CACHE_HEADERS });
     }
 
     let age = 24;
@@ -82,24 +82,32 @@ export async function POST(request) {
       }
     }
 
-    // Convert file uploads to clean data URIs
-    let photoUrl = "/images/avatar-placeholder.svg";
-    let aadhaarFrontUrl = "/images/doc-placeholder.svg";
-    let aadhaarBackUrl = "/images/doc-placeholder.svg";
-    let paymentProofUrl = "/images/payment-placeholder.svg";
-
-    try {
-      const p = await fileToBase64(formData.get("photo"));
-      if (p) photoUrl = p;
-      const af = await fileToBase64(formData.get("aadhaarFront"));
-      if (af) aadhaarFrontUrl = af;
-      const ab = await fileToBase64(formData.get("aadhaarBack"));
-      if (ab) aadhaarBackUrl = ab;
-      const pp = await fileToBase64(formData.get("paymentProof"));
-      if (pp) paymentProofUrl = pp;
-    } catch (fileErr) {
-      return NextResponse.json({ success: false, message: fileErr.message }, { status: 400 });
+    // Process image attachments safely
+    async function extractImageUrl(val) {
+      if (!val) return null;
+      if (typeof val === "string") {
+        if (val.startsWith("data:image/") || val.startsWith("/images/") || val.startsWith("http")) {
+          return val;
+        }
+        return null;
+      }
+      if (typeof val === "object" && typeof val.arrayBuffer === "function") {
+        try {
+          const bytes = await val.arrayBuffer();
+          const buffer = Buffer.from(bytes);
+          const mime = (val.type && val.type.startsWith("image/")) ? val.type : "image/jpeg";
+          return `data:${mime};base64,${buffer.toString("base64")}`;
+        } catch (e) {
+          return null;
+        }
+      }
+      return null;
     }
+
+    const photoUrl = (await extractImageUrl(bodyData.photo)) || "/images/avatar-placeholder.svg";
+    const aadhaarFrontUrl = (await extractImageUrl(bodyData.aadhaarFront)) || "/images/doc-placeholder.svg";
+    const aadhaarBackUrl = (await extractImageUrl(bodyData.aadhaarBack)) || "/images/doc-placeholder.svg";
+    const paymentProofUrl = (await extractImageUrl(bodyData.paymentProof)) || "/images/payment-placeholder.svg";
 
     // Connect to MongoDB
     await connectToDatabase();
@@ -108,9 +116,7 @@ export async function POST(request) {
     try {
       const settingsDoc = await MongoSetting.findOne({ key: "global_settings" }).lean();
       if (settingsDoc && settingsDoc.value) settings = settingsDoc.value;
-    } catch (e) {
-      console.warn("[Register API] Warning fetching settings:", e.message);
-    }
+    } catch (e) {}
 
     let regNumber = "1";
     try {
@@ -132,8 +138,8 @@ export async function POST(request) {
       age,
       ward: ward || "Ward 51",
       speciality: speciality || "Right-hand batsman",
-      tshirtSize: tshirtSize || "Medium",
-      trackSize: trackSize || "32",
+      tshirtSize: (tshirtSize && tshirtSize !== "—Please choose an option—") ? tshirtSize : "Medium",
+      trackSize: (trackSize && trackSize !== "—Please choose an option—") ? trackSize : "32",
       utrNumber: utrNumber || "PENDING",
       amount: settings.registrationFee || 100,
       paymentStatus: "Pending",
@@ -148,17 +154,20 @@ export async function POST(request) {
         {
           timestamp: new Date().toISOString(),
           action: "REGISTERED",
-          notes: "Player submitted registration"
+          notes: "Player self-registered online"
         }
       ]
     };
 
     await MongoRegistration.create(newPlayer);
 
-    // Send email notification in background
-    sendRegistrationNotificationEmail(newPlayer).catch((err) =>
-      console.error("[Email Notification Error]:", err.message)
-    );
+    // Send email notification non-blocking with 2.5s timeout so submission completes ultra-fast
+    Promise.race([
+      sendRegistrationNotificationEmail(newPlayer),
+      new Promise((_, reject) => setTimeout(() => reject(new Error("Email timeout")), 2500))
+    ]).catch((err) => {
+      console.warn("[Register Email Notice]:", err.message);
+    });
 
     return NextResponse.json({
       success: true,
@@ -168,16 +177,19 @@ export async function POST(request) {
         id,
         name,
         phone,
-        ward,
-        tshirtSize,
-        trackSize
+        ward: newPlayer.ward,
+        tshirtSize: newPlayer.tshirtSize,
+        trackSize: newPlayer.trackSize,
+        speciality: newPlayer.speciality,
+        utrNumber: newPlayer.utrNumber,
+        registeredAt: newPlayer.registeredAt
       }
-    });
+    }, { headers: NO_CACHE_HEADERS });
   } catch (error) {
     console.error("[Registration Error]:", error);
     return NextResponse.json({
       success: false,
       message: error.message || "An unexpected error occurred during registration. Please try again."
-    }, { status: 400 });
+    }, { status: 400, headers: NO_CACHE_HEADERS });
   }
 }

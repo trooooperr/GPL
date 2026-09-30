@@ -1,9 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Check, AlertCircle, UploadCloud } from "lucide-react";
+import { Check, AlertCircle, UploadCloud, Loader2, CheckCircle2, Copy } from "lucide-react";
 import QRCode from "qrcode";
-import VerificationCaptcha from "./VerificationCaptcha";
 
 export default function RegistrationForm({ stats, settings = {}, onRegistrationSuccess }) {
   const [formData, setFormData] = useState({
@@ -26,8 +25,8 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
 
   const [fieldErrors, setFieldErrors] = useState({});
   const [copiedUpi, setCopiedUpi] = useState(false);
+  const [copiedReceipt, setCopiedReceipt] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [showCaptcha, setShowCaptcha] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [successData, setSuccessData] = useState(null);
   const [dynamicQrDataUrl, setDynamicQrDataUrl] = useState("");
@@ -73,12 +72,8 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
         const res = await fetch("/api/stats");
         const data = await res.json();
         if (data.success && data.stats) {
-          const teamsCount = data.stats.totalTeams || 10;
-          const cap = (data.stats.maxCapacity && Number(data.stats.maxCapacity) !== 168)
-            ? Number(data.stats.maxCapacity)
-            : (teamsCount * 14);
-          const totalReg = data.stats.totalRegistered || 0;
-          const rem = data.stats.remainingSlots !== undefined ? data.stats.remainingSlots : Math.max(0, cap - totalReg);
+          const cap = data.stats.maxCapacity || 140;
+          const rem = data.stats.remainingSlots !== undefined ? data.stats.remainingSlots : Math.max(0, cap - (data.stats.approved || 0));
           setMaxCapacity(cap);
           setRemainingSlots(rem);
         }
@@ -93,6 +88,14 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
     setTimeout(() => setCopiedUpi(false), 2500);
   };
 
+  const handleCopyReceipt = () => {
+    if (!successData) return;
+    const text = `GPL Registration Slip\nReg Number: #${successData.registrationNumber}\nName: ${successData.player?.name}\nPhone: ${successData.player?.phone}\nWard: ${successData.player?.ward}\nSpeciality: ${successData.player?.speciality}\nUTR: ${successData.player?.utrNumber}\nStatus: Verification Pending`;
+    navigator.clipboard.writeText(text);
+    setCopiedReceipt(true);
+    setTimeout(() => setCopiedReceipt(false), 2500);
+  };
+
   const handleFieldChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     if (fieldErrors[field]) {
@@ -100,15 +103,12 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
     }
   };
 
-    // Client-side image compression to convert iPhone/Android photos to lightweight JPEG under 150KB
-  const compressImage = (file, maxWidth = 1200, quality = 0.75) => {
+  // Robust client-side canvas compression: converts any phone/desktop image to lightweight ~40KB JPEG
+  const compressImageToDataUrl = (file, maxWidth = 800, quality = 0.65) => {
     return new Promise((resolve) => {
-      if (!file || !file.type || !file.type.startsWith("image/")) {
-        resolve(file);
-        return;
-      }
+      if (!file) return resolve({ name: "", dataUrl: "" });
       const reader = new FileReader();
-      reader.onload = (event) => {
+      reader.onload = (e) => {
         const img = new Image();
         img.onload = () => {
           let { width, height } = img;
@@ -126,27 +126,17 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
           canvas.height = height;
           const ctx = canvas.getContext("2d");
           ctx.drawImage(img, 0, 0, width, height);
-          canvas.toBlob(
-            (blob) => {
-              if (blob) {
-                const cleanName = (file.name || "upload.jpg").replace(/\.[^/.]+$/, "") + ".jpg";
-                const compressedFile = new File([blob], cleanName, {
-                  type: "image/jpeg",
-                  lastModified: Date.now(),
-                });
-                resolve(compressedFile);
-              } else {
-                resolve(file);
-              }
-            },
-            "image/jpeg",
-            quality
-          );
+          const dataUrl = canvas.toDataURL("image/jpeg", quality);
+          resolve({ name: file.name, dataUrl });
         };
-        img.onerror = () => resolve(file);
-        img.src = event.target.result;
+        img.onerror = () => {
+          const rawUrl = e.target.result || "";
+          // If raw url is under 500KB use it, otherwise empty
+          resolve({ name: file.name, dataUrl: rawUrl.length < 500000 ? rawUrl : "" });
+        };
+        img.src = e.target.result;
       };
-      reader.onerror = () => resolve(file);
+      reader.onerror = () => resolve({ name: file.name, dataUrl: "" });
       reader.readAsDataURL(file);
     });
   };
@@ -155,13 +145,13 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
     const rawFile = e.target.files?.[0];
     if (rawFile) {
       try {
-        const file = await compressImage(rawFile);
-        setFiles((prev) => ({ ...prev, [field]: file }));
+        const fileObj = await compressImageToDataUrl(rawFile);
+        setFiles((prev) => ({ ...prev, [field]: fileObj }));
         if (fieldErrors[field]) {
           setFieldErrors((prev) => ({ ...prev, [field]: "" }));
         }
       } catch (err) {
-        setFiles((prev) => ({ ...prev, [field]: rawFile }));
+        setFiles((prev) => ({ ...prev, [field]: { name: rawFile.name, dataUrl: "" } }));
       }
     }
   };
@@ -182,7 +172,7 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
       errors.email = "Please enter a valid email address.";
     }
 
-    // 3. Phone (10 digits starting with 6-9)
+    // 3. Phone (10 digits)
     const cleanPhone = formData.phone.replace(/\D/g, "");
     if (!cleanPhone) {
       errors.phone = "Mobile phone number is required.";
@@ -215,10 +205,10 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
       errors.aadhaarBack = "Aadhaar Card Back photo is required.";
     }
 
-    // 9. UTR Number (minimum 6 digits)
+    // 9. UTR Number (minimum 4 chars)
     if (!formData.utrNumber.trim()) {
       errors.utrNumber = "Transaction UTR / Reference number is required.";
-    } else if (formData.utrNumber.trim().length < 6) {
+    } else if (formData.utrNumber.trim().length < 4) {
       errors.utrNumber = "Please enter a valid UPI transaction UTR / Reference number.";
     }
 
@@ -231,7 +221,7 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
     return Object.keys(errors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg("");
 
@@ -240,26 +230,28 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
       return;
     }
 
-    // Trigger interactive cricket security puzzle verification
-    setShowCaptcha(true);
-  };
-
-  const executeSubmission = async () => {
     setSubmitting(true);
-    setErrorMsg("");
 
     try {
-      const data = new FormData();
-      Object.keys(formData).forEach((key) => {
-        data.append(key, formData[key]);
-      });
-      data.append("aadhaarFront", files.aadhaarFront);
-      data.append("aadhaarBack", files.aadhaarBack);
-      data.append("paymentProof", files.paymentProof);
+      const payload = {
+        name: formData.name.trim(),
+        email: formData.email.trim(),
+        phone: formData.phone.trim(),
+        dob: formData.dob,
+        ward: formData.ward,
+        speciality: formData.speciality,
+        tshirtSize: formData.tshirtSize,
+        trackSize: formData.trackSize,
+        utrNumber: formData.utrNumber.trim(),
+        aadhaarFront: files.aadhaarFront?.dataUrl || files.aadhaarFront || "",
+        aadhaarBack: files.aadhaarBack?.dataUrl || files.aadhaarBack || "",
+        paymentProof: files.paymentProof?.dataUrl || files.paymentProof || "",
+      };
 
-            const res = await fetch("/api/register", {
+      const res = await fetch("/api/register", {
         method: "POST",
-        body: data,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
       });
 
       let result;
@@ -267,93 +259,133 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
       try {
         result = JSON.parse(responseText);
       } catch (parseErr) {
-        if (res.status === 413) {
-          throw new Error("Uploaded photos are too large. Please choose smaller images or standard screenshots.");
-        }
-        throw new Error("Server error (" + res.status + "). Please check your network connection and try again.");
+        throw new Error("Server error (" + res.status + "). Please try again in a moment.");
       }
 
       if (!res.ok || !result.success) {
-        throw new Error(result.message || result.error || "Registration failed. Please check your details and try again.");
+        throw new Error(result.message || result.error || "Registration submission failed. Please try again.");
       }
 
       setSuccessData(result);
       setRemainingSlots((prev) => Math.max(0, prev - 1));
       if (onRegistrationSuccess) onRegistrationSuccess(result);
     } catch (err) {
-      setErrorMsg(err.message);
+      setErrorMsg(err.message || "An unexpected error occurred. Please try again.");
     } finally {
       setSubmitting(false);
     }
   };
 
-  const handleCaptchaSuccess = () => {
-    setShowCaptcha(false);
-    executeSubmission();
-  };
-
   return (
     <section id="register" className="py-20 bg-[#edf7ee] border-b border-slate-200 relative">
-      
-      {/* Interactive Cricket Security Verification Captcha Modal */}
-      <VerificationCaptcha
-        isOpen={showCaptcha}
-        onClose={() => setShowCaptcha(false)}
-        onSuccess={handleCaptchaSuccess}
-      />
-
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* Title */}
-        <div className="text-center max-w-xl mx-auto mb-10 space-y-2">
-          <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
-            Registration Is Open!
-          </h2>
-          <p className="text-base sm:text-lg text-slate-700 font-medium">
-            Secure your spot. Registration is open for the first {remainingSlots} players only.
+        {/* Registration Header */}
+        <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-12 space-y-2 sm:space-y-3">
+          <p className="text-sm sm:text-base font-bold text-[#0041b9] tracking-wider uppercase">
+            Official Registration Portal
           </p>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-[#081a36] tracking-tight">
+            Register for GPL
+          </h2>
+          <p className="text-slate-600 text-sm sm:text-base">
+            Radhe Radhe Chashak • Organised by Mohsin Patel &amp; Balram Gupta (Ballu)
+          </p>
+
+          {/* Remaining Slots Counter Banner */}
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white shadow-sm border border-slate-200 text-xs sm:text-sm font-semibold text-slate-800 mt-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span>Available Player Slots:</span>
+            <strong className="text-[#0041b9] font-mono text-base font-extrabold">
+              {remainingSlots} / {maxCapacity}
+            </strong>
+          </div>
         </div>
 
-        {/* Success Modal */}
+        {/* Success View */}
         {successData ? (
-          <div className="bg-white rounded-2xl border border-emerald-300 p-8 sm:p-12 text-center shadow-lg animate-scaleUp">
-            <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-4">
-              <Check className="w-8 h-8" />
+          <div className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200 shadow-xl p-6 sm:p-10 text-center space-y-6 animate-scaleUp">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto rounded-full bg-emerald-50 border-2 border-emerald-400 flex items-center justify-center text-emerald-600 shadow-inner">
+              <CheckCircle2 className="w-10 h-10 sm:w-12 sm:h-12" />
             </div>
 
-            <span className="px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-mono font-bold tracking-wider inline-block mb-2 border border-emerald-200">
-              REGISTRATION NUMBER: {successData.registrationNumber}
-            </span>
+            <div className="space-y-2">
+              <div className="inline-block px-3 py-1 bg-blue-100 text-[#0041b9] rounded-full text-xs font-bold font-mono">
+                Registration #{successData.registrationNumber}
+              </div>
+              <h3 className="text-2xl sm:text-3xl font-extrabold text-[#081a36]">
+                Application Submitted Successfully!
+              </h3>
+              <p className="text-slate-600 text-sm sm:text-base max-w-lg mx-auto">
+                Thank you, <strong>{successData.player?.name}</strong>! Your registration has been received and submitted for administrative document verification.
+              </p>
+            </div>
 
-            <h3 className="text-2xl font-black text-slate-900 mb-2">
-              Registration Successful!
-            </h3>
+            {/* Registration Summary Card */}
+            <div className="max-w-md mx-auto bg-slate-50 rounded-xl p-4 sm:p-5 border border-slate-200 text-left text-xs sm:text-sm space-y-2.5 font-medium">
+              <div className="flex justify-between border-b border-slate-200 pb-2">
+                <span className="text-slate-500">Applicant:</span>
+                <span className="font-bold text-slate-900">{successData.player?.name}</span>
+              </div>
+              <div className="flex justify-between border-b border-slate-200 pb-2">
+                <span className="text-slate-500">Mobile Phone:</span>
+                <span className="font-mono text-slate-800">{successData.player?.phone}</span>
+              </div>
+              <div className="flex justify-between border-b border-slate-200 pb-2">
+                <span className="text-slate-500">Ward:</span>
+                <span className="font-semibold text-slate-800">{successData.player?.ward}</span>
+              </div>
+              <div className="flex justify-between border-b border-slate-200 pb-2">
+                <span className="text-slate-500">Speciality:</span>
+                <span className="font-semibold text-slate-800">{successData.player?.speciality}</span>
+              </div>
+              <div className="flex justify-between border-b border-slate-200 pb-2">
+                <span className="text-slate-500">Kit Sizes:</span>
+                <span className="font-semibold text-slate-800">
+                  T-Shirt: {successData.player?.tshirtSize} • Track: {successData.player?.trackSize}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500">Status:</span>
+                <span className="px-2 py-0.5 rounded bg-amber-100 text-amber-800 text-xs font-bold">
+                  Pending Verification
+                </span>
+              </div>
+            </div>
 
-            <p className="text-sm text-slate-600 max-w-md mx-auto mb-6">
-              Thank you, <strong>{successData.player?.name}</strong>! Your GPL registration is recorded. You will be notified on your registered email once verified.
-            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+              <button
+                type="button"
+                onClick={handleCopyReceipt}
+                className="w-full sm:w-auto px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 transition-colors"
+              >
+                <Copy className="w-4 h-4" />
+                <span>{copiedReceipt ? "Copied Slip!" : "Copy Slip Details"}</span>
+              </button>
 
-            <button
-              onClick={() => {
-                setSuccessData(null);
-                setFormData({
-                  name: "",
-                  email: "",
-                  phone: "",
-                  dob: "",
-                  tshirtSize: "—Please choose an option—",
-                  trackSize: "—Please choose an option—",
-                  speciality: "Right-hand batsman",
-                  ward: "Ward 51",
-                  utrNumber: ""
-                });
-                setFiles({ aadhaarFront: null, aadhaarBack: null, paymentProof: null });
-                setFieldErrors({});
-              }}
-              className="px-6 py-2.5 bg-[#0041b9] text-white rounded-lg font-bold text-sm hover:bg-[#003399] transition-colors"
-            >
-              Register Another Player
-            </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setSuccessData(null);
+                  setFormData({
+                    name: "",
+                    email: "",
+                    phone: "",
+                    dob: "",
+                    tshirtSize: "—Please choose an option—",
+                    trackSize: "—Please choose an option—",
+                    speciality: "Right-hand batsman",
+                    ward: "Ward 51",
+                    utrNumber: ""
+                  });
+                  setFiles({ aadhaarFront: null, aadhaarBack: null, paymentProof: null });
+                  setFieldErrors({});
+                }}
+                className="w-full sm:w-auto px-6 py-2.5 bg-[#0041b9] text-white rounded-lg font-bold text-xs hover:bg-[#003399] transition-colors"
+              >
+                Register Another Player
+              </button>
+            </div>
           </div>
         ) : (
           <form
@@ -363,11 +395,11 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
             {errorMsg && (
               <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm flex items-center gap-3 animate-shake">
                 <AlertCircle className="w-5 h-5 shrink-0" />
-                <p>{errorMsg}</p>
+                <p className="font-semibold">{errorMsg}</p>
               </div>
             )}
 
-            {/* Line 1: Name and Email (2-Column Full Width for comfortable input) */}
+            {/* Line 1: Name and Email */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1.5">
@@ -379,7 +411,9 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
                   value={formData.name}
                   onChange={(e) => handleFieldChange("name", e.target.value)}
                   className={`w-full px-4 py-2.5 rounded-lg border bg-white text-slate-900 text-sm focus:outline-none transition-all ${
-                    fieldErrors.name ? "border-red-500 ring-2 ring-red-200" : "border-slate-300 focus:ring-2 focus:ring-[#0041b9]"
+                    fieldErrors.name
+                      ? "border-red-500 ring-2 ring-red-200"
+                      : "border-slate-300 focus:ring-2 focus:ring-[#0041b9]"
                   }`}
                 />
                 {fieldErrors.name && (
@@ -389,15 +423,17 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                  Email
+                  Email <span className="text-slate-400 font-normal">(Optional)</span>
                 </label>
                 <input
                   type="email"
-                  placeholder="example@mail.com"
+                  placeholder="Email address"
                   value={formData.email}
                   onChange={(e) => handleFieldChange("email", e.target.value)}
                   className={`w-full px-4 py-2.5 rounded-lg border bg-white text-slate-900 text-sm focus:outline-none transition-all ${
-                    fieldErrors.email ? "border-red-500 ring-2 ring-red-200" : "border-slate-300 focus:ring-2 focus:ring-[#0041b9]"
+                    fieldErrors.email
+                      ? "border-red-500 ring-2 ring-red-200"
+                      : "border-slate-300 focus:ring-2 focus:ring-[#0041b9]"
                   }`}
                 />
                 {fieldErrors.email && (
@@ -406,20 +442,21 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
               </div>
             </div>
 
-            {/* Line 2: Phone and DOB (2-Column Full Width with iOS Safari width constraint) */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-              <div className="min-w-0">
+            {/* Line 2: Phone, DOB, Ward */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+              <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                  Phone <span className="text-red-500">*</span>
+                  Phone Number <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="tel"
                   placeholder="10-digit mobile"
-                  maxLength={10}
                   value={formData.phone}
                   onChange={(e) => handleFieldChange("phone", e.target.value)}
-                  className={`w-full max-w-full min-w-0 px-4 py-2.5 rounded-lg border bg-white text-slate-900 text-sm focus:outline-none transition-all ${
-                    fieldErrors.phone ? "border-red-500 ring-2 ring-red-200" : "border-slate-300 focus:ring-2 focus:ring-[#0041b9]"
+                  className={`w-full px-4 py-2.5 rounded-lg border bg-white text-slate-900 text-sm focus:outline-none transition-all font-mono ${
+                    fieldErrors.phone
+                      ? "border-red-500 ring-2 ring-red-200"
+                      : "border-slate-300 focus:ring-2 focus:ring-[#0041b9]"
                   }`}
                 />
                 {fieldErrors.phone && (
@@ -427,30 +464,66 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
                 )}
               </div>
 
-              <div className="min-w-0">
+              <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                  DOB <span className="text-red-500">*</span>
+                  Date of Birth <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="date"
                   value={formData.dob}
                   onChange={(e) => handleFieldChange("dob", e.target.value)}
-                  className={`w-full max-w-full min-w-0 appearance-none px-3.5 py-2.5 rounded-lg border bg-white text-slate-900 text-sm focus:outline-none transition-all ${
-                    fieldErrors.dob ? "border-red-500 ring-2 ring-red-200" : "border-slate-300 focus:ring-2 focus:ring-[#0041b9]"
+                  className={`w-full px-4 py-2.5 rounded-lg border bg-white text-slate-900 text-sm focus:outline-none transition-all ${
+                    fieldErrors.dob
+                      ? "border-red-500 ring-2 ring-red-200"
+                      : "border-slate-300 focus:ring-2 focus:ring-[#0041b9]"
                   }`}
-                  style={{ WebkitAppearance: "none", minWidth: 0, boxSizing: "border-box" }}
                 />
                 {fieldErrors.dob && (
                   <p className="text-[11px] text-red-600 font-medium mt-1">{fieldErrors.dob}</p>
                 )}
               </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                  Ward <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={formData.ward}
+                  onChange={(e) => handleFieldChange("ward", e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-lg border border-slate-300 bg-white text-slate-900 text-sm focus:ring-2 focus:ring-[#0041b9] focus:outline-none transition-all"
+                >
+                  <option value="Ward 51">Ward 51</option>
+                  <option value="Ward 54">Ward 54</option>
+                  <option value="Other Ward (Review Required)">Other Ward (Review Required)</option>
+                </select>
+              </div>
             </div>
 
-            {/* Row 3: Apparel Sizing & Specialty */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {/* Line 3: Speciality */}
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                Speciality / Playing Role <span className="text-red-500">*</span>
+              </label>
+              <select
+                value={formData.speciality}
+                onChange={(e) => handleFieldChange("speciality", e.target.value)}
+                className="w-full px-4 py-2.5 rounded-lg border border-slate-300 bg-white text-slate-900 text-sm focus:ring-2 focus:ring-[#0041b9] focus:outline-none transition-all"
+              >
+                <option value="Right-hand batsman">Right-hand batsman</option>
+                <option value="Left-hand batsman">Left-hand batsman</option>
+                <option value="Right-hand bowler">Right-hand bowler</option>
+                <option value="Left-hand bowler">Left-hand bowler</option>
+                <option value="Right-hand all-rounder">Right-hand all-rounder</option>
+                <option value="Left-hand all-rounder">Left-hand all-rounder</option>
+                <option value="Wicketkeeper Batsman">Wicketkeeper Batsman</option>
+              </select>
+            </div>
+
+            {/* Line 4: T-shirt Size & Track Pant Size */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Tshirt Size <span className="text-red-500">*</span>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                  T-shirt Size <span className="text-red-500">*</span>
                 </label>
                 <select
                   value={formData.tshirtSize}
@@ -472,8 +545,8 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Track Size <span className="text-red-500">*</span>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                  Track Pant Size <span className="text-red-500">*</span>
                 </label>
                 <select
                   value={formData.trackSize}
@@ -493,70 +566,10 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
                   <p className="text-[11px] text-red-600 font-medium mt-1">{fieldErrors.trackSize}</p>
                 )}
               </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Speciality <span className="text-red-500">*</span>
-                </label>
-                <select
-                  value={formData.speciality}
-                  onChange={(e) => handleFieldChange("speciality", e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 bg-white text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#0041b9] transition-all"
-                >
-                  <option value="Right-hand batsman">Right-hand batsman</option>
-                  <option value="Left-hand batsman">Left-hand batsman</option>
-                  <option value="Right-hand bowler">Right-hand bowler</option>
-                  <option value="Left-hand bowler">Left-hand bowler</option>
-                  <option value="Right-hand all-rounder">Right-hand all-rounder</option>
-                  <option value="Left-hand all-rounder">Left-hand all-rounder</option>
-                </select>
-              </div>
             </div>
 
-            {/* Row 4: Ward Eligibility Selection */}
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Ward Eligibility (Goregaon East) <span className="text-red-500">*</span>
-              </label>
-              <div className="grid grid-cols-2 gap-4">
-                <label className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
-                  formData.ward === "Ward 51" ? "border-[#0041b9] bg-blue-50/60 ring-2 ring-blue-200" : "border-slate-200 bg-white"
-                }`}>
-                  <input
-                    type="radio"
-                    name="ward"
-                    value="Ward 51"
-                    checked={formData.ward === "Ward 51"}
-                    onChange={() => handleFieldChange("ward", "Ward 51")}
-                    className="text-[#0041b9] focus:ring-[#0041b9]"
-                  />
-                  <div>
-                    <span className="block text-sm font-bold text-slate-900">Ward 51</span>
-                    <span className="text-[11px] text-slate-500">Goregaon East Resident</span>
-                  </div>
-                </label>
-
-                <label className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
-                  formData.ward === "Ward 54" ? "border-[#0041b9] bg-blue-50/60 ring-2 ring-blue-200" : "border-slate-200 bg-white"
-                }`}>
-                  <input
-                    type="radio"
-                    name="ward"
-                    value="Ward 54"
-                    checked={formData.ward === "Ward 54"}
-                    onChange={() => handleFieldChange("ward", "Ward 54")}
-                    className="text-[#0041b9] focus:ring-[#0041b9]"
-                  />
-                  <div>
-                    <span className="block text-sm font-bold text-slate-900">Ward 54</span>
-                    <span className="text-[11px] text-slate-500">Goregaon East Resident</span>
-                  </div>
-                </label>
-              </div>
-            </div>
-
-            {/* Row 5: Document Uploads (Aadhaar Front & Back) */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+            {/* Line 5: Aadhaar Front & Aadhaar Back */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">
                   Aadhar Card Front <span className="text-red-500">*</span>
@@ -610,7 +623,7 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
               </div>
             </div>
 
-            {/* Row 6: Dynamic Payment QR Code Box */}
+            {/* Line 6: Dynamic Payment QR Code Box */}
             <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center pt-6">
               
               {/* Left Column: Dynamic QR Code Container */}
@@ -646,7 +659,7 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
                 <button
                   type="button"
                   onClick={handleCopyUpi}
-                  className="w-full bg-[#ffb703] hover:bg-[#fca311] text-slate-950 font-bold py-3 px-4 rounded-lg text-sm text-center shadow-sm transition-all active:scale-98 block"
+                  className="w-full bg-[#ffb703] hover:bg-[#fca311] text-slate-950 font-bold py-3 px-4 rounded-lg text-sm text-center shadow-sm transition-all active:scale-98 block cursor-pointer"
                 >
                   {UPI_ID}
                 </button>
@@ -655,7 +668,7 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
                 <button
                   type="button"
                   onClick={handleCopyUpi}
-                  className="w-full bg-[#00b4d8] hover:bg-[#0096c7] text-white font-bold py-3 px-4 rounded-lg text-sm text-center shadow-sm transition-all active:scale-98 block"
+                  className="w-full bg-[#00b4d8] hover:bg-[#0096c7] text-white font-bold py-3 px-4 rounded-lg text-sm text-center shadow-sm transition-all active:scale-98 block cursor-pointer"
                 >
                   {copiedUpi ? "✓ UPI ID Copied to Clipboard!" : "Copy UPI"}
                 </button>
@@ -667,7 +680,7 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
                   </label>
                   <input
                     type="text"
-                    placeholder="12-digit UPI UTR number"
+                    placeholder="UPI Reference / UTR number"
                     value={formData.utrNumber}
                     onChange={(e) => handleFieldChange("utrNumber", e.target.value)}
                     className={`w-full px-4 py-2.5 rounded-lg border bg-white font-mono text-slate-900 text-sm focus:outline-none transition-all ${
@@ -708,13 +721,20 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
                   )}
                 </div>
 
-                {/* Submit Register Button */}
+                {/* Direct Submit Register Button */}
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="w-full mt-4 bg-[#0041b9] hover:bg-[#003399] disabled:bg-slate-400 text-white font-bold py-3.5 px-6 rounded-lg text-base shadow-md transition-all active:scale-98 cursor-pointer disabled:cursor-not-allowed"
+                  className="w-full mt-4 bg-[#0041b9] hover:bg-[#003399] disabled:bg-slate-400 text-white font-bold py-3.5 px-6 rounded-lg text-base shadow-md transition-all active:scale-98 cursor-pointer disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
-                  {submitting ? "Submitting Registration..." : "Register"}
+                  {submitting ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      <span>Submitting Registration...</span>
+                    </>
+                  ) : (
+                    <span>Register</span>
+                  )}
                 </button>
 
               </div>
