@@ -10,7 +10,7 @@ import Navbar from "@/components/Navbar";
 import BannerCarousel from "@/components/BannerCarousel";
 import Hero from "@/components/Hero";
 import PrizesSection from "@/components/PrizesSection";
-import AboutSection from "@/components/AboutSection";
+
 import TeamsGrid from "@/components/TeamsGrid";
 import RulesSection from "@/components/RulesSection";
 import RegistrationForm from "@/components/RegistrationForm";
@@ -127,7 +127,7 @@ export default async function Home() {
       <BannerCarousel />
       <Hero stats={stats} settings={settings} />
       <PrizesSection stats={stats} settings={settings} />
-      <AboutSection stats={stats} teams={teams} />
+
       <TeamsGrid teams={teams} />
       <RulesSection rules={rules} />
       <RegistrationForm stats={stats} settings={settings} />

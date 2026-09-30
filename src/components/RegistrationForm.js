@@ -185,6 +185,16 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
     // 4. DOB
     if (!formData.dob) {
       errors.dob = "Date of Birth is required.";
+    } else {
+      const bd = new Date(formData.dob);
+      if (isNaN(bd.getTime())) {
+        errors.dob = "Please enter a valid date of birth.";
+      } else {
+        const calculatedAge = Math.floor((Date.now() - bd.getTime()) / (365.25 * 24 * 3600 * 1000));
+        if (calculatedAge < 12) {
+          errors.dob = "Players must be at least 12 years old to register.";
+        }
+      }
     }
 
     // 5. T-shirt Size
@@ -475,6 +485,7 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
                 <input
                   type="date"
                   value={formData.dob}
+                  max={(() => { const d = new Date(); d.setFullYear(d.getFullYear() - 12); return d.toISOString().split("T")[0]; })()}
                   onChange={(e) => handleFieldChange("dob", e.target.value)}
                   className={`w-full px-4 py-2.5 rounded-lg border bg-white text-slate-900 text-sm focus:outline-none transition-all ${
                     fieldErrors.dob

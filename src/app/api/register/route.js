@@ -82,6 +82,14 @@ export async function POST(request) {
       }
     }
 
+    // Age must be greater than 11 (minimum 12 years old)
+    if (age < 12) {
+      return NextResponse.json(
+        { success: false, message: "Players must be at least 12 years old to register for GPL." },
+        { status: 400, headers: NO_CACHE_HEADERS }
+      );
+    }
+
     // Process image attachments safely
     async function extractImageUrl(val) {
       if (!val) return null;
