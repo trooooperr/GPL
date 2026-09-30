@@ -1,7 +1,5 @@
 import mongoose from "mongoose";
 
-const MONGODB_URI = process.env.MONGODB_URI;
-
 let cached = global.mongoose;
 
 if (!cached) {
@@ -9,8 +7,9 @@ if (!cached) {
 }
 
 export async function connectToDatabase() {
-  if (!MONGODB_URI) {
-    throw new Error("[MongoDB] No MONGODB_URI provided in environment.");
+  const uri = process.env.MONGODB_URI;
+  if (!uri) {
+    throw new Error("[MongoDB] No MONGODB_URI provided in environment. Please add MONGODB_URI in Vercel Project Settings > Environment Variables.");
   }
 
   // If already connected and ready, return existing connection
@@ -29,7 +28,7 @@ export async function connectToDatabase() {
   }
 
   const opts = {
-    bufferCommands: true,  // Allow buffering so operations wait for connection
+    bufferCommands: false, // In serverless, fail fast instead of hanging/buffering
     serverSelectionTimeoutMS: 10000, // 10s for Vercel cold starts
     connectTimeoutMS: 10000,
     socketTimeoutMS: 30000,
@@ -37,7 +36,7 @@ export async function connectToDatabase() {
   };
 
   try {
-    cached.promise = mongoose.connect(MONGODB_URI, opts);
+    cached.promise = mongoose.connect(uri, opts);
     cached.conn = await cached.promise;
     console.log("[MongoDB] Connected successfully");
     return cached.conn;

@@ -38,11 +38,47 @@ This application is built with Next.js App Router and is 100% optimized for zero
 
 ---
 
-## Part 2: Configuring Environment Variables in Vercel
+## Part 2: Configuring Database & Environment Variables in Vercel
 
-In your Vercel Dashboard > Project > **Settings** > **Environment Variables**, add:
-- `ADMIN_PASSWORD`: Your secret admin password (e.g., `MySuperSecretGPL@2026!`)
-- `JWT_SECRET`: A long random string for cryptographically signing admin tokens
+### Step 1: MongoDB Atlas IP Access (CRITICAL)
+Vercel uses dynamic serverless IP addresses that change on every request. If MongoDB Atlas does not allow connections from anywhere, Vercel will be blocked from connecting:
+1. Log into your [MongoDB Atlas Dashboard](https://cloud.mongodb.com).
+2. Go to **Network Access** (under the "Security" menu on the left sidebar).
+3. Click **+ Add IP Address**.
+4. Click **ALLOW ACCESS FROM ANYWHERE** (this sets `0.0.0.0/0`).
+5. Click **Confirm**. (It takes about 1-2 minutes to become active).
+
+### Step 2: Add Environment Variables in Vercel
+In your Vercel Dashboard > Select Project > **Settings** > **Environment Variables**, add the following:
+
+| Key | Example Value | Description |
+| :--- | :--- | :--- |
+| `MONGODB_URI` | `mongodb+srv://...` | **Required.** Your full MongoDB Atlas connection string |
+| `JWT_SECRET` | *(Random 32+ char string)* | **Required.** Secret used to sign admin session tokens |
+| `ADMIN_USERNAME` | `admin` | Admin dashboard username |
+| `ADMIN_PASSWORD` | `admin123` | Admin dashboard password |
+| `GMAIL_USER` | `goregaonpremierleague11@gmail.com` | (Optional) Email sender for registrations |
+| `GMAIL_APP_PASSWORD` | *(16-char Google App Password)* | (Optional) App password for Gmail |
+| `ADMIN_NOTIFICATION_EMAIL` | `random.alokgupta@gmail.com` | (Optional) Admin notification receiver |
+| `NEXT_PUBLIC_APP_URL` | `https://goregaonpremierleague.in` | Your live custom domain or vercel URL |
+
+> ⚠️ **IMPORTANT**: After adding or updating Environment Variables in Vercel, you **MUST Redeploy**:
+> - Go to **Deployments** tab in Vercel > Click the **three dots (...)** on the latest deployment > Click **Redeploy**.
+> - (New environment variables do NOT take effect on previously existing builds until redeployed).
+
+### Step 3: Verify Database Connection
+Once deployed, open:
+`https://your-app-domain.vercel.app/api/db-check`
+
+You should see:
+```json
+{
+  "success": true,
+  "status": "CONNECTED",
+  "message": "Successfully connected to MongoDB Atlas from Vercel!"
+}
+```
+If anything is wrong (e.g. missing variable or blocked IP), this endpoint will tell you the exact cause and how to fix it!
 
 ---
 
