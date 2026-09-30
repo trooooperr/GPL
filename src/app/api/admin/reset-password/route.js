@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
-import { db, dbReady } from "@/lib/db.js";
+import { connectToDatabase, MongoSetting } from "@/lib/mongodb";
+import { INITIAL_SETTINGS } from "@/lib/constants";
 import { rateLimiter, getClientIp } from "@/lib/rate-limit.js";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(request) {
-  await dbReady;
   try {
     const clientIp = getClientIp(request);
     const limitStatus = rateLimiter.check(`admin_reset_pw_${clientIp}`, 5, 900);
@@ -56,8 +56,17 @@ export async function POST(request) {
       );
     }
 
-    // OTP is valid! Update admin password
-    db.updateSettings({ adminPassword: newPassword.trim() });
+    // OTP is valid! Update admin password in Mongo
+    await connectToDatabase();
+    const existing = await MongoSetting.findOne({ key: "global_settings" }).lean();
+    const merged = { ...INITIAL_SETTINGS, ...(existing?.value || {}), adminPassword: newPassword.trim() };
+
+    await MongoSetting.findOneAndUpdate(
+      { key: "global_settings" },
+      { key: "global_settings", value: merged },
+      { upsert: true }
+    );
+
     global.__gplOtpStore = {};
 
     return NextResponse.json({

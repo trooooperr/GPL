@@ -282,7 +282,7 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
         
         {/* Registration Header */}
         <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-12 space-y-2 sm:space-y-3">
-          <p className="text-sm sm:text-base font-bold text-[#0041b9] tracking-wider uppercase">
+          <p className="text-sm sm:text-base font-bold text-[#059669] tracking-wider uppercase">
             Official Registration Portal
           </p>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-[#081a36] tracking-tight">
@@ -296,7 +296,7 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white shadow-sm border border-slate-200 text-xs sm:text-sm font-semibold text-slate-800 mt-2">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
             <span>Available Player Slots:</span>
-            <strong className="text-[#0041b9] font-mono text-base font-extrabold">
+            <strong className="text-[#059669] font-mono text-base font-extrabold">
               {remainingSlots} / {maxCapacity}
             </strong>
           </div>
@@ -310,7 +310,7 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
             </div>
 
             <div className="space-y-2">
-              <div className="inline-block px-3 py-1 bg-blue-100 text-[#0041b9] rounded-full text-xs font-bold font-mono">
+              <div className="inline-block px-3 py-1 bg-emerald-100 text-[#059669] rounded-full text-xs font-bold font-mono">
                 Registration #{successData.registrationNumber}
               </div>
               <h3 className="text-2xl sm:text-3xl font-extrabold text-[#081a36]">
@@ -381,7 +381,7 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
                   setFiles({ aadhaarFront: null, aadhaarBack: null, paymentProof: null });
                   setFieldErrors({});
                 }}
-                className="w-full sm:w-auto px-6 py-2.5 bg-[#0041b9] text-white rounded-lg font-bold text-xs hover:bg-[#003399] transition-colors"
+                className="w-full sm:w-auto px-6 py-2.5 bg-[#059669] text-white rounded-lg font-bold text-xs hover:bg-[#047857] transition-colors"
               >
                 Register Another Player
               </button>
@@ -413,7 +413,7 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
                   className={`w-full px-4 py-2.5 rounded-lg border bg-white text-slate-900 text-sm focus:outline-none transition-all ${
                     fieldErrors.name
                       ? "border-red-500 ring-2 ring-red-200"
-                      : "border-slate-300 focus:ring-2 focus:ring-[#0041b9]"
+                      : "border-slate-300 focus:ring-2 focus:ring-[#059669]"
                   }`}
                 />
                 {fieldErrors.name && (
@@ -433,7 +433,7 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
                   className={`w-full px-4 py-2.5 rounded-lg border bg-white text-slate-900 text-sm focus:outline-none transition-all ${
                     fieldErrors.email
                       ? "border-red-500 ring-2 ring-red-200"
-                      : "border-slate-300 focus:ring-2 focus:ring-[#0041b9]"
+                      : "border-slate-300 focus:ring-2 focus:ring-[#059669]"
                   }`}
                 />
                 {fieldErrors.email && (
@@ -456,7 +456,7 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
                   className={`w-full px-4 py-2.5 rounded-lg border bg-white text-slate-900 text-sm focus:outline-none transition-all font-mono ${
                     fieldErrors.phone
                       ? "border-red-500 ring-2 ring-red-200"
-                      : "border-slate-300 focus:ring-2 focus:ring-[#0041b9]"
+                      : "border-slate-300 focus:ring-2 focus:ring-[#059669]"
                   }`}
                 />
                 {fieldErrors.phone && (
@@ -475,7 +475,7 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
                   className={`w-full px-4 py-2.5 rounded-lg border bg-white text-slate-900 text-sm focus:outline-none transition-all ${
                     fieldErrors.dob
                       ? "border-red-500 ring-2 ring-red-200"
-                      : "border-slate-300 focus:ring-2 focus:ring-[#0041b9]"
+                      : "border-slate-300 focus:ring-2 focus:ring-[#059669]"
                   }`}
                 />
                 {fieldErrors.dob && (
@@ -490,7 +490,7 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
                 <select
                   value={formData.ward}
                   onChange={(e) => handleFieldChange("ward", e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-lg border border-slate-300 bg-white text-slate-900 text-sm focus:ring-2 focus:ring-[#0041b9] focus:outline-none transition-all"
+                  className="w-full px-4 py-2.5 rounded-lg border border-slate-300 bg-white text-slate-900 text-sm focus:ring-2 focus:ring-[#059669] focus:outline-none transition-all"
                 >
                   <option value="Ward 51">Ward 51</option>
                   <option value="Ward 54">Ward 54</option>
@@ -507,7 +507,7 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
               <select
                 value={formData.speciality}
                 onChange={(e) => handleFieldChange("speciality", e.target.value)}
-                className="w-full px-4 py-2.5 rounded-lg border border-slate-300 bg-white text-slate-900 text-sm focus:ring-2 focus:ring-[#0041b9] focus:outline-none transition-all"
+                className="w-full px-4 py-2.5 rounded-lg border border-slate-300 bg-white text-slate-900 text-sm focus:ring-2 focus:ring-[#059669] focus:outline-none transition-all"
               >
                 <option value="Right-hand batsman">Right-hand batsman</option>
                 <option value="Left-hand batsman">Left-hand batsman</option>
@@ -529,7 +529,7 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
                   value={formData.tshirtSize}
                   onChange={(e) => handleFieldChange("tshirtSize", e.target.value)}
                   className={`w-full px-3.5 py-2.5 rounded-lg border bg-white text-slate-900 text-sm focus:outline-none transition-all ${
-                    fieldErrors.tshirtSize ? "border-red-500 ring-2 ring-red-200" : "border-slate-300 focus:ring-2 focus:ring-[#0041b9]"
+                    fieldErrors.tshirtSize ? "border-red-500 ring-2 ring-red-200" : "border-slate-300 focus:ring-2 focus:ring-[#059669]"
                   }`}
                 >
                   <option disabled>—Please choose an option—</option>
@@ -552,7 +552,7 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
                   value={formData.trackSize}
                   onChange={(e) => handleFieldChange("trackSize", e.target.value)}
                   className={`w-full px-3.5 py-2.5 rounded-lg border bg-white text-slate-900 text-sm focus:outline-none transition-all ${
-                    fieldErrors.trackSize ? "border-red-500 ring-2 ring-red-200" : "border-slate-300 focus:ring-2 focus:ring-[#0041b9]"
+                    fieldErrors.trackSize ? "border-red-500 ring-2 ring-red-200" : "border-slate-300 focus:ring-2 focus:ring-[#059669]"
                   }`}
                 >
                   <option disabled>—Please choose an option—</option>
@@ -575,10 +575,10 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
                   Aadhar Card Front <span className="text-red-500">*</span>
                 </label>
                 <label className={`flex items-center gap-2.5 px-3 py-2 rounded-lg border bg-white hover:bg-slate-50/70 cursor-pointer transition-all ${
-                  fieldErrors.aadhaarFront ? "border-red-500 ring-2 ring-red-200" : "border-slate-300 hover:border-[#0041b9]"
+                  fieldErrors.aadhaarFront ? "border-red-500 ring-2 ring-red-200" : "border-slate-300 hover:border-[#059669]"
                 }`}>
                   <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 text-slate-700 text-xs font-semibold border border-slate-200">
-                    <UploadCloud className="w-3.5 h-3.5 text-[#0041b9]" />
+                    <UploadCloud className="w-3.5 h-3.5 text-[#059669]" />
                     <span>Choose file</span>
                   </div>
                   <span className="text-xs text-slate-500 truncate flex-1">
@@ -601,10 +601,10 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
                   Aadhar Card Back <span className="text-red-500">*</span>
                 </label>
                 <label className={`flex items-center gap-2.5 px-3 py-2 rounded-lg border bg-white hover:bg-slate-50/70 cursor-pointer transition-all ${
-                  fieldErrors.aadhaarBack ? "border-red-500 ring-2 ring-red-200" : "border-slate-300 hover:border-[#0041b9]"
+                  fieldErrors.aadhaarBack ? "border-red-500 ring-2 ring-red-200" : "border-slate-300 hover:border-[#059669]"
                 }`}>
                   <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 text-slate-700 text-xs font-semibold border border-slate-200">
-                    <UploadCloud className="w-3.5 h-3.5 text-[#0041b9]" />
+                    <UploadCloud className="w-3.5 h-3.5 text-[#059669]" />
                     <span>Choose file</span>
                   </div>
                   <span className="text-xs text-slate-500 truncate flex-1">
@@ -686,7 +686,7 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
                     className={`w-full px-4 py-2.5 rounded-lg border bg-white font-mono text-slate-900 text-sm focus:outline-none transition-all ${
                       fieldErrors.utrNumber
                         ? "border-red-500 ring-2 ring-red-200"
-                        : "border-slate-300 focus:ring-2 focus:ring-[#0041b9]"
+                        : "border-slate-300 focus:ring-2 focus:ring-[#059669]"
                     }`}
                   />
                   {fieldErrors.utrNumber && (
@@ -700,10 +700,10 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
                     Upload Screenshot here after successful payment <span className="text-red-500">*</span>
                   </label>
                   <label className={`flex items-center gap-2.5 px-3 py-2 rounded-lg border bg-white hover:bg-slate-50/70 cursor-pointer transition-all ${
-                    fieldErrors.paymentProof ? "border-red-500 ring-2 ring-red-200" : "border-slate-300 hover:border-[#0041b9]"
+                    fieldErrors.paymentProof ? "border-red-500 ring-2 ring-red-200" : "border-slate-300 hover:border-[#059669]"
                   }`}>
                     <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 text-slate-700 text-xs font-semibold border border-slate-200">
-                      <UploadCloud className="w-3.5 h-3.5 text-[#0041b9]" />
+                      <UploadCloud className="w-3.5 h-3.5 text-[#059669]" />
                       <span>Choose file</span>
                     </div>
                     <span className="text-xs text-slate-500 truncate flex-1">
@@ -725,7 +725,7 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="w-full mt-4 bg-[#0041b9] hover:bg-[#003399] disabled:bg-slate-400 text-white font-bold py-3.5 px-6 rounded-lg text-base shadow-md transition-all active:scale-98 cursor-pointer disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="w-full mt-4 bg-[#059669] hover:bg-[#047857] disabled:bg-slate-400 text-white font-bold py-3.5 px-6 rounded-lg text-base shadow-md transition-all active:scale-98 cursor-pointer disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {submitting ? (
                     <>

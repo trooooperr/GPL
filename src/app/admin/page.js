@@ -221,9 +221,20 @@ export default function AdminDashboard() {
       });
       const data = await res.json();
       if (data.success) {
+        if (newStatus === "Rejected") {
+          setPlayers(prev => prev.map(p => p.id === playerId ? { ...p, paymentStatus: "Rejected", teamId: null } : p));
+        } else if (newStatus === "Approved") {
+          setPlayers(prev => prev.map(p => p.id === playerId ? { ...p, paymentStatus: "Approved" } : p));
+        }
         await refreshData();
-        if (inspectPlayer && inspectPlayer.id === playerId) setInspectPlayer(null);
-        showToast(`Registration marked as ${newStatus}!`, "success");
+        if (inspectPlayer && inspectPlayer.id === playerId) {
+          if (newStatus === "Rejected") {
+            setInspectPlayer(null);
+          } else {
+            setInspectPlayer(prev => prev ? { ...prev, paymentStatus: newStatus } : null);
+          }
+        }
+        showToast(`Registration marked as ${newStatus}!${newStatus === "Rejected" ? " Removed from team." : ""}`, "success");
       } else {
         showToast(data.error || "Failed to update status", "error");
       }
@@ -836,9 +847,9 @@ export default function AdminDashboard() {
             {/* Mobile Player Cards View (< lg) */}
             <div className="block lg:hidden space-y-3">
               {filteredPlayers.length > 0 ? (
-                filteredPlayers.map((player) => (
+                filteredPlayers.map((player, idx) => (
                   <div
-                    key={player.id}
+                    key={player.id || idx}
                     className="bg-white rounded-xl sm:rounded-2xl border border-slate-200 p-4 shadow-xs space-y-3"
                   >
                     {/* Top Row: Name, Reg ID & Status */}
@@ -936,8 +947,8 @@ export default function AdminDashboard() {
                         className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-semibold text-slate-700"
                       >
                         <option value="">— Unassigned (Auction Pool) —</option>
-                        {teams.map((t) => (
-                          <option key={t.id} value={t.id}>
+                        {teams.map((t, tIdx) => (
+                          <option key={t.id || tIdx} value={t.id}>
                             {t.name} ({t.shortCode})
                           </option>
                         ))}
@@ -1088,8 +1099,8 @@ export default function AdminDashboard() {
                                 className="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50 text-xs font-semibold text-slate-700"
                               >
                                 <option value="">— Unassigned —</option>
-                                {teams.map((t) => (
-                                  <option key={t.id} value={t.id}>
+                                {teams.map((t, tIdx) => (
+                                  <option key={t.id || tIdx} value={t.id}>
                                     {t.name}
                                   </option>
                                 ))}
@@ -1548,7 +1559,7 @@ export default function AdminDashboard() {
             </div>
 
             <div className="space-y-2.5 max-h-[600px] overflow-y-auto pr-1">
-              {logs.map((log) => {
+              {logs.map((log, lIdx) => {
                 const isApproval = log.action === "STATUS_UPDATED" && log.details?.status === "Approved";
                 const isReject = log.action === "STATUS_UPDATED" && log.details?.status === "Rejected";
                 const isDelete = log.action?.includes("DELETED");
@@ -1571,7 +1582,7 @@ export default function AdminDashboard() {
 
                 return (
                   <div
-                    key={log.id}
+                    key={log.id || log._id || lIdx}
                     className="p-3 rounded-xl bg-slate-50 hover:bg-slate-100/70 border border-slate-100 transition-all space-y-1.5 text-xs"
                   >
                     <div className="flex items-center justify-between gap-2 flex-wrap">
@@ -1597,7 +1608,7 @@ export default function AdminDashboard() {
       {/* MODAL: INSPECT PLAYER FULL DETAILS */}
       {/* ========================================================================= */}
       {inspectPlayer && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
+        <div className="fixed inset-0 z-[80] bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
           <div className="bg-white rounded-2xl sm:rounded-3xl max-w-lg w-full p-4 sm:p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto space-y-4 animate-scaleUp">
             
             <button
@@ -1704,7 +1715,7 @@ export default function AdminDashboard() {
       {/* MODAL: FULL-SCREEN IMAGE ZOOM LIGHTBOX */}
       {/* ========================================================================= */}
       {fullScreenImage && (
-        <div className="fixed inset-0 z-60 bg-black/90 backdrop-blur-md flex flex-col items-center justify-center p-3 sm:p-4">
+        <div className="fixed inset-0 z-[95] bg-black/90 backdrop-blur-md flex flex-col items-center justify-center p-3 sm:p-4">
           
           <div className="w-full max-w-5xl flex items-center justify-between text-white mb-2 sm:mb-4 px-2">
             <span className="text-xs sm:text-base font-bold truncate pr-4">{fullScreenImage.title}</span>
@@ -1732,7 +1743,7 @@ export default function AdminDashboard() {
       {/* MODAL: EDIT PLAYER DETAILS */}
       {/* ========================================================================= */}
       {editPlayer && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
+        <div className="fixed inset-0 z-[70] bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
           <div className="bg-white rounded-2xl max-w-md w-full p-4 sm:p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto space-y-4">
             
             <button

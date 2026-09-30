@@ -1,7 +1,7 @@
 import nodemailer from "nodemailer";
 import fs from "fs";
 import path from "path";
-import { db } from "./db.js";
+// removed db import for serverless reliability
 
 const LOGS_FILE = path.join(process.cwd(), "data", "email_logs.json");
 
@@ -62,9 +62,7 @@ function getTransporter() {
 }
 
 export function getAdminContactEmail() {
-  const settings = db.getSettings();
   return (
-    settings.adminEmail ||
     process.env.ADMIN_NOTIFICATION_EMAIL ||
     process.env.GMAIL_USER ||
     "goregaonpremierleague11@gmail.com"

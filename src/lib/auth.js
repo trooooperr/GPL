@@ -1,41 +1,28 @@
 import jwt from "jsonwebtoken";
-import bcrypt from "bcryptjs";
 import crypto from "crypto";
-import { db } from "./db.js";
 
 const JWT_SECRET = process.env.JWT_SECRET || process.env.SESSION_SECRET || "gpl_tournament_super_secret_jwt_key_2026_x89a!";
 export const COOKIE_NAME = "gpl_admin_jwt";
 
 /**
- * Validates admin credentials securely against database settings and env variables
+ * Validates admin credentials against env variables
  */
 export async function authenticateAdmin(username, password) {
   if (!username || !password) return false;
 
-  const settings = db.getSettings();
-  const configuredUser = (settings.adminUsername || process.env.ADMIN_USERNAME || "admin").trim().toLowerCase();
-  const configuredPass = settings.adminPassword || process.env.ADMIN_PASSWORD || "gpl2026admin";
+  const configuredUser = (process.env.ADMIN_USERNAME || "admin").trim().toLowerCase();
+  const configuredPass = process.env.ADMIN_PASSWORD || "admin123";
 
   const userValid = username.trim().toLowerCase() === configuredUser;
   if (!userValid) return false;
 
-  // Permitted valid passwords: the dynamic configured password, plus standard fallbacks
-  const candidates = [configuredPass, "gpl2026admin", "GPL@Admin2026", "admin123"];
-  if (process.env.ADMIN_PASSWORD) candidates.push(process.env.ADMIN_PASSWORD);
-
-  for (const candidate of candidates) {
-    if (!candidate) continue;
-    if (candidate.startsWith("$2a$") || candidate.startsWith("$2b$")) {
-      if (await bcrypt.compare(password, candidate)) return true;
-    } else {
-      try {
-        const a = Buffer.from(password);
-        const b = Buffer.from(candidate);
-        if (a.length === b.length && crypto.timingSafeEqual(a, b)) return true;
-      } catch {
-        if (password === candidate) return true;
-      }
-    }
+  // Check password
+  try {
+    const a = Buffer.from(password);
+    const b = Buffer.from(configuredPass);
+    if (a.length === b.length && crypto.timingSafeEqual(a, b)) return true;
+  } catch {
+    if (password === configuredPass) return true;
   }
 
   return false;

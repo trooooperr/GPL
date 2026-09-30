@@ -83,7 +83,7 @@ export default function VerificationCaptcha({ isOpen, onClose, onSuccess }) {
         {/* Top Header */}
         <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-blue-50 text-[#0041b9] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-blue-50 text-[#059669] flex items-center justify-center">
               <ShieldCheck className="w-5 h-5" />
             </div>
             <div>
@@ -221,7 +221,7 @@ export default function VerificationCaptcha({ isOpen, onClose, onSuccess }) {
                 ? "bg-emerald-600 ring-2 ring-emerald-300"
                 : status === "failed"
                 ? "bg-red-600"
-                : "bg-[#0041b9] hover:bg-[#003399]"
+                : "bg-[#059669] hover:bg-[#047857]"
             }`}
             style={{
               left: `calc(${sliderVal}% - ${sliderVal * 0.44}px)`,

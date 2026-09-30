@@ -25,14 +25,14 @@ export default function Hero() {
             <div className="pt-1 sm:pt-2 flex items-center gap-3 sm:gap-4">
               <button
                 onClick={() => setShowModal(true)}
-                className="bg-[#0041b9] hover:bg-[#003399] text-white px-5 sm:px-7 py-2.5 sm:py-3 rounded-lg text-xs sm:text-sm font-semibold transition-all shadow-sm hover:shadow active:scale-98"
+                className="bg-[#059669] hover:bg-[#047857] text-white px-5 sm:px-7 py-2.5 sm:py-3 rounded-lg text-xs sm:text-sm font-semibold transition-all shadow-sm hover:shadow active:scale-98"
               >
                 Read More...
               </button>
 
               <a
                 href="#register"
-                className="text-[#0041b9] hover:underline font-bold text-xs sm:text-sm flex items-center gap-1.5 transition-colors"
+                className="text-[#059669] hover:underline font-bold text-xs sm:text-sm flex items-center gap-1.5 transition-colors"
               >
                 <span>Register Player</span>
                 <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />

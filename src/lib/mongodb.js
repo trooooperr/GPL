@@ -2,9 +2,6 @@ import mongoose from "mongoose";
 
 const MONGODB_URI = process.env.MONGODB_URI;
 
-// Disable Mongoose query buffering globally to prevent 10s black hole timeouts
-mongoose.set("bufferCommands", false);
-
 let cached = global.mongoose;
 
 if (!cached) {
@@ -13,8 +10,7 @@ if (!cached) {
 
 export async function connectToDatabase() {
   if (!MONGODB_URI) {
-    console.warn("[MongoDB] No MONGODB_URI provided in environment.");
-    return null;
+    throw new Error("[MongoDB] No MONGODB_URI provided in environment.");
   }
 
   // If already connected and ready, return existing connection
@@ -23,41 +19,37 @@ export async function connectToDatabase() {
   }
 
   // If currently connecting, wait for it
-  if (mongoose.connection && mongoose.connection.readyState === 2 && cached.promise) {
+  if (cached.promise) {
     try {
-      await cached.promise;
-      return mongoose;
+      cached.conn = await cached.promise;
+      if (mongoose.connection.readyState === 1) return cached.conn;
     } catch (e) {
       cached.promise = null;
     }
   }
 
-  // Clear stale connection cache
-  cached.conn = null;
-  cached.promise = null;
-
   const opts = {
-    bufferCommands: false, // Never buffer commands if disconnected
-    serverSelectionTimeoutMS: 3000, // Fast 3s timeout
-    connectTimeoutMS: 3000,
-    socketTimeoutMS: 5000,
+    bufferCommands: true,  // Allow buffering so operations wait for connection
+    serverSelectionTimeoutMS: 10000, // 10s for Vercel cold starts
+    connectTimeoutMS: 10000,
+    socketTimeoutMS: 30000,
     maxPoolSize: 10,
   };
 
   try {
     cached.promise = mongoose.connect(MONGODB_URI, opts);
     cached.conn = await cached.promise;
-    console.log("[MongoDB] Connected successfully to Atlas cluster");
+    console.log("[MongoDB] Connected successfully");
     return cached.conn;
   } catch (err) {
-    console.error("[MongoDB Connect Warning]:", err.message);
+    console.error("[MongoDB Connect Error]:", err.message);
     cached.promise = null;
     cached.conn = null;
-    return null;
+    throw err; // Throw so callers know it failed
   }
 }
 
-const schemaOptions = { timestamps: true, bufferCommands: false };
+const schemaOptions = { timestamps: true };
 
 // Mongoose Schemas
 const RegistrationSchema = new mongoose.Schema({

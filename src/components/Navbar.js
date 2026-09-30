@@ -56,7 +56,7 @@ export default function Navbar() {
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <span className="text-base sm:text-lg font-black text-[#081a36] tracking-tight group-hover:text-[#0041b9] transition-colors">
+                <span className="text-base sm:text-lg font-black text-[#081a36] tracking-tight group-hover:text-[#059669] transition-colors">
                   Goregaon Premier League
                 </span>
               </div>
@@ -75,7 +75,7 @@ export default function Navbar() {
             <a
               key={link.name}
               href={link.href}
-              className="px-4 py-1.5 rounded-full text-xs sm:text-[13px] font-bold text-slate-700 hover:text-[#0041b9] hover:bg-white transition-all duration-200"
+              className="px-4 py-1.5 rounded-full text-xs sm:text-[13px] font-bold text-slate-700 hover:text-[#059669] hover:bg-white transition-all duration-200"
             >
               {link.name}
             </a>
@@ -86,7 +86,7 @@ export default function Navbar() {
         <div className="hidden sm:flex items-center gap-3">
           <a
             href="#register"
-            className="inline-flex items-center gap-2 bg-[#0041b9] hover:bg-[#003399] text-white px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold shadow-sm hover:shadow-md transition-all duration-200 active:scale-95"
+            className="inline-flex items-center gap-2 bg-[#059669] hover:bg-[#047857] text-white px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold shadow-sm hover:shadow-md transition-all duration-200 active:scale-95"
           >
             <span>Register Now</span>
             <ArrowRight className="w-4 h-4" />
@@ -97,7 +97,7 @@ export default function Navbar() {
         <div className="flex items-center gap-2 lg:hidden">
           <a
             href="#register"
-            className="bg-[#0041b9] hover:bg-[#003399] text-white px-3.5 py-1.5 rounded-lg text-xs font-bold shadow-sm active:scale-95 transition-all"
+            className="bg-[#059669] hover:bg-[#047857] text-white px-3.5 py-1.5 rounded-lg text-xs font-bold shadow-sm active:scale-95 transition-all"
           >
             Register
           </a>
@@ -122,7 +122,7 @@ export default function Navbar() {
                 key={link.name}
                 href={link.href}
                 onClick={() => setIsOpen(false)}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-700 hover:text-[#0041b9] hover:bg-slate-50 font-bold text-sm transition-colors"
+                className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-700 hover:text-[#059669] hover:bg-slate-50 font-bold text-sm transition-colors"
               >
                 <Icon className="w-4 h-4 text-slate-400" />
                 <span>{link.name}</span>
@@ -133,7 +133,7 @@ export default function Navbar() {
             <a
               href="#register"
               onClick={() => setIsOpen(false)}
-              className="w-full flex items-center justify-center gap-2 bg-[#0041b9] hover:bg-[#003399] text-white py-3 rounded-xl text-sm font-bold shadow-sm"
+              className="w-full flex items-center justify-center gap-2 bg-[#059669] hover:bg-[#047857] text-white py-3 rounded-xl text-sm font-bold shadow-sm"
             >
               <span>Register Now</span>
               <ArrowRight className="w-4 h-4" />

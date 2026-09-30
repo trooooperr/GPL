@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { connectToDatabase, MongoRegistration, MongoTeam, MongoSetting } from "@/lib/mongodb";
-import { INITIAL_SETTINGS } from "@/lib/db";
+import { INITIAL_SETTINGS } from "@/lib/constants";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;

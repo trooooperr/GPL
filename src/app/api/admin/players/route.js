@@ -77,6 +77,7 @@ export async function GET(request) {
     const stats = await getCalculatedStats(mapped);
     return NextResponse.json({ success: true, players: mapped, stats }, { headers: NO_CACHE_HEADERS });
   } catch (e) {
+    console.error("[Admin Players GET Error]:", e.message);
     return NextResponse.json({ success: false, error: e.message }, { status: 500, headers: NO_CACHE_HEADERS });
   }
 }
@@ -126,6 +127,13 @@ export async function POST(request) {
     if (action === "edit" && id && playerData) {
       const cleanPlayerData = { ...playerData };
       delete cleanPlayerData._id;
+      
+      // If paymentStatus is set to Rejected, automatically remove from team
+      if (cleanPlayerData.paymentStatus && cleanPlayerData.paymentStatus.toLowerCase() === "rejected") {
+        await MongoTeam.updateMany({}, { $pull: { members: id } });
+        cleanPlayerData.teamId = null;
+      }
+
       const old = await MongoRegistration.findOne({ id }).lean();
       await MongoRegistration.findOneAndUpdate({ id }, { $set: cleanPlayerData });
       const updated = await MongoRegistration.findOne({ id }).lean();
@@ -146,11 +154,18 @@ export async function POST(request) {
 
     // 4. UPDATE STATUS (Approve / Reject / Pending)
     if (id && status) {
+      const isRejected = status.toLowerCase() === "rejected";
+      
+      // If status is Rejected, automatically remove player from any team
+      if (isRejected) {
+        await MongoTeam.updateMany({}, { $pull: { members: id } });
+      }
+
       const old = await MongoRegistration.findOne({ id }).lean();
       const historyEntry = {
         timestamp: new Date().toISOString(),
         action: `STATUS_CHANGE_${status.toUpperCase()}`,
-        notes: notes || `Status updated to ${status}`
+        notes: notes || `Status updated to ${status}${isRejected ? " (Removed from team)" : ""}`
       };
 
       await MongoRegistration.findOneAndUpdate(
@@ -158,7 +173,8 @@ export async function POST(request) {
         {
           $set: {
             paymentStatus: status,
-            notes: notes !== undefined ? notes : (old?.notes || "")
+            notes: notes !== undefined ? notes : (old?.notes || ""),
+            ...(isRejected ? { teamId: null } : {})
           },
           $push: { history: historyEntry }
         }
@@ -178,6 +194,7 @@ export async function POST(request) {
 
     return NextResponse.json({ success: false, error: "Invalid action" }, { status: 400, headers: NO_CACHE_HEADERS });
   } catch (e) {
+    console.error("[Admin Players POST Error]:", e.message);
     return NextResponse.json({ success: false, error: e.message }, { status: 500, headers: NO_CACHE_HEADERS });
   }
 }

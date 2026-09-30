@@ -1,9 +1,12 @@
 @import "tailwindcss";
 
 :root {
-  --primary: #0041b9;
-  --bg-light: #f6f8f6;
-  --bg-dark: #081a36;
+  --primary: #047857;
+  --primary-hover: #065f46;
+  --accent-gold: #f59e0b;
+  --accent-gold-hover: #d97706;
+  --bg-light: #f8fafc;
+  --bg-dark: #0f172a;
 }
 
 html {

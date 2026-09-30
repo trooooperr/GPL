@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { verifyAuthCookie } from "@/lib/auth";
 import { connectToDatabase, MongoSetting } from "@/lib/mongodb";
-import { INITIAL_SETTINGS, db } from "@/lib/db";
+import { INITIAL_SETTINGS } from "@/lib/constants";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -24,6 +24,7 @@ export async function GET(request) {
     const settings = { ...INITIAL_SETTINGS, ...(doc?.value || {}) };
     return NextResponse.json({ success: true, settings }, { headers: NO_CACHE_HEADERS });
   } catch (e) {
+    console.error("[Admin Settings GET Error]:", e.message);
     return NextResponse.json({ success: false, error: e.message }, { status: 500, headers: NO_CACHE_HEADERS });
   }
 }
@@ -46,12 +47,9 @@ export async function POST(request) {
       { upsert: true }
     );
 
-    if (db) {
-      db.settings = merged;
-    }
-
     return NextResponse.json({ success: true, settings: merged }, { headers: NO_CACHE_HEADERS });
   } catch (e) {
+    console.error("[Admin Settings POST Error]:", e.message);
     return NextResponse.json({ success: false, error: e.message }, { status: 500, headers: NO_CACHE_HEADERS });
   }
 }

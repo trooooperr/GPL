@@ -1,19 +1,15 @@
 import { NextResponse } from "next/server";
 import crypto from "crypto";
-import { db, dbReady } from "@/lib/db.js";
 import { sendAdminPasswordResetOtp, getAdminContactEmail } from "@/lib/email.js";
 import { rateLimiter, getClientIp } from "@/lib/rate-limit.js";
 
 export const dynamic = "force-dynamic";
 
-// In-memory OTP store (works on both local and Vercel serverless)
-// On Vercel, each invocation shares the same module scope within a warm function
 if (!global.__gplOtpStore) {
   global.__gplOtpStore = {};
 }
 
 export async function POST(request) {
-  await dbReady;
   try {
     const clientIp = getClientIp(request);
     const limitStatus = rateLimiter.check(`admin_forgot_pw_${clientIp}`, 4, 600);

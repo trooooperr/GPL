@@ -71,7 +71,7 @@ export default function TeamsGrid({ teams = [] }) {
                 <div>
                   <h3 className="text-base sm:text-lg font-bold text-slate-900 leading-snug">{selectedTeam.name}</h3>
                   <p className="text-xs text-slate-500 font-mono">
-                    Code: <span className="text-[#0041b9] font-bold">{selectedTeam.shortCode}</span>
+                    Code: <span className="text-[#059669] font-bold">{selectedTeam.shortCode}</span>
                   </p>
                 </div>
               </div>
@@ -90,12 +90,12 @@ export default function TeamsGrid({ teams = [] }) {
 
               {/* Squad Registered Players Count: Clean balanced border radius and flex layout */}
               <div className="space-y-3 mb-4 sm:mb-5">
-                <div className="flex items-center justify-between p-2.5 sm:p-3 rounded-xl bg-blue-50 border border-blue-100 gap-2">
+                <div className="flex items-center justify-between p-2.5 sm:p-3 rounded-xl bg-emerald-50 border border-blue-100 gap-2">
                   <div className="flex items-center gap-2 shrink-0">
-                    <Users className="w-4 h-4 text-[#0041b9] shrink-0" />
+                    <Users className="w-4 h-4 text-[#059669] shrink-0" />
                     <span className="text-xs font-bold text-[#081a36]">Registered Squad</span>
                   </div>
-                  <span className="text-[11px] sm:text-xs font-bold font-mono px-2.5 py-1 rounded-lg bg-[#0041b9] text-white whitespace-nowrap shrink-0 shadow-sm">
+                  <span className="text-[11px] sm:text-xs font-bold font-mono px-2.5 py-1 rounded-lg bg-[#059669] text-white whitespace-nowrap shrink-0 shadow-sm">
                     {selectedTeam.memberDetails ? selectedTeam.memberDetails.length : (selectedTeam.members ? selectedTeam.members.length : 0)} / 14 Players
                   </span>
                 </div>
@@ -114,7 +114,7 @@ export default function TeamsGrid({ teams = [] }) {
                             <div className="text-[10px] text-slate-500">{player.speciality} • {player.ward}</div>
                           </div>
                         </div>
-                        <span className="text-[10px] font-mono font-bold text-[#0041b9] bg-blue-50 px-1.5 py-0.5 rounded">
+                        <span className="text-[10px] font-mono font-bold text-[#059669] bg-emerald-50 px-1.5 py-0.5 rounded">
                           {player.tshirtSize}
                         </span>
                       </div>

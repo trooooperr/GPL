@@ -5,7 +5,7 @@ import {
   MongoRule,
   MongoSetting
 } from "@/lib/mongodb";
-import { INITIAL_TEAMS, INITIAL_RULES, INITIAL_SETTINGS } from "@/lib/db";
+import { INITIAL_TEAMS, INITIAL_RULES, INITIAL_SETTINGS } from "@/lib/constants";
 import Navbar from "@/components/Navbar";
 import BannerCarousel from "@/components/BannerCarousel";
 import Hero from "@/components/Hero";
@@ -53,75 +53,74 @@ export default async function Home() {
   };
 
   try {
-    const conn = await connectToDatabase();
-    if (conn) {
-      const [mongoTeams, mongoRegs, ruleDoc, settingDoc] = await Promise.all([
-        MongoTeam.find().lean(),
-        MongoRegistration.find().lean(),
-        MongoRule.findOne().lean(),
-        MongoSetting.findOne({ key: "global_settings" }).lean(),
-      ]);
+    await connectToDatabase();
 
-      if (settingDoc && settingDoc.value) {
-        settings = { ...INITIAL_SETTINGS, ...settingDoc.value };
-      }
+    const [mongoTeams, mongoRegs, ruleDoc, settingDoc] = await Promise.all([
+      MongoTeam.find().lean(),
+      MongoRegistration.find().lean(),
+      MongoRule.findOne().lean(),
+      MongoSetting.findOne({ key: "global_settings" }).lean(),
+    ]);
 
-      if (ruleDoc && ruleDoc.rules && Array.isArray(ruleDoc.rules) && ruleDoc.rules.length > 0) {
-        rules = ruleDoc.rules;
-      }
-
-      const regs = mongoRegs || [];
-
-      if (mongoTeams && mongoTeams.length > 0) {
-        teams = mongoTeams.map((t) => ({
-          id: t.id,
-          name: t.name,
-          shortCode: t.shortCode,
-          owner: t.owner,
-          captain: t.captain,
-          established: t.established || "2024",
-          championships: t.championships || 0,
-          logo: t.logo || "/images/teams/team-csk.png",
-          members: t.members || [],
-          memberDetails: (t.members || [])
-            .map((mid) => regs.find((r) => r.id === mid))
-            .filter(Boolean)
-            .map((r) => ({
-              id: r.id,
-              name: r.name,
-              speciality: r.speciality,
-              ward: r.ward,
-              tshirtSize: r.tshirtSize
-            }))
-        }));
-      }
-
-      const total = regs.length;
-      const approved = regs.filter((p) => p.paymentStatus === "Approved").length;
-      const rejected = regs.filter((p) => p.paymentStatus === "Rejected").length;
-      const pending = regs.filter((p) => p.paymentStatus === "Pending").length;
-      const cap = settings.maxCapacity || (teams.length * 14);
-
-      stats = {
-        totalRegistrations: total,
-        totalRegistered: total,
-        approved,
-        rejected,
-        pending,
-        available: Math.max(0, cap - approved),
-        remainingSlots: Math.max(0, cap - approved),
-        totalTeams: teams.length,
-        maxCapacity: cap,
-        registrationFee: settings.registrationFee || 100,
-        upiId: settings.upiId || "shahbazkhandm@okhdfcbank"
-      };
+    if (settingDoc && settingDoc.value) {
+      settings = { ...INITIAL_SETTINGS, ...settingDoc.value };
     }
+
+    if (ruleDoc && ruleDoc.rules && Array.isArray(ruleDoc.rules) && ruleDoc.rules.length > 0) {
+      rules = ruleDoc.rules;
+    }
+
+    const regs = mongoRegs || [];
+
+    if (mongoTeams && mongoTeams.length > 0) {
+      teams = mongoTeams.map((t) => ({
+        id: t.id,
+        name: t.name,
+        shortCode: t.shortCode,
+        owner: t.owner,
+        captain: t.captain,
+        established: t.established || "2024",
+        championships: t.championships || 0,
+        logo: t.logo || "/images/teams/team-csk.png",
+        members: t.members || [],
+        memberDetails: (t.members || [])
+          .map((mid) => regs.find((r) => r.id === mid))
+          .filter(Boolean)
+          .map((r) => ({
+            id: r.id,
+            name: r.name,
+            speciality: r.speciality,
+            ward: r.ward,
+            tshirtSize: r.tshirtSize
+          }))
+      }));
+    }
+
+    const total = regs.length;
+    const approved = regs.filter((p) => p.paymentStatus === "Approved").length;
+    const rejected = regs.filter((p) => p.paymentStatus === "Rejected").length;
+    const pending = regs.filter((p) => p.paymentStatus === "Pending").length;
+    const cap = settings.maxCapacity || (teams.length * 14);
+
+    stats = {
+      totalRegistrations: total,
+      totalRegistered: total,
+      approved,
+      rejected,
+      pending,
+      available: Math.max(0, cap - approved),
+      remainingSlots: Math.max(0, cap - approved),
+      totalTeams: teams.length,
+      maxCapacity: cap,
+      registrationFee: settings.registrationFee || 100,
+      upiId: settings.upiId || "shahbazkhandm@okhdfcbank"
+    };
   } catch (e) {
     console.error("[Home Page MongoDB Error]:", e.message);
   }
 
   return (
-    <main className="min-h-screen bg-[#f6f8f6] font-sans antialiased text-slate-900">
+    <main className="min-h-screen bg-gradient-to-b from-[#0a0e1a] via-[#0d1526] to-[#111b2e] font-sans antialiased text-white">
       <Navbar settings={settings} />
       <BannerCarousel />
       <Hero stats={stats} settings={settings} />

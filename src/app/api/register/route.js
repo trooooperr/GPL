@@ -2,12 +2,11 @@ import { NextResponse } from "next/server";
 import { rateLimiter, getClientIp } from "@/lib/rate-limit";
 import { sendRegistrationNotificationEmail } from "@/lib/email";
 import { connectToDatabase, MongoRegistration, MongoSetting } from "@/lib/mongodb";
-import { db, INITIAL_SETTINGS } from "@/lib/db";
+import { INITIAL_SETTINGS } from "@/lib/constants";
 import {
   sanitizeText, validatePhone, formatPhone, validateEmail,
   ALLOWED_TSHIRT_SIZES, ALLOWED_TRACK_SIZES, ALLOWED_SPECIALITIES
 } from "@/lib/sanitize";
-import mongoose from "mongoose";
 import crypto from "crypto";
 
 export const dynamic = "force-dynamic";
@@ -110,31 +109,19 @@ export async function POST(request) {
     const aadhaarBackUrl = (await extractImageUrl(bodyData.aadhaarBack)) || "/images/doc-placeholder.svg";
     const paymentProofUrl = (await extractImageUrl(bodyData.paymentProof)) || "/images/payment-placeholder.svg";
 
-    // Fast connection check with 3s timeout
-    const conn = await connectToDatabase();
-    const isMongoReady = conn && mongoose.connection.readyState === 1;
+    // Connect to MongoDB — this MUST succeed for registration to work
+    await connectToDatabase();
 
     let settings = INITIAL_SETTINGS;
-    if (isMongoReady) {
-      try {
-        const settingsDoc = await MongoSetting.findOne({ key: "global_settings" }).lean().catch(() => null);
-        if (settingsDoc && settingsDoc.value) settings = { ...INITIAL_SETTINGS, ...settingsDoc.value };
-      } catch (e) {}
-    } else if (db) {
-      settings = db.getSettings();
+    try {
+      const settingsDoc = await MongoSetting.findOne({ key: "global_settings" }).lean();
+      if (settingsDoc && settingsDoc.value) settings = { ...INITIAL_SETTINGS, ...settingsDoc.value };
+    } catch (e) {
+      console.warn("[Register] Settings fetch error:", e.message);
     }
 
-    let regNumber = "1";
-    try {
-      if (isMongoReady) {
-        const count = await MongoRegistration.countDocuments().catch(() => 0);
-        regNumber = String(count + 1);
-      } else if (db) {
-        regNumber = String(db.getAllRegistrations().length + 1);
-      }
-    } catch (e) {
-      regNumber = String(Date.now()).slice(-4);
-    }
+    const count = await MongoRegistration.countDocuments();
+    const regNumber = String(count + 1);
 
     const id = `GPL-REG-${Date.now()}-${crypto.randomBytes(3).toString("hex")}`;
 
@@ -169,21 +156,12 @@ export async function POST(request) {
       ]
     };
 
-    // Save to Mongo if ready, and always save to memory DB
-    if (isMongoReady) {
-      await MongoRegistration.create(newPlayer).catch((err) => {
-        console.warn("[MongoRegistration.create fallback]:", err.message);
-      });
-    }
-    if (db) {
-      try { db.addRegistration(newPlayer); } catch (e) {}
-    }
+    // Save to MongoDB — await and DO NOT swallow errors
+    await MongoRegistration.create(newPlayer);
+    console.log("[Register] Player saved to MongoDB:", id, name);
 
-    // Send email notification non-blocking with 2s timeout
-    Promise.race([
-      sendRegistrationNotificationEmail(newPlayer),
-      new Promise((_, reject) => setTimeout(() => reject(new Error("Email timeout")), 2000))
-    ]).catch((err) => {
+    // Send email notification non-blocking (fire and forget)
+    sendRegistrationNotificationEmail(newPlayer).catch((err) => {
       console.warn("[Register Email Notice]:", err.message);
     });
 
@@ -208,6 +186,6 @@ export async function POST(request) {
     return NextResponse.json({
       success: false,
       message: error.message || "An unexpected error occurred during registration. Please try again."
-    }, { status: 400, headers: NO_CACHE_HEADERS });
+    }, { status: 500, headers: NO_CACHE_HEADERS });
   }
 }

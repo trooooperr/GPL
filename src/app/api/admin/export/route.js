@@ -1,20 +1,23 @@
 import { NextResponse } from "next/server";
 import { verifyAuthCookie } from "@/lib/auth";
-import { db, dbReady } from "@/lib/db";
+import { connectToDatabase, MongoRegistration, MongoTeam } from "@/lib/mongodb";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export async function GET(request) {
-  await dbReady;
   try {
     const isAuthed = await verifyAuthCookie(request);
     if (!isAuthed) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const players = db.getAllRegistrations();
-    const teams = db.getAllTeams();
-    const teamMap = new Map(teams.map(t => [t.id, t.name]));
+    await connectToDatabase();
+    const [players, teams] = await Promise.all([
+      MongoRegistration.find().lean(),
+      MongoTeam.find().lean()
+    ]);
+    const teamMap = new Map((teams || []).map((t) => [t.id, t.name]));
 
     const headers = [
       "Registration Number",
@@ -38,8 +41,8 @@ export async function GET(request) {
       return `"${val}"`;
     };
 
-    const rows = players.map(p => [
-      escapeCsv(p.id),
+    const rows = (players || []).map((p) => [
+      escapeCsv(p.regNumber || p.id),
       escapeCsv(p.name),
       escapeCsv(p.phone),
       escapeCsv(p.email),
@@ -54,16 +57,16 @@ export async function GET(request) {
       escapeCsv(p.teamId ? (teamMap.get(p.teamId) || p.teamId) : "Unassigned")
     ]);
 
-    const csvContent = "\uFEFF" + [headers.join(","), ...rows.map(r => r.join(","))].join("\r\n");
+    const csvContent = "\uFEFF" + [headers.join(","), ...rows.map((r) => r.join(","))].join("\r\n");
 
     return new NextResponse(csvContent, {
       status: 200,
       headers: {
         "Content-Type": "text/csv; charset=utf-8",
-        "Content-Disposition": "attachment; filename=\"GPL_Player_Roster.csv\""
+        "Content-Disposition": 'attachment; filename="GPL_Player_Roster.csv"'
       }
     });
   } catch (error) {
-    return new NextResponse("Export Failed", { status: 500 });
+    return new NextResponse("Export Failed: " + error.message, { status: 500 });
   }
 }

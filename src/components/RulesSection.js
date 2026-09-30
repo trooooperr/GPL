@@ -25,7 +25,7 @@ export default function RulesSection({ rules = [] }) {
               <div className="space-y-3.5">
                 {rulesList.map((rule, idx) => (
                   <div key={idx} className="flex items-start gap-3">
-                    <div className="text-[#0041b9] shrink-0 mt-0.5">
+                    <div className="text-[#059669] shrink-0 mt-0.5">
                       <Gavel className="w-4 h-4" />
                     </div>
                     <span className="text-[14px] sm:text-[15px] font-medium text-slate-800 leading-snug">

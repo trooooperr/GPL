@@ -78,7 +78,7 @@ export default function PrizesSection({ stats, settings }) {
               {/* Material Symbol Icon */}
               <div className="mb-2.5 sm:mb-4 lg:mb-5">
                 <span
-                  className="material-symbols-outlined text-[24px] sm:text-[28px] lg:text-[30px] text-[#0041b9] font-normal leading-none block select-none"
+                  className="material-symbols-outlined text-[24px] sm:text-[28px] lg:text-[30px] text-[#059669] font-normal leading-none block select-none"
                   style={{ fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24" }}
                 >
                   {item.iconName}
