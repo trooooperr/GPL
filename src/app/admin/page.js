@@ -78,7 +78,7 @@ export default function AdminDashboard() {
 
   const loadAllData = async () => {
     try {
-      const resPlayers = await fetch("/api/admin/players");
+      const resPlayers = await fetch("/api/admin/players", { cache: "no-store" });
       if (resPlayers.status === 401) {
         router.push("/admin/login");
         return;
@@ -89,23 +89,23 @@ export default function AdminDashboard() {
         if (dataPlayers.stats) setStats(dataPlayers.stats);
       }
 
-      const resTeams = await fetch("/api/admin/teams");
+      const resTeams = await fetch("/api/admin/teams", { cache: "no-store" });
       const dataTeams = await resTeams.json();
       if (dataTeams.success) setTeams(dataTeams.teams || []);
 
-      const resSettings = await fetch("/api/admin/settings");
+      const resSettings = await fetch("/api/admin/settings", { cache: "no-store" });
       const dataSettings = await resSettings.json();
       if (dataSettings.success) setSettings(dataSettings.settings || {});
 
-      const resRules = await fetch("/api/admin/rules");
+      const resRules = await fetch("/api/admin/rules", { cache: "no-store" });
       const dataRules = await resRules.json();
       if (dataRules.success) setRules(dataRules.rules || []);
 
-      const resSizing = await fetch("/api/admin/sizing");
+      const resSizing = await fetch("/api/admin/sizing", { cache: "no-store" });
       const dataSizing = await resSizing.json();
       if (dataSizing.success) setSizing(dataSizing.matrix);
 
-      const resLogs = await fetch("/api/admin/logs");
+      const resLogs = await fetch("/api/admin/logs", { cache: "no-store" });
       const dataLogs = await resLogs.json();
       if (dataLogs.success) setLogs(dataLogs.logs || []);
     } catch (err) {
@@ -119,7 +119,7 @@ export default function AdminDashboard() {
     let isMounted = true;
     async function initDashboard() {
       try {
-        const resPlayers = await fetch("/api/admin/players");
+        const resPlayers = await fetch("/api/admin/players", { cache: "no-store" });
         if (resPlayers.status === 401) {
           router.push("/admin/login");
           return;
@@ -130,23 +130,23 @@ export default function AdminDashboard() {
           if (dataPlayers.stats) setStats(dataPlayers.stats);
         }
 
-        const resTeams = await fetch("/api/admin/teams");
+        const resTeams = await fetch("/api/admin/teams", { cache: "no-store" });
         const dataTeams = await resTeams.json();
         if (isMounted && dataTeams.success) setTeams(dataTeams.teams || []);
 
-        const resSettings = await fetch("/api/admin/settings");
+        const resSettings = await fetch("/api/admin/settings", { cache: "no-store" });
         const dataSettings = await resSettings.json();
         if (isMounted && dataSettings.success) setSettings(dataSettings.settings || {});
 
-        const resRules = await fetch("/api/admin/rules");
+        const resRules = await fetch("/api/admin/rules", { cache: "no-store" });
         const dataRules = await resRules.json();
         if (isMounted && dataRules.success) setRules(dataRules.rules || []);
 
-        const resSizing = await fetch("/api/admin/sizing");
+        const resSizing = await fetch("/api/admin/sizing", { cache: "no-store" });
         const dataSizing = await resSizing.json();
         if (isMounted && dataSizing.success) setSizing(dataSizing.matrix);
 
-        const resLogs = await fetch("/api/admin/logs");
+        const resLogs = await fetch("/api/admin/logs", { cache: "no-store" });
         const dataLogs = await resLogs.json();
         if (isMounted && dataLogs.success) setLogs(dataLogs.logs || []);
       } catch (err) {
@@ -188,9 +188,9 @@ export default function AdminDashboard() {
   const refreshData = async () => {
     try {
       const [rPlayers, rTeams, rStats] = await Promise.all([
-        fetch("/api/admin/players").then(r => r.json()),
-        fetch("/api/admin/teams").then(r => r.json()),
-        fetch("/api/stats").then(r => r.json()),
+        fetch("/api/admin/players", { cache: "no-store" }).then(r => r.json()),
+        fetch("/api/admin/teams", { cache: "no-store" }).then(r => r.json()),
+        fetch("/api/stats", { cache: "no-store" }).then(r => r.json()),
       ]);
       if (rPlayers.success) setPlayers(rPlayers.players || []);
       if (rTeams.success) setTeams(rTeams.teams || []);
@@ -327,8 +327,8 @@ export default function AdminDashboard() {
 
   // --- TEAM SAVE & LOGO UPLOAD ---
   const handleSaveTeam = async (e) => {
-    setSavingTeam(true);
     e.preventDefault();
+    setSavingTeam(true);
     try {
       const res = await fetch("/api/admin/teams", {
         method: "POST",
@@ -344,9 +344,13 @@ export default function AdminDashboard() {
         setTeams(data.teams);
         setEditTeam(null);
         showToast("Team saved successfully!", "success");
+      } else {
+        showToast("Failed to save team: " + (data.error || "Unknown error"), "error");
       }
     } catch (err) {
       showToast("Failed to save team: " + err.message, "error");
+    } finally {
+      setSavingTeam(false);
     }
   };
 
@@ -397,8 +401,8 @@ export default function AdminDashboard() {
 
   // --- RULES MANAGER ---
   const handleAddRule = async () => {
-    setSavingRules(true);
     if (!newRuleText.trim()) return;
+    setSavingRules(true);
     const updated = [...rules, newRuleText.trim()];
     try {
       const res = await fetch("/api/admin/rules", {
@@ -410,9 +414,14 @@ export default function AdminDashboard() {
       if (data.success) {
         setRules(data.rules);
         setNewRuleText("");
+        showToast("Rule added successfully!", "success");
+      } else {
+        showToast("Failed to add rule: " + (data.error || "Unknown error"), "error");
       }
     } catch (err) {
       showToast("Failed to add rule: " + err.message, "error");
+    } finally {
+      setSavingRules(false);
     }
   };
 

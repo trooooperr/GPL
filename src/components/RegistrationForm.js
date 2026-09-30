@@ -100,16 +100,68 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
     }
   };
 
-  const handleFileChange = (field, e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        setFieldErrors((prev) => ({ ...prev, [field]: "File size exceeds 5MB limit. Please choose a smaller file." }));
+    // Client-side image compression to convert iPhone/Android photos to lightweight JPEG under 150KB
+  const compressImage = (file, maxWidth = 1200, quality = 0.75) => {
+    return new Promise((resolve) => {
+      if (!file || !file.type || !file.type.startsWith("image/")) {
+        resolve(file);
         return;
       }
-      setFiles((prev) => ({ ...prev, [field]: file }));
-      if (fieldErrors[field]) {
-        setFieldErrors((prev) => ({ ...prev, [field]: "" }));
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          let { width, height } = img;
+          if (width > maxWidth || height > maxWidth) {
+            if (width > height) {
+              height = Math.round((height * maxWidth) / width);
+              width = maxWidth;
+            } else {
+              width = Math.round((width * maxWidth) / height);
+              height = maxWidth;
+            }
+          }
+          const canvas = document.createElement("canvas");
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, width, height);
+          canvas.toBlob(
+            (blob) => {
+              if (blob) {
+                const cleanName = (file.name || "upload.jpg").replace(/\.[^/.]+$/, "") + ".jpg";
+                const compressedFile = new File([blob], cleanName, {
+                  type: "image/jpeg",
+                  lastModified: Date.now(),
+                });
+                resolve(compressedFile);
+              } else {
+                resolve(file);
+              }
+            },
+            "image/jpeg",
+            quality
+          );
+        };
+        img.onerror = () => resolve(file);
+        img.src = event.target.result;
+      };
+      reader.onerror = () => resolve(file);
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleFileChange = async (field, e) => {
+    const rawFile = e.target.files?.[0];
+    if (rawFile) {
+      try {
+        const file = await compressImage(rawFile);
+        setFiles((prev) => ({ ...prev, [field]: file }));
+        if (fieldErrors[field]) {
+          setFieldErrors((prev) => ({ ...prev, [field]: "" }));
+        }
+      } catch (err) {
+        setFiles((prev) => ({ ...prev, [field]: rawFile }));
       }
     }
   };
@@ -205,15 +257,24 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
       data.append("aadhaarBack", files.aadhaarBack);
       data.append("paymentProof", files.paymentProof);
 
-      const res = await fetch("/api/register", {
+            const res = await fetch("/api/register", {
         method: "POST",
         body: data,
       });
 
-      const result = await res.json();
+      let result;
+      const responseText = await res.text();
+      try {
+        result = JSON.parse(responseText);
+      } catch (parseErr) {
+        if (res.status === 413) {
+          throw new Error("Uploaded photos are too large. Please choose smaller images or standard screenshots.");
+        }
+        throw new Error("Server error (" + res.status + "). Please check your network connection and try again.");
+      }
 
       if (!res.ok || !result.success) {
-        throw new Error(result.message || result.error || "Registration submission failed. Please check your details and try again.");
+        throw new Error(result.message || result.error || "Registration failed. Please check your details and try again.");
       }
 
       setSuccessData(result);
@@ -651,7 +712,7 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="w-full mt-4 bg-[#0041b9] hover:bg-[#003399] disabled:bg-slate-400 text-white font-bold py-3.5 px-6 rounded-lg text-base shadow-md transition-all active:scale-98"
+                  className="w-full mt-4 bg-[#0041b9] hover:bg-[#003399] disabled:bg-slate-400 text-white font-bold py-3.5 px-6 rounded-lg text-base shadow-md transition-all active:scale-98 cursor-pointer disabled:cursor-not-allowed"
                 >
                   {submitting ? "Submitting Registration..." : "Register"}
                 </button>

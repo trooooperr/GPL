@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const MONGODB_URI = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/gpl_tournament";
+const MONGODB_URI = process.env.MONGODB_URI;
 
 let cached = global.mongoose;
 
@@ -9,37 +9,42 @@ if (!cached) {
 }
 
 export async function connectToDatabase() {
-  if (!process.env.MONGODB_URI) {
+  if (!MONGODB_URI) {
+    console.warn("[MongoDB] No MONGODB_URI environment variable provided.");
     return null;
   }
-  if (cached.conn) {
+
+  if (cached.conn && mongoose.connection.readyState === 1) {
     return cached.conn;
   }
 
   if (!cached.promise) {
     const opts = {
-      bufferCommands: false,
-      serverSelectionTimeoutMS: 3000,
+      bufferCommands: true,
+      serverSelectionTimeoutMS: 10000,
+      connectTimeoutMS: 10000,
+      maxPoolSize: 10,
     };
 
     cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongooseInstance) => {
-      console.log("[MongoDB] Connected successfully to:", MONGODB_URI.split("@").pop());
+      console.log("[MongoDB] Connected successfully to Atlas cluster");
       return mongooseInstance;
     }).catch((err) => {
-      console.warn("[MongoDB Notice] MongoDB connection not active, using persistent local DB:", err.message);
+      console.error("[MongoDB Connect Error]:", err.message);
       cached.promise = null;
-      return null;
+      cached.conn = null;
+      throw err;
     });
   }
 
   try {
     cached.conn = await cached.promise;
+    return cached.conn;
   } catch (e) {
     cached.promise = null;
+    cached.conn = null;
     return null;
   }
-
-  return cached.conn;
 }
 
 // Mongoose Schemas
