@@ -32,12 +32,10 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
   const [dynamicQrDataUrl, setDynamicQrDataUrl] = useState("");
 
   // Dynamic capacity & remaining slots calculation based on teams count (totalTeams * 14)
-  const calcTotalTeams = stats?.totalTeams || (settings.maxCapacity ? Math.round(settings.maxCapacity / 14) : 10);
-  const calcMaxCap = (settings.maxCapacity && Number(settings.maxCapacity) !== 168)
-    ? Number(settings.maxCapacity)
-    : (stats?.maxCapacity || (calcTotalTeams * 14));
-  const calcRegistered = stats?.totalRegistered || 0;
-  const calcRemaining = stats?.remainingSlots !== undefined ? stats.remainingSlots : Math.max(0, calcMaxCap - calcRegistered);
+  const calcTotalTeams = stats?.totalTeams || 11;
+  const calcMaxCap = calcTotalTeams * 14;
+  const calcApproved = stats?.approved !== undefined ? stats.approved : (stats?.totalRegistered || 0);
+  const calcRemaining = Math.max(0, calcMaxCap - calcApproved);
 
   const [remainingSlots, setRemainingSlots] = useState(calcRemaining);
   const [maxCapacity, setMaxCapacity] = useState(calcMaxCap);
@@ -97,7 +95,11 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
   };
 
   const handleFieldChange = (field, value) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    let cleanVal = value;
+    if (field === "phone") {
+      cleanVal = value.replace(/\D/g, "").slice(0, 10);
+    }
+    setFormData((prev) => ({ ...prev, [field]: cleanVal }));
     if (fieldErrors[field]) {
       setFieldErrors((prev) => ({ ...prev, [field]: "" }));
     }
@@ -450,6 +452,8 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
                 </label>
                 <input
                   type="tel"
+                  maxLength={10}
+                  inputMode="numeric"
                   placeholder="10-digit mobile"
                   value={formData.phone}
                   onChange={(e) => handleFieldChange("phone", e.target.value)}

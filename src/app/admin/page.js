@@ -27,7 +27,7 @@ import {
   Check,
   UploadCloud,
   UserX,
-  History,
+
   Maximize2,
   X,
   Image as ImageIcon,
@@ -42,7 +42,7 @@ import { INITIAL_RULES } from "@/lib/constants";
 
 export default function AdminDashboard() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState("players"); // players | teams | sizing | settings | rules | logs
+  const [activeTab, setActiveTab] = useState("players"); // players | teams | sizing | settings | rules
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState(null);
@@ -58,7 +58,7 @@ export default function AdminDashboard() {
     adminEmail: "goregaonpremierleague11@gmail.com"
   });
   const [sizing, setSizing] = useState(null);
-  const [logs, setLogs] = useState([]);
+
   const [adminQrPreview, setAdminQrPreview] = useState("");
 
   // Search & Filters for Players
@@ -81,6 +81,10 @@ export default function AdminDashboard() {
   const [actionLoading, setActionLoading] = useState({}); // { [key]: true } for per-button loading
   const [savingRules, setSavingRules] = useState(false);
   const [savingTeam, setSavingTeam] = useState(false);
+  const [rejectPlayerModal, setRejectPlayerModal] = useState(null);
+  const [rejectReason, setRejectReason] = useState("");
+  const [isRejecting, setIsRejecting] = useState(false);
+  const [isSavingPlayer, setIsSavingPlayer] = useState(false);
 
   const loadAllData = async () => {
     try {
@@ -111,9 +115,6 @@ export default function AdminDashboard() {
       const dataSizing = await resSizing.json();
       if (dataSizing.success) setSizing(dataSizing.matrix);
 
-      const resLogs = await fetch("/api/admin/logs", { cache: "no-store" });
-      const dataLogs = await resLogs.json();
-      if (dataLogs.success) setLogs(dataLogs.logs || []);
     } catch (err) {
       console.error("Dashboard data load error:", err);
     } finally {
@@ -152,9 +153,6 @@ export default function AdminDashboard() {
         const dataSizing = await resSizing.json();
         if (isMounted && dataSizing.success) setSizing(dataSizing.matrix);
 
-        const resLogs = await fetch("/api/admin/logs", { cache: "no-store" });
-        const dataLogs = await resLogs.json();
-        if (isMounted && dataLogs.success) setLogs(dataLogs.logs || []);
       } catch (err) {
         console.error("Dashboard data load error:", err);
       } finally {
@@ -210,19 +208,19 @@ export default function AdminDashboard() {
   };
 
   // --- PLAYER ACTIONS ---
-  const handleUpdateStatus = async (playerId, newStatus) => {
+  const handleUpdateStatus = async (playerId, newStatus, notes = "") => {
     const key = `status_${playerId}_${newStatus}`;
     setActionLoading(prev => ({ ...prev, [key]: true }));
     try {
       const res = await fetch("/api/admin/players", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: playerId, status: newStatus }),
+        body: JSON.stringify({ id: playerId, status: newStatus, notes }),
       });
       const data = await res.json();
       if (data.success) {
         if (newStatus === "Rejected") {
-          setPlayers(prev => prev.map(p => p.id === playerId ? { ...p, paymentStatus: "Rejected", teamId: null } : p));
+          setPlayers(prev => prev.map(p => p.id === playerId ? { ...p, paymentStatus: "Rejected", teamId: null, notes } : p));
         } else if (newStatus === "Approved") {
           setPlayers(prev => prev.map(p => p.id === playerId ? { ...p, paymentStatus: "Approved" } : p));
         }
@@ -234,7 +232,7 @@ export default function AdminDashboard() {
             setInspectPlayer(prev => prev ? { ...prev, paymentStatus: newStatus } : null);
           }
         }
-        showToast(`Registration marked as ${newStatus}!${newStatus === "Rejected" ? " Removed from team." : ""}`, "success");
+        showToast(`Registration marked as ${newStatus}!${newStatus === "Rejected" ? " Rejection reason dispatched." : ""}`, "success");
       } else {
         showToast(data.error || "Failed to update status", "error");
       }
@@ -245,8 +243,24 @@ export default function AdminDashboard() {
     }
   };
 
+  const promptRejectPlayer = (player) => {
+    setRejectPlayerModal(player);
+    setRejectReason("Aadhaar card address not from Ward 51 or 54 (Goregaon East)");
+  };
+
+  const handleConfirmReject = async (e) => {
+    if (e) e.preventDefault();
+    if (!rejectPlayerModal) return;
+    setIsRejecting(true);
+    await handleUpdateStatus(rejectPlayerModal.id, "Rejected", rejectReason);
+    setIsRejecting(false);
+    setRejectPlayerModal(null);
+    setRejectReason("");
+  };
+
   const handleSavePlayerEdit = async (e) => {
     e.preventDefault();
+    setIsSavingPlayer(true);
     try {
       const res = await fetch("/api/admin/players", {
         method: "POST",
@@ -268,6 +282,8 @@ export default function AdminDashboard() {
       }
     } catch (err) {
       showToast("Failed to update player: " + err.message, "error");
+    } finally {
+      setIsSavingPlayer(false);
     }
   };
 
@@ -538,7 +554,6 @@ export default function AdminDashboard() {
     { id: "sizing", label: "Kit Sizing", icon: Shirt },
     { id: "settings", label: "Payment & Settings", icon: QrCode },
     { id: "rules", label: "Rules", icon: FileText },
-    { id: "logs", label: "Logs", icon: History },
   ];
 
   return (
@@ -968,7 +983,7 @@ export default function AdminDashboard() {
 
                       {player.paymentStatus !== "Rejected" && (
                         <button
-                          onClick={() => handleUpdateStatus(player.id, "Rejected")}
+                          onClick={() => promptRejectPlayer(player)}
                           className="flex-1 py-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
                         >
                           Reject
@@ -1119,7 +1134,7 @@ export default function AdminDashboard() {
                                 )}
                                 {player.paymentStatus !== "Rejected" && (
                                   <button
-                                    onClick={() => handleUpdateStatus(player.id, "Rejected")}
+                                    onClick={() => promptRejectPlayer(player)}
                                     className="p-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 cursor-pointer"
                                     title="Reject Player"
                                   >
@@ -1548,60 +1563,6 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* ========================================================================= */}
-        {/* TAB 6: SECURITY ACTIVITY LOGS */}
-        {/* ========================================================================= */}
-        {activeTab === "logs" && (
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-6 space-y-4">
-            <div>
-              <h2 className="text-lg sm:text-xl font-bold text-[#081a36]">Security Audit &amp; Activity Logs</h2>
-              <p className="text-xs text-slate-500">Immutable trace of all administrative status changes, team assignments, and logins</p>
-            </div>
-
-            <div className="space-y-2.5 max-h-[600px] overflow-y-auto pr-1">
-              {logs.map((log, lIdx) => {
-                const isApproval = log.action === "STATUS_UPDATED" && log.details?.status === "Approved";
-                const isReject = log.action === "STATUS_UPDATED" && log.details?.status === "Rejected";
-                const isDelete = log.action?.includes("DELETED");
-
-                let badgeClass = "bg-slate-100 text-slate-700 border-slate-200";
-                if (isApproval) badgeClass = "bg-emerald-50 text-emerald-700 border-emerald-200";
-                else if (isReject || isDelete) badgeClass = "bg-red-50 text-red-700 border-red-200";
-                else if (log.action === "PLAYER_REGISTERED") badgeClass = "bg-blue-50 text-blue-700 border-blue-200";
-                else if (log.action?.includes("SETTINGS")) badgeClass = "bg-purple-50 text-purple-700 border-purple-200";
-                else if (log.action?.includes("TEAM")) badgeClass = "bg-amber-50 text-amber-700 border-amber-200";
-
-                let detailsDisplay = "";
-                if (typeof log.details === "object" && log.details !== null) {
-                  detailsDisplay = Object.entries(log.details)
-                    .map(([k, v]) => `${k}: ${typeof v === "object" ? JSON.stringify(v) : v}`)
-                    .join(" • ");
-                } else {
-                  detailsDisplay = String(log.details || "");
-                }
-
-                return (
-                  <div
-                    key={log.id || log._id || lIdx}
-                    className="p-3 rounded-xl bg-slate-50 hover:bg-slate-100/70 border border-slate-100 transition-all space-y-1.5 text-xs"
-                  >
-                    <div className="flex items-center justify-between gap-2 flex-wrap">
-                      <span className={`px-2 py-0.5 rounded-md border font-mono text-[10px] font-bold ${badgeClass}`}>
-                        {log.action}
-                      </span>
-                      <span className="text-[10px] text-slate-400 font-mono">
-                        {new Date(log.timestamp).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}
-                      </span>
-                    </div>
-                    <div className="text-slate-700 font-mono text-[11px] bg-white p-2 rounded-lg border border-slate-100/80 break-words leading-relaxed">
-                      {detailsDisplay || "No additional payload"}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
       </main>
 
       {/* ========================================================================= */}
@@ -1700,7 +1661,7 @@ export default function AdminDashboard() {
                 Approve Player
               </button>
               <button
-                onClick={() => handleUpdateStatus(inspectPlayer.id, "Rejected")}
+                onClick={() => { promptRejectPlayer(inspectPlayer); setInspectPlayer(null); }}
                 className="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold shadow-xs cursor-pointer"
               >
                 Reject Player
@@ -1852,9 +1813,14 @@ export default function AdminDashboard() {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2 rounded-lg bg-[#0041b9] hover:bg-[#003399] text-white font-bold cursor-pointer"
+                  disabled={isSavingPlayer}
+                  className="flex-1 py-2 rounded-lg bg-[#0041b9] hover:bg-[#003399] disabled:bg-[#0041b9]/70 text-white font-bold cursor-pointer disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
                 >
-                  Save Changes
+                  {isSavingPlayer ? (
+                    <><Loader2 className="w-3.5 h-3.5 animate-spin" /><span>Saving...</span></>
+                  ) : (
+                    <span>Save Changes</span>
+                  )}
                 </button>
               </div>
 
@@ -1900,10 +1866,11 @@ export default function AdminDashboard() {
                   <input
                     type="text"
                     required
-                    maxLength={4}
+                    maxLength={3}
+                    minLength={2}
                     placeholder="CSK"
                     value={editTeam.shortCode || ""}
-                    onChange={(e) => setEditTeam({ ...editTeam, shortCode: e.target.value.toUpperCase() })}
+                    onChange={(e) => setEditTeam({ ...editTeam, shortCode: e.target.value.replace(/[^A-Za-z]/g, "").toUpperCase().slice(0, 3) })}
                     className="w-full px-3 py-2 rounded-lg border border-slate-200 font-mono uppercase"
                   />
                 </div>
@@ -2099,6 +2066,65 @@ export default function AdminDashboard() {
               </button>
             </div>
 
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* MODAL: REJECT PLAYER WITH REASON */}
+      {/* ========================================================================= */}
+      {rejectPlayerModal && (
+        <div className="fixed inset-0 z-[75] bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl relative space-y-4">
+            <button
+              onClick={() => { setRejectPlayerModal(null); setRejectReason(""); }}
+              className="absolute top-3 right-3 p-2 text-slate-400 hover:text-slate-700"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-red-100 text-red-600 flex items-center justify-center shrink-0">
+                <UserX className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-slate-900">Reject Player Registration</h3>
+                <p className="text-[11px] text-slate-500 mt-0.5">{rejectPlayerModal.name} • ID: {rejectPlayerModal.regNumber || rejectPlayerModal.id}</p>
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-slate-700 block mb-1.5">Reason for Rejection <span className="text-red-500">*</span></label>
+              <textarea
+                value={rejectReason}
+                onChange={(e) => setRejectReason(e.target.value)}
+                rows={4}
+                placeholder="Enter the reason for rejection. This will be sent to the player by email."
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:border-red-400 focus:ring-2 focus:ring-red-100 text-xs resize-none outline-none transition-all"
+              />
+              <p className="text-[11px] text-slate-400 mt-1">📧 This reason will be included in the rejection email sent to the player.</p>
+            </div>
+
+            <div className="flex gap-2 pt-1">
+              <button
+                onClick={() => { setRejectPlayerModal(null); setRejectReason(""); }}
+                disabled={isRejecting}
+                className="flex-1 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmReject}
+                disabled={isRejecting || !rejectReason.trim()}
+                className="flex-1 py-2 rounded-lg bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white font-bold text-xs cursor-pointer transition-all flex items-center justify-center gap-1.5 disabled:cursor-not-allowed"
+              >
+                {isRejecting ? (
+                  <><Loader2 className="w-3.5 h-3.5 animate-spin" /><span>Rejecting...</span></>
+                ) : (
+                  <span>Confirm Rejection</span>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       )}

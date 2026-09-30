@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { verifyAuthCookie } from "@/lib/auth";
-import { sendPlayerStatusEmail } from "@/lib/email";
+import { sendPlayerStatusEmail, sendTeamAssignmentEmail } from "@/lib/email";
 import { connectToDatabase, MongoRegistration, MongoTeam, MongoSetting } from "@/lib/mongodb";
 
 export const dynamic = "force-dynamic";
@@ -13,12 +13,28 @@ const NO_CACHE_HEADERS = {
 };
 
 function mapPlayer(r) {
+  let displayId = String(r.id || "");
+  if (!/^\d{4}$/.test(displayId)) {
+    if (/^\d{4}$/.test(String(r.regNumber || ""))) {
+      displayId = String(r.regNumber);
+    } else {
+      const num = parseInt(r.regNumber, 10);
+      if (!isNaN(num) && num > 0) {
+        displayId = String(1000 + num);
+      } else {
+        const digits = displayId.replace(/\D/g, "");
+        displayId = digits.length >= 4 ? digits.slice(-4) : "1001";
+      }
+    }
+  }
+
   return {
     id: r.id,
-    regNumber: r.regNumber || String(r.id).replace(/\D/g, "").slice(-4) || "1",
+    displayId,
+    regNumber: displayId,
     name: r.name,
     email: r.email,
-    phone: r.phone,
+    phone: (r.phone || "").replace(/\D/g, "").slice(0, 10),
     dob: r.dob,
     age: r.age,
     ward: r.ward || "Ward 51",
@@ -44,13 +60,13 @@ async function getCalculatedStats(players) {
   const approved = players.filter((p) => p.paymentStatus === "Approved").length;
   const rejected = players.filter((p) => p.paymentStatus === "Rejected").length;
   const pending = players.filter((p) => p.paymentStatus === "Pending").length;
-  let maxCap = 140;
+  
+  let teamsCount = 11;
   try {
-    const sDoc = await MongoSetting.findOne({ key: "global_settings" }).lean();
-    if (sDoc?.value?.maxCapacity) {
-      maxCap = Number(sDoc.value.maxCapacity);
-    }
+    teamsCount = (await MongoTeam.countDocuments()) || 11;
   } catch (e) {}
+
+  const maxCap = teamsCount * 14;
 
   return {
     totalRegistrations: total,
@@ -60,7 +76,8 @@ async function getCalculatedStats(players) {
     pending,
     available: Math.max(0, maxCap - approved),
     remainingSlots: Math.max(0, maxCap - approved),
-    maxCapacity: maxCap
+    maxCapacity: maxCap,
+    totalTeams: teamsCount
   };
 }
 
@@ -114,7 +131,10 @@ export async function POST(request) {
           );
         }
         await MongoTeam.findOneAndUpdate({ id: teamId }, { $addToSet: { members: id } });
-        await MongoRegistration.findOneAndUpdate({ id }, { teamId });
+        const updatedDoc = await MongoRegistration.findOneAndUpdate({ id }, { teamId }, { new: true }).lean();
+        if (team && updatedDoc) {
+          sendTeamAssignmentEmail(updatedDoc, team).catch(() => {});
+        }
       } else {
         await MongoRegistration.findOneAndUpdate({ id }, { teamId: null });
       }

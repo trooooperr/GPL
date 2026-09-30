@@ -1,10 +1,8 @@
 "use client";
 
 export default function PrizesSection({ stats, settings }) {
-  const teamsCount = stats?.totalTeams || (settings?.maxCapacity ? Math.round(settings.maxCapacity / 14) : 10);
-  const totalCapacity = (settings?.maxCapacity && Number(settings.maxCapacity) !== 168)
-    ? Number(settings.maxCapacity)
-    : (stats?.maxCapacity || (teamsCount * 14));
+  const teamsCount = stats?.totalTeams || 11;
+  const totalCapacity = teamsCount * 14;
 
   const features = [
     {

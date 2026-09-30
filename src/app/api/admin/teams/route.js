@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { verifyAuthCookie } from "@/lib/auth";
 import { connectToDatabase, MongoTeam, MongoRegistration } from "@/lib/mongodb";
 import { INITIAL_TEAMS } from "@/lib/constants";
+import { sendTeamAssignmentEmail } from "@/lib/email";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -94,7 +95,17 @@ export async function POST(request) {
             );
           }
           await MongoTeam.findOneAndUpdate({ id: teamId }, { $addToSet: { members: playerId } });
-          await MongoRegistration.findOneAndUpdate({ id: playerId }, { teamId });
+          const updatedPlayer = await MongoRegistration.findOneAndUpdate(
+            { id: playerId },
+            { teamId },
+            { new: true }
+          ).lean();
+
+          if (targetTeam && updatedPlayer) {
+            sendTeamAssignmentEmail(updatedPlayer, targetTeam).catch((err) => {
+              console.warn("[Auction Draft Email Notice]:", err.message);
+            });
+          }
         } else {
           // Unassign from team
           await MongoRegistration.findOneAndUpdate({ id: playerId }, { teamId: null });

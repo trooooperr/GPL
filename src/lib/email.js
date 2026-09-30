@@ -61,17 +61,28 @@ function getTransporter() {
   return null;
 }
 
-export function getAdminContactEmail() {
+export function format4DigitId(id, regNumber) {
+  if (typeof id === "number" || (/^\d{4}$/.test(id))) return String(id);
+  if (/^\d{4}$/.test(regNumber)) return String(regNumber);
+  const num = parseInt(regNumber, 10);
+  if (!isNaN(num) && num > 0) return String(1000 + num);
+  const digits = String(id || "").replace(/\D/g, "");
+  if (digits.length >= 4) return digits.slice(-4);
+  return "1001";
+}
+
+export function getAdminContactEmail(customEmail = null) {
   return (
+    customEmail ||
     process.env.ADMIN_NOTIFICATION_EMAIL ||
-    process.env.GMAIL_USER ||
     "goregaonpremierleague11@gmail.com"
   );
 }
 
-export async function sendRegistrationNotificationEmail(player) {
+export async function sendRegistrationNotificationEmail(player, customAdminEmail = null) {
   try {
-    const adminEmail = getAdminContactEmail();
+    const adminEmail = getAdminContactEmail(customAdminEmail);
+    const displayPlayerId = format4DigitId(player.id, player.regNumber);
 
     const htmlContent = `
       <!DOCTYPE html>
@@ -83,7 +94,7 @@ export async function sendRegistrationNotificationEmail(player) {
           .header { background: #081a36; padding: 24px; text-align: center; color: #ffffff; }
           .header h1 { margin: 0 0 4px; font-size: 22px; }
           .header p { margin: 0; color: #94a3b8; font-size: 13px; }
-          .badge { display: inline-block; background: #0041b9; color: #ffffff; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; margin-top: 12px; }
+          .badge { display: inline-block; background: #0041b9; color: #ffffff; padding: 4px 12px; border-radius: 20px; font-size: 14px; font-weight: bold; margin-top: 12px; letter-spacing: 1px; }
           .body { padding: 24px; }
           .table { width: 100%; border-collapse: collapse; margin-top: 16px; }
           .table td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
@@ -99,11 +110,15 @@ export async function sendRegistrationNotificationEmail(player) {
         <div class="card">
           <div class="header">
             <h1>New Player Registration Received!</h1>
-            <p>Radhe Radhe Chashak Goregaon Premier League</p>
-            <div class="badge">${player.id}</div>
+            <p>Radhe Radhe Chashak • Goregaon Premier League</p>
+            <div class="badge">Player ID: ${displayPlayerId}</div>
           </div>
           <div class="body">
             <table class="table">
+              <tr>
+                <td class="label">Player ID:</td>
+                <td class="value"><strong>${displayPlayerId}</strong></td>
+              </tr>
               <tr>
                 <td class="label">Player Name:</td>
                 <td class="value"><strong>${player.name}</strong></td>
@@ -161,14 +176,14 @@ export async function sendRegistrationNotificationEmail(player) {
         from: `"GPL Alert" <${transportInfo.fromEmail}>`,
         to: adminEmail,
         replyTo: adminEmail,
-        subject: `🏏 New Player Registration: ${player.name} (${player.id}) - UTR: ${player.utrNumber || "N/A"}`,
+        subject: `🏏 New Registration: ${player.name} (Player ID: ${displayPlayerId}) - UTR: ${player.utrNumber || "N/A"}`,
         html: htmlContent
       });
-      logEmailDispatch({ type: "ADMIN_NOTIFICATION", recipient: adminEmail, playerId: player.id, status: "SENT" });
-      console.log(`[EMAIL] Registration alert successfully sent to admin ${adminEmail} for ${player.id}`);
+      logEmailDispatch({ type: "ADMIN_NOTIFICATION", recipient: adminEmail, playerId: displayPlayerId, status: "SENT" });
+      console.log(`[EMAIL] Registration alert successfully sent to admin ${adminEmail} for Player ID ${displayPlayerId}`);
     } else {
-      logEmailDispatch({ type: "ADMIN_NOTIFICATION", recipient: adminEmail, playerId: player.id, status: "RECORDED_NO_SMTP" });
-      console.log(`[EMAIL NOTICE] SMTP credentials not set in .env. Admin alert prepared for ${adminEmail} (Player: ${player.id}, Name: ${player.name})`);
+      logEmailDispatch({ type: "ADMIN_NOTIFICATION", recipient: adminEmail, playerId: displayPlayerId, status: "RECORDED_NO_SMTP" });
+      console.log(`[EMAIL NOTICE] SMTP credentials not set in .env. Admin alert prepared for ${adminEmail} (Player ID: ${displayPlayerId}, Name: ${player.name})`);
     }
   } catch (error) {
     console.error("[EMAIL ERROR] Failed to send admin email notification:", error);
@@ -190,12 +205,13 @@ export async function sendPlayerStatusEmail(player, status, notes = "") {
       return { sent: false, reason: "Invalid or dummy email" };
     }
 
-    const regNumber = player.regNumber || (player.id ? player.id.replace(/\D/g, "") : "");
+    const displayPlayerId = format4DigitId(player.id, player.regNumber);
     const adminEmail = getAdminContactEmail();
 
+    // Subject without registration number as requested
     const subject = isApproved
-      ? `🎉 Registration Approved! GPL Official Reg No: ${regNumber} - Radhe Radhe Chashak`
-      : `Update on your GPL Player Application - Radhe Radhe Chashak (Reg No: ${regNumber})`;
+      ? `🎉 Registration Approved! Welcome to Goregaon Premier League`
+      : `Update on your GPL Player Application - Goregaon Premier League`;
 
     const statusBadgeColor = isApproved ? "#16a34a" : "#dc2626";
     const statusBg = isApproved ? "#f0fdf4" : "#fef2f2";
@@ -223,8 +239,8 @@ export async function sendPlayerStatusEmail(player, status, notes = "") {
           .table tr:last-child td { border-bottom: none; }
           .label { font-weight: 600; color: #64748b; width: 40%; }
           .value { color: #0f172a; font-weight: 500; }
-          .notes-box { background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 14px; margin-top: 18px; font-size: 13px; color: #92400e; }
-          .notes-title { font-weight: 700; margin-bottom: 4px; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
+          .rejection-box { background: #fff1f2; border: 1.5px solid #fecdd3; border-radius: 8px; padding: 16px; margin-top: 18px; font-size: 14px; color: #9f1239; line-height: 1.5; }
+          .rejection-title { font-weight: 800; margin-bottom: 6px; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px; color: #be123c; }
           .action-box { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; padding: 16px; margin-top: 20px; text-align: center; font-size: 13px; color: #1e40af; }
           .footer { background: #f8fafc; padding: 20px; text-align: center; font-size: 12px; color: #94a3b8; border-top: 1px solid #e2e8f0; line-height: 1.5; }
         </style>
@@ -258,22 +274,22 @@ export async function sendPlayerStatusEmail(player, status, notes = "") {
                     We are pleased to inform you that your application for the <strong>Goregaon Premier League (Radhe Radhe Chashak)</strong> has been formally <strong>APPROVED</strong>. You are now officially enrolled in the player pool for the upcoming Grand Auction!
                    </p>`
                 : `<p style="font-size: 14px; line-height: 1.6; color: #334155; margin: 0 0 16px;">
-                    Thank you for applying for the <strong>Goregaon Premier League (Radhe Radhe Chashak)</strong>. Following the review of your submitted credentials, your application was not approved by the tournament organizing committee.
+                    Thank you for applying for the <strong>Goregaon Premier League (Radhe Radhe Chashak)</strong>. Following the review of your submitted documents, your application was not approved by the tournament committee.
                    </p>`
             }
 
             <div class="info-card">
               <div style="font-size: 12px; font-weight: 700; color: #0041b9; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px;">
-                Registration Summary
+                Player Details
               </div>
               <table class="table">
                 <tr>
                   <td class="label">Player ID:</td>
-                  <td class="value"><strong>${player.id}</strong></td>
+                  <td class="value"><strong style="font-size: 16px; color: #0041b9; font-family: monospace;">${displayPlayerId}</strong></td>
                 </tr>
                 <tr>
                   <td class="label">Player Name:</td>
-                  <td class="value">${player.name}</td>
+                  <td class="value"><strong>${player.name}</strong></td>
                 </tr>
                 <tr>
                   <td class="label">Ward:</td>
@@ -287,18 +303,14 @@ export async function sendPlayerStatusEmail(player, status, notes = "") {
                   <td class="label">Kit Sizes:</td>
                   <td class="value">T-Shirt: ${player.tshirtSize} • Track: ${player.trackSize}</td>
                 </tr>
-                <tr>
-                  <td class="label">Payment UTR:</td>
-                  <td class="value"><code>${player.utrNumber || "Verified"}</code></td>
-                </tr>
               </table>
             </div>
 
             ${
-              notes
-                ? `<div class="notes-box">
-                    <div class="notes-title">Admin Remarks / Notes:</div>
-                    <div>${notes}</div>
+              isRejected
+                ? `<div class="rejection-box">
+                    <div class="rejection-title">⚠️ Reason for Rejection:</div>
+                    <div>${notes || "Document details or eligibility requirements could not be verified by the committee."}</div>
                   </div>`
                 : ""
             }
@@ -313,7 +325,7 @@ export async function sendPlayerStatusEmail(player, status, notes = "") {
                   </div>`
                 : `<div class="action-box" style="background: #fff1f2; border-color: #fecdd3; color: #9f1239;">
                     <strong>Need Help or Clarification?</strong><br />
-                    If you believe your documents (Aadhaar Ward 51/54 or Payment UTR) were submitted incorrectly, please contact the GPL tournament organizers at <a href="mailto:${adminEmail}">${adminEmail}</a>.
+                    If you believe your documents were submitted incorrectly, please contact the GPL tournament organizers at <a href="mailto:${adminEmail}">${adminEmail}</a>.
                   </div>`
             }
           </div>
@@ -338,22 +350,143 @@ export async function sendPlayerStatusEmail(player, status, notes = "") {
         subject: subject,
         html: htmlContent
       });
-      logEmailDispatch({ type: "PLAYER_STATUS", recipient: playerEmail, playerId: player.id, status: "SENT", decision: status, from: adminEmail });
-      console.log(`[EMAIL] Player status (${status}) email successfully sent to ${playerEmail} for ${player.id} from ${adminEmail}`);
+      logEmailDispatch({ type: "PLAYER_STATUS", recipient: playerEmail, playerId: displayPlayerId, status: "SENT", decision: status, from: adminEmail });
+      console.log(`[EMAIL] Player status (${status}) email successfully sent to ${playerEmail} for Player ID ${displayPlayerId}`);
       return { sent: true, recipient: playerEmail, method: "SMTP", from: adminEmail };
     } else {
-      logEmailDispatch({ type: "PLAYER_STATUS", recipient: playerEmail, playerId: player.id, status: "RECORDED_NO_SMTP", decision: status, from: adminEmail });
-      console.log(`[EMAIL NOTICE] SMTP credentials not set in .env. Player status notification prepared & logged for ${playerEmail} from ${adminEmail}:`, {
-        playerId: player.id,
-        name: player.name,
-        status: status,
-        notes: notes
-      });
-      return { sent: true, recipient: playerEmail, method: "LOGGED", from: adminEmail };
+      logEmailDispatch({ type: "PLAYER_STATUS", recipient: playerEmail, playerId: displayPlayerId, status: "RECORDED_NO_SMTP", decision: status, from: adminEmail });
+      return { sent: false, reason: "SMTP not configured" };
     }
   } catch (error) {
     console.error("[EMAIL ERROR] Failed to send player status email:", error);
-    logEmailDispatch({ type: "PLAYER_STATUS", recipient: player?.email, playerId: player?.id, status: "ERROR", error: error.message });
+    return { sent: false, error: error.message };
+  }
+}
+
+export async function sendTeamAssignmentEmail(player, team) {
+  try {
+    const playerEmail = player?.email?.trim();
+    if (!playerEmail || !playerEmail.includes("@") || playerEmail.endsWith("@gplcricket.local")) {
+      console.log(`[EMAIL NOTICE] Player ${player?.id} has no valid submitted email (${playerEmail}). Skipping team draft email.`);
+      return { sent: false, reason: "Invalid or dummy email" };
+    }
+
+    const displayPlayerId = format4DigitId(player.id, player.regNumber);
+    const adminEmail = getAdminContactEmail();
+    const teamName = team?.name || "Official GPL Team";
+    const teamOwner = team?.owner || "Team Franchise Owner";
+    const teamCaptain = team?.captain || "To be announced";
+
+    const subject = `🏏 You Have Been Drafted to ${teamName}! - GPL Player Auction`;
+
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8" />
+        <style>
+          body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #081225; margin: 0; padding: 24px; color: #1e293b; }
+          .card { max-width: 620px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 15px 35px rgba(0,0,0,0.2); }
+          .header { background: linear-gradient(135deg, #081a36 0%, #0041b9 100%); padding: 32px 24px; text-align: center; color: #ffffff; }
+          .header h1 { margin: 0 0 6px; font-size: 26px; font-weight: 900; letter-spacing: -0.5px; }
+          .header p { margin: 0; color: #93c5fd; font-size: 14px; }
+          .badge { display: inline-block; background: #f59e0b; color: #081a36; padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 800; margin-top: 14px; text-transform: uppercase; letter-spacing: 1px; }
+          .body { padding: 28px 24px; }
+          .team-card { background: #f8fafc; border: 2px solid #0041b9; border-radius: 14px; padding: 20px; margin: 20px 0; text-align: center; }
+          .team-title { font-size: 12px; font-weight: bold; color: #64748b; text-transform: uppercase; letter-spacing: 1px; }
+          .team-name { font-size: 24px; font-weight: 900; color: #081a36; margin: 6px 0; }
+          .team-meta { font-size: 13px; color: #475569; }
+          .table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+          .table td { padding: 10px 12px; font-size: 14px; border-bottom: 1px solid #edf2f7; }
+          .table tr:last-child td { border-bottom: none; }
+          .label { font-weight: 600; color: #64748b; width: 40%; }
+          .value { color: #0f172a; font-weight: 500; }
+          .footer { background: #f8fafc; padding: 20px; text-align: center; font-size: 12px; color: #94a3b8; border-top: 1px solid #e2e8f0; line-height: 1.5; }
+        </style>
+      </head>
+      <body>
+        <div class="card">
+          <div class="header">
+            <h1>Goregaon Premier League</h1>
+            <p>Radhe Radhe Chashak • Official Player Auction Result</p>
+            <div class="badge">AUCTION SELECTION CONFIRMED</div>
+          </div>
+
+          <div class="body">
+            <p style="font-size: 16px; line-height: 1.6; margin: 0 0 16px;">
+              Dear <strong>${player.name}</strong>,
+            </p>
+
+            <p style="font-size: 14px; line-height: 1.6; color: #334155; margin: 0 0 16px;">
+              We are delighted to congratulate you! You have been successfully selected and drafted to <strong>${teamName}</strong> for the upcoming <strong>Goregaon Premier League (Radhe Radhe Chashak)</strong>!
+            </p>
+
+            <div class="team-card">
+              <div class="team-title">Your Assigned Team</div>
+              <div class="team-name">${teamName}</div>
+              <div class="team-meta">
+                <strong>Franchise Owner:</strong> ${teamOwner} <br />
+                <strong>Captain:</strong> ${teamCaptain}
+              </div>
+            </div>
+
+            <table class="table">
+              <tr>
+                <td class="label">Player ID:</td>
+                <td class="value"><strong style="font-family: monospace; font-size: 15px; color: #0041b9;">${displayPlayerId}</strong></td>
+              </tr>
+              <tr>
+                <td class="label">Player Name:</td>
+                <td class="value"><strong>${player.name}</strong></td>
+              </tr>
+              <tr>
+                <td class="label">Playing Role:</td>
+                <td class="value">${player.speciality}</td>
+              </tr>
+              <tr>
+                <td class="label">Kit Sizes:</td>
+                <td class="value">T-Shirt: ${player.tshirtSize} • Track: ${player.trackSize}</td>
+              </tr>
+              <tr>
+                <td class="label">Match Venue:</td>
+                <td class="value">Sambhaji Maidan, Goregaon East, Mumbai</td>
+              </tr>
+            </table>
+
+            <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 16px; margin-top: 20px; font-size: 13px; color: #166534; line-height: 1.5;">
+              <strong>What's Next?</strong><br />
+              Your team management will contact you shortly regarding squad practice sessions, kit distributions, and match line-up coordination.
+            </div>
+          </div>
+
+          <div class="footer">
+            <strong>Goregaon Premier League • Radhe Radhe Chashak</strong><br />
+            Organised by: Mohsin Patel &amp; Balram Gupta (Ballu)<br />
+            Official Contact: <a href="mailto:${adminEmail}">${adminEmail}</a>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const transportInfo = getTransporter();
+    if (transportInfo) {
+      await transportInfo.transporter.sendMail({
+        from: `"GPL Tournament Committee" <${adminEmail}>`,
+        to: playerEmail,
+        replyTo: adminEmail,
+        subject: subject,
+        html: htmlContent
+      });
+      logEmailDispatch({ type: "TEAM_ASSIGNMENT", recipient: playerEmail, playerId: displayPlayerId, team: teamName, status: "SENT" });
+      console.log(`[EMAIL] Team assignment email sent to ${playerEmail} for team ${teamName}`);
+      return { sent: true };
+    } else {
+      logEmailDispatch({ type: "TEAM_ASSIGNMENT", recipient: playerEmail, playerId: displayPlayerId, team: teamName, status: "RECORDED_NO_SMTP" });
+      return { sent: false, reason: "SMTP not configured" };
+    }
+  } catch (error) {
+    console.error("[EMAIL ERROR] Failed to send team assignment email:", error);
     return { sent: false, error: error.message };
   }
 }

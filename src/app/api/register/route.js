@@ -120,17 +120,28 @@ export async function POST(request) {
       console.warn("[Register] Settings fetch error:", e.message);
     }
 
-    const count = await MongoRegistration.countDocuments();
-    const regNumber = String(count + 1);
-
-    const id = `GPL-REG-${Date.now()}-${crypto.randomBytes(3).toString("hex")}`;
+    // Generate strictly 4-digit numeric Player ID (e.g. 1001, 1002, 1003...)
+    const existingPlayers = await MongoRegistration.find().select("id regNumber").lean();
+    let maxNumericId = 1000;
+    for (const p of existingPlayers) {
+      if (/^\d{4}$/.test(p.id)) {
+        const val = parseInt(p.id, 10);
+        if (val > maxNumericId) maxNumericId = val;
+      } else if (/^\d{4}$/.test(p.regNumber)) {
+        const val = parseInt(p.regNumber, 10);
+        if (val > maxNumericId) maxNumericId = val;
+      }
+    }
+    const nextIdNum = maxNumericId + 1;
+    const id = String(nextIdNum);
+    const regNumber = id;
 
     const newPlayer = {
       id,
       regNumber,
       name,
       email: email || `${phone}@gplcricket.local`,
-      phone,
+      phone: (phone || "").replace(/\D/g, "").slice(0, 10),
       dob: dob || "",
       age,
       ward: ward || "Ward 51",
@@ -158,10 +169,10 @@ export async function POST(request) {
 
     // Save to MongoDB — await and DO NOT swallow errors
     await MongoRegistration.create(newPlayer);
-    console.log("[Register] Player saved to MongoDB:", id, name);
+    console.log("[Register] Player saved to MongoDB with 4-digit ID:", id, name);
 
-    // Send email notification non-blocking (fire and forget)
-    sendRegistrationNotificationEmail(newPlayer).catch((err) => {
+    // Send email notification to configured admin email (defaults to goregaonpremierleague11@gmail.com)
+    sendRegistrationNotificationEmail(newPlayer, settings.adminEmail).catch((err) => {
       console.warn("[Register Email Notice]:", err.message);
     });
 

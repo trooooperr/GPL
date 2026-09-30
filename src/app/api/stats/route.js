@@ -25,8 +25,8 @@ export async function GET() {
     const approved = players.filter((p) => p.paymentStatus === "Approved").length;
     const rejected = players.filter((p) => p.paymentStatus === "Rejected").length;
     const pending = players.filter((p) => p.paymentStatus === "Pending").length;
-    const totalTeams = teams.length || 10;
-    const cap = settings.maxCapacity || (totalTeams * 14);
+    const totalTeams = teams.length || 11;
+    const cap = totalTeams * 14;
 
     return NextResponse.json({
       success: true,

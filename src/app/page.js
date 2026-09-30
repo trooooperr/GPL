@@ -10,6 +10,7 @@ import Navbar from "@/components/Navbar";
 import BannerCarousel from "@/components/BannerCarousel";
 import Hero from "@/components/Hero";
 import PrizesSection from "@/components/PrizesSection";
+import AboutSection from "@/components/AboutSection";
 import TeamsGrid from "@/components/TeamsGrid";
 import RulesSection from "@/components/RulesSection";
 import RegistrationForm from "@/components/RegistrationForm";
@@ -100,7 +101,8 @@ export default async function Home() {
     const approved = regs.filter((p) => p.paymentStatus === "Approved").length;
     const rejected = regs.filter((p) => p.paymentStatus === "Rejected").length;
     const pending = regs.filter((p) => p.paymentStatus === "Pending").length;
-    const cap = settings.maxCapacity || (teams.length * 14);
+    const totalTeamsCount = teams.length || 11;
+    const cap = totalTeamsCount * 14;
 
     stats = {
       totalRegistrations: total,
@@ -110,7 +112,7 @@ export default async function Home() {
       pending,
       available: Math.max(0, cap - approved),
       remainingSlots: Math.max(0, cap - approved),
-      totalTeams: teams.length,
+      totalTeams: totalTeamsCount,
       maxCapacity: cap,
       registrationFee: settings.registrationFee || 100,
       upiId: settings.upiId || "shahbazkhandm@okhdfcbank"
@@ -125,6 +127,7 @@ export default async function Home() {
       <BannerCarousel />
       <Hero stats={stats} settings={settings} />
       <PrizesSection stats={stats} settings={settings} />
+      <AboutSection stats={stats} teams={teams} />
       <TeamsGrid teams={teams} />
       <RulesSection rules={rules} />
       <RegistrationForm stats={stats} settings={settings} />
