@@ -1244,7 +1244,7 @@ export default function AdminDashboard() {
                         <span className="text-slate-400">Squad:</span>
                         <span className="font-mono font-bold text-[#0041b9] flex items-center gap-1">
                           <span>{players.filter((p) => p.teamId === team.id).length} / 14 Players</span>
-                          <span className="text-[10px] text-blue-600 font-sans font-semibold ml-1 underline">View Roster ↗</span>
+
                         </span>
                       </div>
                     </div>
@@ -1862,7 +1862,7 @@ export default function AdminDashboard() {
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="sm:col-span-1">
-                  <label className="font-bold text-slate-700 block mb-1">Short Code (3 Letters)</label>
+                  <label className="font-bold text-slate-700 block mb-1">Short Code</label>
                   <input
                     type="text"
                     required
