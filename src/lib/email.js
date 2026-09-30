@@ -453,10 +453,6 @@ export async function sendTeamAssignmentEmail(player, team) {
               </tr>
             </table>
 
-            <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 16px; margin-top: 20px; font-size: 13px; color: #166534; line-height: 1.5;">
-              <strong>What's Next?</strong><br />
-              Your team management will contact you shortly regarding squad practice sessions, kit distributions, and match line-up coordination.
-            </div>
           </div>
 
           <div class="footer">
