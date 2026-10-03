@@ -478,7 +478,7 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
                 )}
               </div>
 
-              <div>
+              <div className="min-w-0">
                 <label className="block text-xs font-bold text-slate-700 mb-1.5">
                   Date of Birth <span className="text-red-500">*</span>
                 </label>
@@ -487,7 +487,7 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
                   value={formData.dob}
                   max={(() => { const d = new Date(); d.setFullYear(d.getFullYear() - 12); return d.toISOString().split("T")[0]; })()}
                   onChange={(e) => handleFieldChange("dob", e.target.value)}
-                  className={`w-full px-4 py-2.5 rounded-lg border bg-white text-slate-900 text-sm focus:outline-none transition-all ${
+                  className={`w-full min-w-0 max-w-full box-border px-4 py-2.5 rounded-lg border bg-white text-slate-900 text-sm focus:outline-none transition-all ${
                     fieldErrors.dob
                       ? "border-red-500 ring-2 ring-red-200"
                       : "border-slate-300 focus:ring-2 focus:ring-[#059669]"
