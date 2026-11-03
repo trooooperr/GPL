@@ -77,7 +77,29 @@ export async function POST(request) {
   try {
     await connectToDatabase();
     const body = await request.json();
-    const { action, teamId, teamData, playerId } = body;
+    const { action, teamId, teamData, playerId, playerIds } = body;
+
+    // 0. BATCH ASSIGN PLAYERS TO TEAM
+    if (action === "batchAssign" && Array.isArray(playerIds) && playerIds.length > 0) {
+      await MongoTeam.updateMany({}, { $pull: { members: { $in: playerIds } } });
+
+      if (teamId && teamId !== "unassign" && teamId !== "" && teamId !== "null") {
+        const targetTeam = await MongoTeam.findOne({ id: teamId }).lean();
+        const currentMembers = targetTeam?.members || [];
+        const availableSlots = Math.max(0, 14 - currentMembers.length);
+        const toAdd = playerIds.slice(0, availableSlots);
+
+        if (toAdd.length > 0) {
+          await MongoTeam.findOneAndUpdate({ id: teamId }, { $addToSet: { members: { $each: toAdd } } });
+          await MongoRegistration.updateMany({ id: { $in: toAdd } }, { $set: { teamId } });
+        }
+      } else {
+        await MongoRegistration.updateMany({ id: { $in: playerIds } }, { $set: { teamId: null } });
+      }
+
+      const teams = await getPopulatedTeams();
+      return NextResponse.json({ success: true, teams }, { headers: NO_CACHE_HEADERS });
+    }
 
     // 1. ASSIGN / UNASSIGN PLAYER
     if (action === "assign") {

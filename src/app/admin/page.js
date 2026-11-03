@@ -35,7 +35,13 @@ import {
   Menu,
   Phone,
   CreditCard,
-  FileCheck
+  FileCheck,
+  ChevronLeft,
+  ChevronRight,
+  Printer,
+  CheckSquare,
+  Square,
+  MessageSquare
 } from "lucide-react";
 import QRCode from "qrcode";
 import { INITIAL_RULES } from "@/lib/constants";
@@ -65,6 +71,51 @@ export default function AdminDashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [wardFilter, setWardFilter] = useState("ALL");
+  const [roleFilter, setRoleFilter] = useState("ALL");
+  const [teamFilter, setTeamFilter] = useState("ALL");
+
+  // Bulk Selection & Export Dropdown
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [batchRejectModalOpen, setBatchRejectModalOpen] = useState(false);
+  const [batchRejectReason, setBatchRejectReason] = useState("");
+  const [exportMenuOpen, setExportMenuOpen] = useState(false);
+
+  // Client-side canvas image compression helper for admin edits
+  const compressImageToDataUrl = (file, maxWidth = 800, quality = 0.65) => {
+    return new Promise((resolve) => {
+      if (!file) return resolve({ name: "", dataUrl: "" });
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          let { width, height } = img;
+          if (width > maxWidth || height > maxWidth) {
+            if (width > height) {
+              height = Math.round((height * maxWidth) / width);
+              width = maxWidth;
+            } else {
+              width = Math.round((width * maxWidth) / height);
+              height = maxWidth;
+            }
+          }
+          const canvas = document.createElement("canvas");
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, width, height);
+          const dataUrl = canvas.toDataURL("image/jpeg", quality);
+          resolve({ name: file.name, dataUrl });
+        };
+        img.onerror = () => {
+          const rawUrl = e.target.result || "";
+          resolve({ name: file.name, dataUrl: rawUrl.length < 500000 ? rawUrl : "" });
+        };
+        img.src = e.target.result;
+      };
+      reader.onerror = () => resolve({ name: file.name, dataUrl: "" });
+      reader.readAsDataURL(file);
+    });
+  };
 
   // Modals & Active Edit States
   const [inspectPlayer, setInspectPlayer] = useState(null);
@@ -635,13 +686,14 @@ export default function AdminDashboard() {
     }
   };
 
-  // Filtered Players
+  // Filtered Players with role, team, and registration number search
   const filteredPlayers = players.filter((p) => {
     const matchesQuery =
       searchQuery === "" ||
       p.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       p.phone?.includes(searchQuery) ||
       p.id?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      String(p.regNumber || "").includes(searchQuery) ||
       p.utrNumber?.toLowerCase().includes(searchQuery.toLowerCase());
 
     const matchesStatus =
@@ -650,8 +702,212 @@ export default function AdminDashboard() {
     const matchesWard =
       wardFilter === "ALL" || p.ward === wardFilter;
 
-    return matchesQuery && matchesStatus && matchesWard;
+    const matchesRole =
+      roleFilter === "ALL" ||
+      p.speciality?.toLowerCase().includes(roleFilter.toLowerCase());
+
+    const matchesTeam =
+      teamFilter === "ALL"
+        ? true
+        : teamFilter === "UNASSIGNED"
+        ? !p.teamId
+        : teamFilter === "ASSIGNED"
+        ? !!p.teamId
+        : p.teamId === teamFilter;
+
+    return matchesQuery && matchesStatus && matchesWard && matchesRole && matchesTeam;
   });
+
+  // Bulk Selection Handlers
+  const allFilteredSelected =
+    filteredPlayers.length > 0 &&
+    filteredPlayers.every((p) => selectedIds.includes(p.id));
+
+  const handleToggleSelectAll = () => {
+    if (allFilteredSelected) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(filteredPlayers.map((p) => p.id));
+    }
+  };
+
+  const handleToggleSelect = (id) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  };
+
+  const handleBatchApprove = async () => {
+    if (selectedIds.length === 0) return;
+    const idsToApprove = [...selectedIds];
+    const prevPlayers = players;
+    const prevStats = stats;
+
+    setPlayers((prev) =>
+      prev.map((p) => (idsToApprove.includes(p.id) ? { ...p, paymentStatus: "Approved" } : p))
+    );
+    setSelectedIds([]);
+    showToast(`${idsToApprove.length} players marked as Approved!`, "success");
+
+    try {
+      const res = await fetch("/api/admin/players", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "batchStatus", ids: idsToApprove, status: "Approved" }),
+      });
+      const data = await res.json();
+      if (!data.success) {
+        setPlayers(prevPlayers);
+        setStats(prevStats);
+        showToast(data.error || "Batch approval failed", "error");
+      } else if (data.stats) {
+        setStats(data.stats);
+      }
+    } catch (err) {
+      setPlayers(prevPlayers);
+      setStats(prevStats);
+      showToast("Network error: " + err.message, "error");
+    }
+  };
+
+  const handleConfirmBatchReject = async () => {
+    if (selectedIds.length === 0) return;
+    const idsToReject = [...selectedIds];
+    const reason = batchRejectReason || "Aadhaar address not from Ward 51/54 (Goregaon East)";
+    const prevPlayers = players;
+    const prevStats = stats;
+    const prevTeams = teams;
+
+    setPlayers((prev) =>
+      prev.map((p) =>
+        idsToReject.includes(p.id)
+          ? { ...p, paymentStatus: "Rejected", teamId: null, notes: reason }
+          : p
+      )
+    );
+    setTeams((prev) =>
+      prev.map((t) => ({
+        ...t,
+        members: (t.members || []).filter((mid) => !idsToReject.includes(mid))
+      }))
+    );
+    setSelectedIds([]);
+    setBatchRejectModalOpen(false);
+    setBatchRejectReason("");
+    showToast(`${idsToReject.length} players marked as Rejected!`, "success");
+
+    try {
+      const res = await fetch("/api/admin/players", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "batchStatus",
+          ids: idsToReject,
+          status: "Rejected",
+          notes: reason
+        }),
+      });
+      const data = await res.json();
+      if (!data.success) {
+        setPlayers(prevPlayers);
+        setStats(prevStats);
+        setTeams(prevTeams);
+        showToast(data.error || "Batch rejection failed", "error");
+      } else if (data.stats) {
+        setStats(data.stats);
+      }
+    } catch (err) {
+      setPlayers(prevPlayers);
+      setStats(prevStats);
+      setTeams(prevTeams);
+      showToast("Network error: " + err.message, "error");
+    }
+  };
+
+  const handleBatchAssignTeam = async (teamId) => {
+    if (selectedIds.length === 0) return;
+    const cleanTeamId = teamId && teamId !== "unassign" && teamId !== "" ? teamId : null;
+    const idsToAssign = [...selectedIds];
+    const prevPlayers = players;
+    const prevTeams = teams;
+
+    setPlayers((prev) =>
+      prev.map((p) => (idsToAssign.includes(p.id) ? { ...p, teamId: cleanTeamId } : p))
+    );
+    setTeams((prev) =>
+      prev.map((t) => {
+        const without = (t.members || []).filter((mid) => !idsToAssign.includes(mid));
+        if (cleanTeamId && t.id === cleanTeamId) {
+          return { ...t, members: [...without, ...idsToAssign].slice(0, 14) };
+        }
+        return { ...t, members: without };
+      })
+    );
+    setSelectedIds([]);
+    const targetTeam = teams.find((t) => t.id === cleanTeamId);
+    showToast(
+      cleanTeamId
+        ? `${idsToAssign.length} players assigned to ${targetTeam?.name || "team"}!`
+        : `${idsToAssign.length} players unassigned from teams.`,
+      "success"
+    );
+
+    try {
+      const res = await fetch("/api/admin/teams", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "batchAssign", playerIds: idsToAssign, teamId: cleanTeamId }),
+      });
+      const data = await res.json();
+      if (!data.success) {
+        setPlayers(prevPlayers);
+        setTeams(prevTeams);
+        showToast(data.error || "Batch team assignment failed", "error");
+      } else if (data.teams) {
+        setTeams(data.teams);
+      }
+    } catch (err) {
+      setPlayers(prevPlayers);
+      setTeams(prevTeams);
+      showToast("Network error: " + err.message, "error");
+    }
+  };
+
+  // Inspect Player Keyboard & Arrow Navigation
+  const currentInspectIdx = inspectPlayer
+    ? filteredPlayers.findIndex((p) => p.id === inspectPlayer.id)
+    : -1;
+
+  const handlePrevInspectPlayer = () => {
+    if (currentInspectIdx > 0) {
+      setInspectPlayer(filteredPlayers[currentInspectIdx - 1]);
+    }
+  };
+
+  const handleNextInspectPlayer = () => {
+    if (currentInspectIdx >= 0 && currentInspectIdx < filteredPlayers.length - 1) {
+      setInspectPlayer(filteredPlayers[currentInspectIdx + 1]);
+    }
+  };
+
+  useEffect(() => {
+    if (!inspectPlayer) return;
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        setInspectPlayer(null);
+      } else if (e.key === "ArrowRight") {
+        if (currentInspectIdx >= 0 && currentInspectIdx < filteredPlayers.length - 1) {
+          setInspectPlayer(filteredPlayers[currentInspectIdx + 1]);
+        }
+      } else if (e.key === "ArrowLeft") {
+        if (currentInspectIdx > 0) {
+          setInspectPlayer(filteredPlayers[currentInspectIdx - 1]);
+        }
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [inspectPlayer, currentInspectIdx, filteredPlayers]);
 
   const tabItems = [
     { id: "players", label: `Players (${players.length})`, icon: Users },
@@ -822,7 +1078,11 @@ export default function AdminDashboard() {
         {stats && (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-4">
             
-            <div className="bg-white p-3.5 sm:p-5 rounded-xl sm:rounded-2xl border border-slate-200 shadow-xs">
+            <div
+              onClick={() => { setActiveTab("players"); setStatusFilter("ALL"); setRoleFilter("ALL"); setTeamFilter("ALL"); }}
+              className="bg-white p-3.5 sm:p-5 rounded-xl sm:rounded-2xl border border-slate-200 shadow-xs cursor-pointer hover:border-blue-400 hover:shadow-md transition-all active:scale-[0.98]"
+              title="Click to view All Players"
+            >
               <span className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5 sm:mb-1">
                 Total Registered
               </span>
@@ -837,27 +1097,39 @@ export default function AdminDashboard() {
               </span>
             </div>
 
-            <div className="bg-white p-3.5 sm:p-5 rounded-xl sm:rounded-2xl border border-emerald-200/80 shadow-xs">
+            <div
+              onClick={() => { setActiveTab("players"); setStatusFilter("Approved"); }}
+              className="bg-white p-3.5 sm:p-5 rounded-xl sm:rounded-2xl border border-emerald-200/80 shadow-xs cursor-pointer hover:border-emerald-500 hover:shadow-md transition-all active:scale-[0.98]"
+              title="Click to filter Approved Players"
+            >
               <span className="text-[10px] sm:text-[11px] font-bold text-emerald-600 uppercase tracking-wider block mb-0.5 sm:mb-1">
                 Approved
               </span>
               <span className="text-xl sm:text-3xl font-extrabold text-emerald-700">
                 {stats.approved}
               </span>
-              <span className="text-[10px] sm:text-[11px] text-slate-500 block mt-0.5 sm:mt-1 truncate">Auction eligible</span>
+              <span className="text-[10px] sm:text-[11px] text-slate-500 block mt-0.5 sm:mt-1 truncate">Auction eligible ⚡</span>
             </div>
 
-            <div className="bg-white p-3.5 sm:p-5 rounded-xl sm:rounded-2xl border border-amber-200/80 shadow-xs">
+            <div
+              onClick={() => { setActiveTab("players"); setStatusFilter("Pending"); }}
+              className="bg-white p-3.5 sm:p-5 rounded-xl sm:rounded-2xl border border-amber-200/80 shadow-xs cursor-pointer hover:border-amber-500 hover:shadow-md transition-all active:scale-[0.98]"
+              title="Click to filter Pending Players"
+            >
               <span className="text-[10px] sm:text-[11px] font-bold text-amber-600 uppercase tracking-wider block mb-0.5 sm:mb-1">
                 Pending Review
               </span>
               <span className="text-xl sm:text-3xl font-extrabold text-amber-700">
                 {stats.pending}
               </span>
-              <span className="text-[10px] sm:text-[11px] text-slate-500 block mt-0.5 sm:mt-1 truncate">Needs verification</span>
+              <span className="text-[10px] sm:text-[11px] text-slate-500 block mt-0.5 sm:mt-1 truncate">Needs verification 🔍</span>
             </div>
 
-            <div className="bg-white p-3.5 sm:p-5 rounded-xl sm:rounded-2xl border border-red-200/80 shadow-xs">
+            <div
+              onClick={() => { setActiveTab("players"); setStatusFilter("Rejected"); }}
+              className="bg-white p-3.5 sm:p-5 rounded-xl sm:rounded-2xl border border-red-200/80 shadow-xs cursor-pointer hover:border-red-500 hover:shadow-md transition-all active:scale-[0.98]"
+              title="Click to filter Rejected Players"
+            >
               <span className="text-[10px] sm:text-[11px] font-bold text-red-600 uppercase tracking-wider block mb-0.5 sm:mb-1">
                 Rejected
               </span>
@@ -867,17 +1139,25 @@ export default function AdminDashboard() {
               <span className="text-[10px] sm:text-[11px] text-slate-500 block mt-0.5 sm:mt-1 truncate">Non-eligible</span>
             </div>
 
-            <div className="bg-white p-3.5 sm:p-5 rounded-xl sm:rounded-2xl border border-slate-200 shadow-xs">
+            <div
+              onClick={() => setActiveTab("teams")}
+              className="bg-white p-3.5 sm:p-5 rounded-xl sm:rounded-2xl border border-slate-200 shadow-xs cursor-pointer hover:border-blue-400 hover:shadow-md transition-all active:scale-[0.98]"
+              title="Click to view Franchises & Teams"
+            >
               <span className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5 sm:mb-1">
                 Franchises
               </span>
               <span className="text-xl sm:text-3xl font-extrabold text-[#081a36]">
                 {teams.length}
               </span>
-              <span className="text-[10px] sm:text-[11px] text-slate-500 block mt-0.5 sm:mt-1 truncate">Teams active</span>
+              <span className="text-[10px] sm:text-[11px] text-slate-500 block mt-0.5 sm:mt-1 truncate">Teams active 🏆</span>
             </div>
 
-            <div className="bg-white p-3.5 sm:p-5 rounded-xl sm:rounded-2xl border border-purple-200/80 shadow-xs">
+            <div
+              onClick={() => setActiveTab("sizing")}
+              className="bg-white p-3.5 sm:p-5 rounded-xl sm:rounded-2xl border border-purple-200/80 shadow-xs cursor-pointer hover:border-purple-500 hover:shadow-md transition-all active:scale-[0.98]"
+              title="Click to view Kit Sizing Matrix"
+            >
               <span className="text-[10px] sm:text-[11px] font-bold text-purple-600 uppercase tracking-wider block mb-0.5 sm:mb-1">
                 Collected Fees
               </span>
@@ -930,7 +1210,8 @@ export default function AdminDashboard() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 w-full sm:w-auto">
+              <div className="grid grid-cols-2 sm:flex sm:items-center sm:flex-wrap gap-2 w-full sm:w-auto">
+                {/* Status Filter */}
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
@@ -942,6 +1223,7 @@ export default function AdminDashboard() {
                   <option value="Rejected">Rejected</option>
                 </select>
 
+                {/* Ward Filter */}
                 <select
                   value={wardFilter}
                   onChange={(e) => setWardFilter(e.target.value)}
@@ -953,9 +1235,73 @@ export default function AdminDashboard() {
                   <option value="Other Ward">Other Ward</option>
                 </select>
 
+                {/* Role / Speciality Filter */}
+                <select
+                  value={roleFilter}
+                  onChange={(e) => setRoleFilter(e.target.value)}
+                  className="px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700"
+                >
+                  <option value="ALL">All Roles</option>
+                  <option value="batsman">Batsmen</option>
+                  <option value="bowler">Bowlers</option>
+                  <option value="all-rounder">All-Rounders</option>
+                  <option value="Wicketkeeper">Wicketkeepers</option>
+                </select>
+
+                {/* Team Assignment Filter */}
+                <select
+                  value={teamFilter}
+                  onChange={(e) => setTeamFilter(e.target.value)}
+                  className="px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700"
+                >
+                  <option value="ALL">All Teams</option>
+                  <option value="UNASSIGNED">Unassigned (Auction Pool)</option>
+                  <option value="ASSIGNED">Assigned to Any Team</option>
+                  {teams.map((t) => (
+                    <option key={t.id} value={t.id}>{t.name}</option>
+                  ))}
+                </select>
+
+                {/* Export Dropdown */}
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setExportMenuOpen((prev) => !prev)}
+                    className="px-3 py-2 rounded-xl bg-blue-50 border border-blue-200 text-[#0041b9] hover:bg-blue-100 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    <span>Export ▾</span>
+                  </button>
+                  {exportMenuOpen && (
+                    <div
+                      className="absolute right-0 mt-1 w-56 bg-white rounded-xl shadow-xl border border-slate-200 py-1.5 z-40 text-xs space-y-0.5"
+                      onClick={() => setExportMenuOpen(false)}
+                    >
+                      <a
+                        href="/api/admin/export?filter=all"
+                        className="block px-3.5 py-2 text-slate-700 hover:bg-slate-50 font-semibold"
+                      >
+                        📄 Export All Registrations (CSV)
+                      </a>
+                      <a
+                        href="/api/admin/export?filter=approved"
+                        className="block px-3.5 py-2 text-emerald-700 hover:bg-emerald-50 font-semibold"
+                      >
+                        ⚡ Export Auction Pool (Approved)
+                      </a>
+                      <a
+                        href="/api/admin/export?filter=sizing"
+                        className="block px-3.5 py-2 text-purple-700 hover:bg-purple-50 font-semibold"
+                      >
+                        👕 Export Kit Sizing Sheet
+                      </a>
+                    </div>
+                  )}
+                </div>
+
                 <button
                   onClick={loadAllData}
-                  className="col-span-2 sm:col-span-1 p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors flex items-center justify-center gap-1 text-xs font-semibold"
+                  className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors flex items-center justify-center gap-1 text-xs font-semibold"
                   title="Refresh Data"
                 >
                   <RefreshCw className="w-3.5 h-3.5" />
@@ -972,13 +1318,34 @@ export default function AdminDashboard() {
                     key={player.id || idx}
                     className="bg-white rounded-xl sm:rounded-2xl border border-slate-200 p-4 shadow-xs space-y-3"
                   >
-                    {/* Top Row: Name, Reg ID & Status */}
+                    {/* Top Row: Checkbox, Name, Reg ID & Status */}
                     <div className="flex items-start justify-between gap-2 border-b border-slate-100 pb-2.5">
-                      <div>
-                        <h3 className="font-bold text-slate-900 text-sm leading-tight">{player.name}</h3>
-                        <span className="text-xs font-mono font-bold text-blue-600 block mt-0.5">
-                          {player.regNumber || (player.id ? player.id.replace(/\D/g, "") : "")}
-                        </span>
+                      <div className="flex items-start gap-2.5">
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.includes(player.id)}
+                          onChange={() => handleToggleSelect(player.id)}
+                          className="mt-1 w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                        />
+                        <div>
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <h3 className="font-bold text-slate-900 text-sm leading-tight">{player.name}</h3>
+                            {player.phone && (
+                              <a
+                                href={`https://wa.me/91${player.phone.replace(/\D/g, "")}?text=${encodeURIComponent(`Hi ${player.name}, regards from Goregaon Premier League (GPL). Reg #${player.regNumber || player.id}`)}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="p-1 rounded bg-emerald-50 text-emerald-600 hover:bg-emerald-100 inline-flex items-center"
+                                title="Chat on WhatsApp"
+                              >
+                                <MessageSquare className="w-3 h-3 text-emerald-600" />
+                              </a>
+                            )}
+                          </div>
+                          <span className="text-xs font-mono font-bold text-blue-600 block mt-0.5">
+                            #{player.regNumber || (player.id ? player.id.replace(/\D/g, "") : "")}
+                          </span>
+                        </div>
                       </div>
                       <span
                         className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold inline-flex items-center gap-1 shrink-0 ${
@@ -1134,22 +1501,40 @@ export default function AdminDashboard() {
                 <table className="w-full text-left text-xs">
                   <thead className="bg-slate-50/80 border-b border-slate-200 text-slate-500 uppercase text-[11px] font-bold tracking-wider">
                     <tr>
-                      <th className="py-4 px-5">Player</th>
-                      <th className="py-4 px-5">Role &amp; Ward</th>
-                      <th className="py-4 px-5">Kit Size</th>
-                      <th className="py-4 px-5">Payment UTR</th>
-                      <th className="py-4 px-5">Documents</th>
-                      <th className="py-4 px-5">Status</th>
-                      <th className="py-4 px-5">Assigned Team</th>
-                      <th className="py-4 px-5 text-right">Actions</th>
+                      <th className="py-4 px-3 w-10 text-center">
+                        <input
+                          type="checkbox"
+                          checked={allFilteredSelected}
+                          onChange={handleToggleSelectAll}
+                          className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                          title={allFilteredSelected ? "Deselect All" : "Select All"}
+                        />
+                      </th>
+                      <th className="py-4 px-4">Player</th>
+                      <th className="py-4 px-4">Role &amp; Ward</th>
+                      <th className="py-4 px-4">Kit Size</th>
+                      <th className="py-4 px-4">Payment UTR</th>
+                      <th className="py-4 px-4">Documents</th>
+                      <th className="py-4 px-4">Status</th>
+                      <th className="py-4 px-4">Assigned Team</th>
+                      <th className="py-4 px-4 text-right">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {filteredPlayers.length > 0 ? (
                       filteredPlayers.map((player) => {
+                        const isSelected = selectedIds.includes(player.id);
                         return (
-                          <tr key={player.id} className="hover:bg-slate-50/70 transition-colors">
-                            <td className="py-4 px-5">
+                          <tr key={player.id} className={`hover:bg-slate-50/70 transition-colors ${isSelected ? "bg-blue-50/40" : ""}`}>
+                            <td className="py-4 px-3 text-center">
+                              <input
+                                type="checkbox"
+                                checked={isSelected}
+                                onChange={() => handleToggleSelect(player.id)}
+                                className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                              />
+                            </td>
+                            <td className="py-4 px-4">
                               <div className="flex items-center gap-2.5">
                                 <div className="w-8 h-8 rounded-full bg-blue-100 text-[#0041b9] flex items-center justify-center font-bold text-xs shrink-0 overflow-hidden border border-blue-200">
                                   {player.photoUrl && !player.photoUrl.includes('placeholder') ? (
@@ -1159,8 +1544,25 @@ export default function AdminDashboard() {
                                   )}
                                 </div>
                                 <div>
-                                  <div className="font-bold text-slate-900 text-sm">{player.name}</div>
-                                  <div className="text-xs text-slate-500 mt-0.5">{player.phone}</div>
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="font-bold text-slate-900 text-sm">{player.name}</span>
+                                    {player.phone && (
+                                      <a
+                                        href={`https://wa.me/91${player.phone.replace(/\D/g, "")}?text=${encodeURIComponent(`Hi ${player.name}, greetings from Goregaon Premier League (GPL). Reg #${player.regNumber || player.id}`)}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="p-1 rounded bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors"
+                                        title="Chat on WhatsApp"
+                                      >
+                                        <MessageSquare className="w-3 h-3" />
+                                      </a>
+                                    )}
+                                  </div>
+                                  <div className="flex items-center gap-2 text-xs text-slate-500 mt-0.5">
+                                    <span className="font-mono text-blue-600 font-bold">#{player.regNumber || (player.id ? player.id.replace(/\D/g, "") : "")}</span>
+                                    <span>•</span>
+                                    <a href={`tel:${player.phone}`} className="hover:underline">{player.phone}</a>
+                                  </div>
                                 </div>
                               </div>
                             </td>
@@ -1292,7 +1694,7 @@ export default function AdminDashboard() {
                       })
                     ) : (
                       <tr>
-                        <td colSpan={8} className="py-12 text-center text-slate-400">
+                        <td colSpan={9} className="py-12 text-center text-slate-400">
                           No player registrations found matching your query.
                         </td>
                       </tr>
@@ -1716,16 +2118,75 @@ export default function AdminDashboard() {
         <div className="fixed inset-0 z-[80] bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
           <div className="bg-white rounded-2xl sm:rounded-3xl max-w-lg w-full p-4 sm:p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto space-y-4 animate-scaleUp">
             
-            <button
-              onClick={() => setInspectPlayer(null)}
-              className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-700"
-            >
-              <X className="w-5 h-5" />
-            </button>
+            {/* Navigation Header */}
+            <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handlePrevInspectPlayer}
+                  disabled={currentInspectIdx <= 0}
+                  className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 disabled:opacity-30 text-slate-700 text-xs font-semibold flex items-center gap-1 cursor-pointer disabled:cursor-not-allowed"
+                  title="Previous Player (← Arrow Left)"
+                >
+                  <ChevronLeft className="w-3.5 h-3.5" />
+                  <span>Prev</span>
+                </button>
+                <span className="text-xs font-mono font-bold text-slate-500">
+                  {currentInspectIdx >= 0 ? `${currentInspectIdx + 1} / ${filteredPlayers.length}` : ""}
+                </span>
+                <button
+                  type="button"
+                  onClick={handleNextInspectPlayer}
+                  disabled={currentInspectIdx >= filteredPlayers.length - 1}
+                  className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 disabled:opacity-30 text-slate-700 text-xs font-semibold flex items-center gap-1 cursor-pointer disabled:cursor-not-allowed"
+                  title="Next Player (→ Arrow Right)"
+                >
+                  <span>Next</span>
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              <div className="flex items-center gap-1.5">
+                <a
+                  href={`https://wa.me/91${inspectPlayer.phone.replace(/\D/g, "")}?text=${encodeURIComponent(`Hello ${inspectPlayer.name}, this is from Goregaon Premier League (Radhe Radhe Chashak) Organizing Committee regarding your application #${inspectPlayer.regNumber || inspectPlayer.id}.`)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-2 py-1 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 text-xs font-bold inline-flex items-center gap-1 border border-emerald-200"
+                  title="Chat on WhatsApp"
+                >
+                  <MessageSquare className="w-3.5 h-3.5 text-emerald-600" />
+                  <span className="hidden sm:inline">WhatsApp</span>
+                </a>
+                <a
+                  href={`tel:${inspectPlayer.phone}`}
+                  className="px-2 py-1 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 text-xs font-bold inline-flex items-center gap-1 border border-blue-200"
+                  title="Call Player"
+                >
+                  <Phone className="w-3.5 h-3.5 text-blue-600" />
+                  <span className="hidden sm:inline">Call</span>
+                </a>
+                <button
+                  type="button"
+                  onClick={() => { const p = inspectPlayer; setInspectPlayer(null); setEditPlayer(p); }}
+                  className="px-2 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 text-xs font-semibold inline-flex items-center gap-1"
+                  title="Edit Player Details"
+                >
+                  <Edit className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Edit</span>
+                </button>
+                <button
+                  onClick={() => setInspectPlayer(null)}
+                  className="p-1 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-100 ml-1"
+                  title="Close (Esc)"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
 
             <div className="flex items-center gap-3">
               <div
-                className="w-12 h-12 rounded-full bg-blue-100 text-[#0041b9] flex items-center justify-center font-bold text-lg overflow-hidden cursor-pointer border-2 border-blue-200"
+                className="w-12 h-12 rounded-full bg-blue-100 text-[#0041b9] flex items-center justify-center font-bold text-lg overflow-hidden cursor-pointer border-2 border-blue-200 shrink-0"
                 onClick={() => inspectPlayer.photoUrl && !inspectPlayer.photoUrl.includes('placeholder') && setFullScreenImage({ url: inspectPlayer.photoUrl, title: `Profile Photo - ${inspectPlayer.name}` })}
               >
                 {inspectPlayer.photoUrl && !inspectPlayer.photoUrl.includes('placeholder') ? (
@@ -1736,7 +2197,9 @@ export default function AdminDashboard() {
               </div>
               <div>
                 <h3 className="text-lg font-bold text-slate-900 leading-tight">{inspectPlayer.name}</h3>
-                <span className="text-xs font-mono text-slate-400">{inspectPlayer.id} • {inspectPlayer.phone}</span>
+                <span className="text-xs font-mono text-slate-400">
+                  ID: #{inspectPlayer.regNumber || inspectPlayer.id} • {inspectPlayer.phone}
+                </span>
               </div>
             </div>
 
@@ -1884,6 +2347,53 @@ export default function AdminDashboard() {
             <h3 className="text-base sm:text-lg font-bold text-slate-900">Edit Player: {editPlayer.name}</h3>
 
             <form onSubmit={handleSavePlayerEdit} className="space-y-3 text-xs">
+              {/* Profile Photo Editor */}
+              <div className="flex items-center gap-3.5 p-3 rounded-xl bg-slate-50 border border-slate-200">
+                <div className="w-14 h-14 rounded-full bg-blue-100 text-[#0041b9] flex items-center justify-center font-bold text-lg overflow-hidden border-2 border-blue-200 shrink-0 shadow-xs">
+                  {editPlayer.photoUrl && !editPlayer.photoUrl.includes("placeholder") ? (
+                    <img src={editPlayer.photoUrl} alt={editPlayer.name} className="w-full h-full object-cover" />
+                  ) : (
+                    editPlayer.name?.[0] || "P"
+                  )}
+                </div>
+                <div className="flex-1 space-y-1">
+                  <span className="font-bold text-slate-700 block text-xs">Profile Photo</span>
+                  <div className="flex items-center gap-2">
+                    <label className="px-2.5 py-1 rounded-lg bg-white border border-slate-300 text-slate-700 hover:border-[#0041b9] cursor-pointer text-[11px] font-semibold inline-flex items-center gap-1 shadow-2xs">
+                      <UploadCloud className="w-3 h-3 text-[#0041b9]" />
+                      <span>{editPlayer.photoUrl && !editPlayer.photoUrl.includes("placeholder") ? "Change Photo" : "Upload Photo"}</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="sr-only"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const res = await compressImageToDataUrl(file);
+                            if (res.dataUrl) {
+                              setEditPlayer((prev) => ({ ...prev, photoUrl: res.dataUrl }));
+                              showToast("Profile photo selected! Click 'Save Changes' to apply.", "success");
+                            }
+                          }
+                        }}
+                      />
+                    </label>
+                    {editPlayer.photoUrl && !editPlayer.photoUrl.includes("placeholder") && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditPlayer((prev) => ({ ...prev, photoUrl: "" }));
+                          showToast("Photo removed. Click 'Save Changes' to apply.", "info");
+                        }}
+                        className="px-2 py-1 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 text-[11px] font-semibold cursor-pointer"
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
               <div>
                 <label className="font-bold text-slate-700 block mb-1">Full Name</label>
                 <input
@@ -2144,13 +2654,24 @@ export default function AdminDashboard() {
                   </div>
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={() => setViewSquadTeam(null)}
-                className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-100"
-              >
-                <X className="w-5 h-5" />
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+                  title="Print Team Squad Roster"
+                >
+                  <Printer className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Print Roster</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewSquadTeam(null)}
+                  className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-100"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
             </div>
 
             {/* Squad List */}
@@ -2324,6 +2845,123 @@ export default function AdminDashboard() {
                 className="flex-1 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white font-bold text-xs cursor-pointer"
               >
                 {confirmModal.confirmText || "Confirm"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* FLOATING BULK OPERATIONS TOOLBAR */}
+      {/* ========================================================================= */}
+      {selectedIds.length > 0 && activeTab === "players" && (
+        <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-40 bg-[#081a36]/95 backdrop-blur-md text-white px-4 py-3 rounded-2xl shadow-2xl border border-blue-500/30 flex flex-wrap items-center justify-between gap-3 max-w-2xl w-[92%] animate-in fade-in slide-in-from-bottom-4 duration-200">
+          <div className="flex items-center gap-2.5">
+            <span className="px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 font-mono font-bold text-xs border border-blue-400/30">
+              {selectedIds.length} Selected
+            </span>
+            <button
+              onClick={() => setSelectedIds([])}
+              className="text-xs text-slate-400 hover:text-white underline cursor-pointer"
+            >
+              Clear
+            </button>
+          </div>
+
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              onClick={handleBatchApprove}
+              className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer shadow-sm"
+              title="Bulk approve selected registrations"
+            >
+              <Check className="w-3.5 h-3.5" />
+              <span>Approve ({selectedIds.length})</span>
+            </button>
+
+            <button
+              onClick={() => {
+                setBatchRejectReason("");
+                setBatchRejectModalOpen(true);
+              }}
+              className="px-3 py-1.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer shadow-sm"
+              title="Bulk reject selected registrations"
+            >
+              <UserX className="w-3.5 h-3.5" />
+              <span>Reject ({selectedIds.length})</span>
+            </button>
+
+            <select
+              defaultValue=""
+              onChange={(e) => {
+                if (e.target.value) {
+                  handleBatchAssignTeam(e.target.value);
+                  e.target.value = "";
+                }
+              }}
+              className="px-2.5 py-1.5 rounded-xl bg-slate-800 border border-slate-700 text-white text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+            >
+              <option value="" disabled>Assign Team...</option>
+              <option value="unassign">— Unassign / Remove Team —</option>
+              {teams.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* BATCH REJECT MODAL */}
+      {/* ========================================================================= */}
+      {batchRejectModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2.5 text-red-600">
+                <AlertTriangle className="w-5 h-5 shrink-0" />
+                <h3 className="font-bold text-slate-900 text-base">
+                  Reject {selectedIds.length} Selected Players
+                </h3>
+              </div>
+              <button
+                onClick={() => setBatchRejectModalOpen(false)}
+                className="p-1 text-slate-400 hover:text-slate-600 rounded-lg cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <p className="text-xs text-slate-600">
+              You are about to mark <span className="font-bold text-red-600">{selectedIds.length}</span> player registration(s) as Rejected. Any team assignments for these players will be unassigned automatically.
+            </p>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">
+                Rejection Reason (will be recorded in notes)
+              </label>
+              <textarea
+                rows={3}
+                value={batchRejectReason}
+                onChange={(e) => setBatchRejectReason(e.target.value)}
+                placeholder="e.g., Address outside Ward 51/54 / Invalid payment proof / Underage..."
+                className="w-full text-xs p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-red-500"
+              />
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <button
+                onClick={() => setBatchRejectModalOpen(false)}
+                className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmBatchReject}
+                className="px-4 py-2 rounded-xl text-xs font-bold bg-red-600 hover:bg-red-700 text-white transition-colors cursor-pointer"
+              >
+                Confirm Batch Rejection
               </button>
             </div>
           </div>

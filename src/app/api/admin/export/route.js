@@ -12,28 +12,23 @@ export async function GET(request) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
+    const { searchParams } = new URL(request.url);
+    const filterType = searchParams.get("filter") || "all";
+
     await connectToDatabase();
+    let query = {};
+    if (filterType === "approved") query.paymentStatus = "Approved";
+    else if (filterType === "pending") query.paymentStatus = "Pending";
+    else if (filterType === "rejected") query.paymentStatus = "Rejected";
+
     const [players, teams] = await Promise.all([
-      MongoRegistration.find().lean(),
+      MongoRegistration.find(
+        query,
+        "regNumber id name phone email ward age dob speciality tshirtSize trackSize paymentStatus utrNumber teamId"
+      ).lean(),
       MongoTeam.find().lean()
     ]);
     const teamMap = new Map((teams || []).map((t) => [t.id, t.name]));
-
-    const headers = [
-      "Registration Number",
-      "Player Name",
-      "Mobile Phone",
-      "Email Address",
-      "Ward",
-      "Age",
-      "Date of Birth",
-      "Cricket Speciality",
-      "T-Shirt Size",
-      "Track Pant Size",
-      "Payment Status",
-      "UTR / Transaction ID",
-      "Assigned Team"
-    ];
 
     const escapeCsv = (str) => {
       if (str === null || str === undefined) return "";
@@ -41,21 +36,65 @@ export async function GET(request) {
       return `"${val}"`;
     };
 
-    const rows = (players || []).map((p) => [
-      escapeCsv(p.regNumber || p.id),
-      escapeCsv(p.name),
-      escapeCsv(p.phone),
-      escapeCsv(p.email),
-      escapeCsv(p.ward),
-      escapeCsv(p.age || ""),
-      escapeCsv(p.dob || ""),
-      escapeCsv(p.speciality),
-      escapeCsv(p.tshirtSize),
-      escapeCsv(p.trackSize),
-      escapeCsv(p.paymentStatus),
-      escapeCsv(p.utrNumber || ""),
-      escapeCsv(p.teamId ? (teamMap.get(p.teamId) || p.teamId) : "Unassigned")
-    ]);
+    let headers = [];
+    let rows = [];
+    let filename = "GPL_Player_Roster.csv";
+
+    if (filterType === "sizing") {
+      filename = "GPL_Uniform_Kit_Sizing_Sheet.csv";
+      headers = [
+        "Player ID",
+        "Player Name",
+        "Mobile Phone",
+        "T-Shirt Size",
+        "Track Pant Size",
+        "Ward",
+        "Assigned Team"
+      ];
+      rows = (players || []).map((p) => [
+        escapeCsv(p.regNumber || p.id),
+        escapeCsv(p.name),
+        escapeCsv(p.phone),
+        escapeCsv(p.tshirtSize),
+        escapeCsv(p.trackSize),
+        escapeCsv(p.ward),
+        escapeCsv(p.teamId ? (teamMap.get(p.teamId) || p.teamId) : "Unassigned")
+      ]);
+    } else {
+      if (filterType === "approved") {
+        filename = "GPL_Auction_Pool_Approved_Players.csv";
+      }
+      headers = [
+        "Registration Number",
+        "Player Name",
+        "Mobile Phone",
+        "Email Address",
+        "Ward",
+        "Age",
+        "Date of Birth",
+        "Cricket Speciality",
+        "T-Shirt Size",
+        "Track Pant Size",
+        "Payment Status",
+        "UTR / Transaction ID",
+        "Assigned Team"
+      ];
+      rows = (players || []).map((p) => [
+        escapeCsv(p.regNumber || p.id),
+        escapeCsv(p.name),
+        escapeCsv(p.phone),
+        escapeCsv(p.email),
+        escapeCsv(p.ward),
+        escapeCsv(p.age || ""),
+        escapeCsv(p.dob || ""),
+        escapeCsv(p.speciality),
+        escapeCsv(p.tshirtSize),
+        escapeCsv(p.trackSize),
+        escapeCsv(p.paymentStatus),
+        escapeCsv(p.utrNumber || ""),
+        escapeCsv(p.teamId ? (teamMap.get(p.teamId) || p.teamId) : "Unassigned")
+      ]);
+    }
 
     const csvContent = "\uFEFF" + [headers.join(","), ...rows.map((r) => r.join(","))].join("\r\n");
 
@@ -63,7 +102,7 @@ export async function GET(request) {
       status: 200,
       headers: {
         "Content-Type": "text/csv; charset=utf-8",
-        "Content-Disposition": 'attachment; filename="GPL_Player_Roster.csv"'
+        "Content-Disposition": `attachment; filename="${filename}"`
       }
     });
   } catch (error) {

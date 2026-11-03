@@ -110,7 +110,36 @@ export async function POST(request) {
   try {
     await connectToDatabase();
     const body = await request.json();
-    const { action, id, status, notes, playerData, teamId } = body;
+    const { action, id, ids, status, notes, playerData, teamId } = body;
+
+    // 0. BATCH UPDATE STATUS (Multiple Players)
+    if (action === "batchStatus" && Array.isArray(ids) && ids.length > 0 && status) {
+      const isRejected = status.toLowerCase() === "rejected";
+      if (isRejected) {
+        await MongoTeam.updateMany({}, { $pull: { members: { $in: ids } } });
+      }
+
+      const historyEntry = {
+        timestamp: new Date().toISOString(),
+        action: `BATCH_STATUS_${status.toUpperCase()}`,
+        notes: notes || `Batch status updated to ${status}${isRejected ? " (Removed from team)" : ""}`
+      };
+
+      await MongoRegistration.updateMany(
+        { id: { $in: ids } },
+        {
+          $set: {
+            paymentStatus: status,
+            ...(notes !== undefined ? { notes } : {}),
+            ...(isRejected ? { teamId: null } : {})
+          },
+          $push: { history: historyEntry }
+        }
+      );
+
+      const stats = await getCalculatedStats();
+      return NextResponse.json({ success: true, count: ids.length, stats }, { headers: NO_CACHE_HEADERS });
+    }
 
     // 1. DELETE player
     if (action === "delete") {
