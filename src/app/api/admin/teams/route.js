@@ -16,7 +16,7 @@ const NO_CACHE_HEADERS = {
 async function getPopulatedTeams() {
   const [mongoTeams, mongoRegs] = await Promise.all([
     MongoTeam.find().lean(),
-    MongoRegistration.find().lean()
+    MongoRegistration.find({}, "id name speciality ward tshirtSize").lean()
   ]);
 
   let rawTeams = mongoTeams;

@@ -58,7 +58,7 @@ export default async function Home() {
 
     const [mongoTeams, mongoRegs, ruleDoc, settingDoc] = await Promise.all([
       MongoTeam.find().lean(),
-      MongoRegistration.find().lean(),
+      MongoRegistration.find({}, "id name speciality ward tshirtSize paymentStatus").lean(),
       MongoRule.findOne().lean(),
       MongoSetting.findOne({ key: "global_settings" }).lean(),
     ]);

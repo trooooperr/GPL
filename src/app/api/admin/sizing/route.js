@@ -13,7 +13,7 @@ export async function GET(request) {
 
   try {
     await connectToDatabase();
-    const players = await MongoRegistration.find().lean();
+    const players = await MongoRegistration.find({}, "tshirtSize trackSize").lean();
     
     const tshirtSizes = {};
     const trackSizes = {};

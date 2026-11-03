@@ -96,6 +96,8 @@ const TeamSchema = new mongoose.Schema({
   members: [String]
 }, schemaOptions);
 
+TeamSchema.index({ members: 1 });
+
 const SettingSchema = new mongoose.Schema({
   key: { type: String, required: true, unique: true },
   value: mongoose.Schema.Types.Mixed

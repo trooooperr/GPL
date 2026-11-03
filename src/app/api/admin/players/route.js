@@ -55,16 +55,18 @@ function mapPlayer(r) {
   };
 }
 
-async function getCalculatedStats(players) {
-  const total = players.length;
-  const approved = players.filter((p) => p.paymentStatus === "Approved").length;
-  const rejected = players.filter((p) => p.paymentStatus === "Rejected").length;
-  const pending = players.filter((p) => p.paymentStatus === "Pending").length;
-  
+async function getCalculatedStats() {
   let teamsCount = 11;
   try {
     teamsCount = (await MongoTeam.countDocuments()) || 11;
   } catch (e) {}
+
+  const [total, approved, rejected, pending] = await Promise.all([
+    MongoRegistration.countDocuments(),
+    MongoRegistration.countDocuments({ paymentStatus: "Approved" }),
+    MongoRegistration.countDocuments({ paymentStatus: "Rejected" }),
+    MongoRegistration.countDocuments({ paymentStatus: "Pending" }),
+  ]);
 
   const maxCap = teamsCount * 14;
 
@@ -91,7 +93,7 @@ export async function GET(request) {
     await connectToDatabase();
     const players = await MongoRegistration.find().sort({ createdAt: -1, registeredAt: -1 }).lean();
     const mapped = players.map(mapPlayer);
-    const stats = await getCalculatedStats(mapped);
+    const stats = await getCalculatedStats();
     return NextResponse.json({ success: true, players: mapped, stats }, { headers: NO_CACHE_HEADERS });
   } catch (e) {
     console.error("[Admin Players GET Error]:", e.message);
@@ -114,9 +116,8 @@ export async function POST(request) {
     if (action === "delete") {
       await MongoRegistration.findOneAndDelete({ id });
       await MongoTeam.updateMany({}, { $pull: { members: id } });
-      const players = (await MongoRegistration.find().sort({ createdAt: -1, registeredAt: -1 }).lean()).map(mapPlayer);
-      const stats = await getCalculatedStats(players);
-      return NextResponse.json({ success: true, players, stats }, { headers: NO_CACHE_HEADERS });
+      const stats = await getCalculatedStats();
+      return NextResponse.json({ success: true, deletedId: id, stats }, { headers: NO_CACHE_HEADERS });
     }
 
     // 2. ASSIGN / UNASSIGN TEAM
@@ -138,9 +139,8 @@ export async function POST(request) {
       } else {
         await MongoRegistration.findOneAndUpdate({ id }, { teamId: null });
       }
-      const players = (await MongoRegistration.find().sort({ createdAt: -1, registeredAt: -1 }).lean()).map(mapPlayer);
-      const stats = await getCalculatedStats(players);
-      return NextResponse.json({ success: true, players, stats }, { headers: NO_CACHE_HEADERS });
+      const stats = await getCalculatedStats();
+      return NextResponse.json({ success: true, id, teamId, stats }, { headers: NO_CACHE_HEADERS });
     }
 
     // 3. EDIT player
@@ -154,9 +154,12 @@ export async function POST(request) {
         cleanPlayerData.teamId = null;
       }
 
-      const old = await MongoRegistration.findOne({ id }).lean();
-      await MongoRegistration.findOneAndUpdate({ id }, { $set: cleanPlayerData });
-      const updated = await MongoRegistration.findOne({ id }).lean();
+      const old = await MongoRegistration.findOne({ id }, "paymentStatus notes").lean();
+      const updated = await MongoRegistration.findOneAndUpdate(
+        { id },
+        { $set: cleanPlayerData },
+        { new: true }
+      ).lean();
       const mappedUpdated = mapPlayer(updated);
 
       if (
@@ -167,9 +170,8 @@ export async function POST(request) {
         sendPlayerStatusEmail(mappedUpdated, cleanPlayerData.paymentStatus, cleanPlayerData.notes || "").catch(() => {});
       }
 
-      const players = (await MongoRegistration.find().sort({ createdAt: -1, registeredAt: -1 }).lean()).map(mapPlayer);
-      const stats = await getCalculatedStats(players);
-      return NextResponse.json({ success: true, player: mappedUpdated, players, stats }, { headers: NO_CACHE_HEADERS });
+      const stats = await getCalculatedStats();
+      return NextResponse.json({ success: true, player: mappedUpdated, stats }, { headers: NO_CACHE_HEADERS });
     }
 
     // 4. UPDATE STATUS (Approve / Reject / Pending)
@@ -181,14 +183,14 @@ export async function POST(request) {
         await MongoTeam.updateMany({}, { $pull: { members: id } });
       }
 
-      const old = await MongoRegistration.findOne({ id }).lean();
+      const old = await MongoRegistration.findOne({ id }, "notes").lean();
       const historyEntry = {
         timestamp: new Date().toISOString(),
         action: `STATUS_CHANGE_${status.toUpperCase()}`,
         notes: notes || `Status updated to ${status}${isRejected ? " (Removed from team)" : ""}`
       };
 
-      await MongoRegistration.findOneAndUpdate(
+      const updated = await MongoRegistration.findOneAndUpdate(
         { id },
         {
           $set: {
@@ -197,19 +199,18 @@ export async function POST(request) {
             ...(isRejected ? { teamId: null } : {})
           },
           $push: { history: historyEntry }
-        }
-      );
+        },
+        { new: true }
+      ).lean();
 
-      const updated = await MongoRegistration.findOne({ id }).lean();
       const mappedUpdated = mapPlayer(updated);
 
       if (["approved", "rejected"].includes(status.toLowerCase())) {
         sendPlayerStatusEmail(mappedUpdated, status, notes || "").catch(() => {});
       }
 
-      const players = (await MongoRegistration.find().sort({ createdAt: -1, registeredAt: -1 }).lean()).map(mapPlayer);
-      const stats = await getCalculatedStats(players);
-      return NextResponse.json({ success: true, player: mappedUpdated, players, stats }, { headers: NO_CACHE_HEADERS });
+      const stats = await getCalculatedStats();
+      return NextResponse.json({ success: true, player: mappedUpdated, stats }, { headers: NO_CACHE_HEADERS });
     }
 
     return NextResponse.json({ success: false, error: "Invalid action" }, { status: 400, headers: NO_CACHE_HEADERS });

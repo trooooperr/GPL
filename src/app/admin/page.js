@@ -86,33 +86,37 @@ export default function AdminDashboard() {
   const [isRejecting, setIsRejecting] = useState(false);
   const [isSavingPlayer, setIsSavingPlayer] = useState(false);
 
+  // Fast parallel dashboard data loader
   const loadAllData = async () => {
     try {
-      const resPlayers = await fetch("/api/admin/players", { cache: "no-store" });
+      const [resPlayers, resTeams, resSettings, resRules, resSizing] = await Promise.all([
+        fetch("/api/admin/players", { cache: "no-store" }),
+        fetch("/api/admin/teams", { cache: "no-store" }),
+        fetch("/api/admin/settings", { cache: "no-store" }),
+        fetch("/api/admin/rules", { cache: "no-store" }),
+        fetch("/api/admin/sizing", { cache: "no-store" })
+      ]);
+
       if (resPlayers.status === 401) {
         router.push("/admin/login");
         return;
       }
-      const dataPlayers = await resPlayers.json();
+
+      const [dataPlayers, dataTeams, dataSettings, dataRules, dataSizing] = await Promise.all([
+        resPlayers.json().catch(() => ({})),
+        resTeams.json().catch(() => ({})),
+        resSettings.json().catch(() => ({})),
+        resRules.json().catch(() => ({})),
+        resSizing.json().catch(() => ({}))
+      ]);
+
       if (dataPlayers.success) {
         setPlayers(dataPlayers.players || []);
         if (dataPlayers.stats) setStats(dataPlayers.stats);
       }
-
-      const resTeams = await fetch("/api/admin/teams", { cache: "no-store" });
-      const dataTeams = await resTeams.json();
       if (dataTeams.success) setTeams(dataTeams.teams || []);
-
-      const resSettings = await fetch("/api/admin/settings", { cache: "no-store" });
-      const dataSettings = await resSettings.json();
       if (dataSettings.success) setSettings(dataSettings.settings || {});
-
-      const resRules = await fetch("/api/admin/rules", { cache: "no-store" });
-      const dataRules = await resRules.json();
       if (dataRules.success && Array.isArray(dataRules.rules) && dataRules.rules.length > 0) setRules(dataRules.rules);
-
-      const resSizing = await fetch("/api/admin/sizing", { cache: "no-store" });
-      const dataSizing = await resSizing.json();
       if (dataSizing.success) setSizing(dataSizing.matrix);
 
     } catch (err) {
@@ -126,35 +130,39 @@ export default function AdminDashboard() {
     let isMounted = true;
     async function initDashboard() {
       try {
-        const resPlayers = await fetch("/api/admin/players", { cache: "no-store" });
+        const [resPlayers, resTeams, resSettings, resRules, resSizing] = await Promise.all([
+          fetch("/api/admin/players", { cache: "no-store" }),
+          fetch("/api/admin/teams", { cache: "no-store" }),
+          fetch("/api/admin/settings", { cache: "no-store" }),
+          fetch("/api/admin/rules", { cache: "no-store" }),
+          fetch("/api/admin/sizing", { cache: "no-store" })
+        ]);
+
         if (resPlayers.status === 401) {
           router.push("/admin/login");
           return;
         }
-        const dataPlayers = await resPlayers.json();
-        if (isMounted && dataPlayers.success) {
-          setPlayers(dataPlayers.players || []);
-          if (dataPlayers.stats) setStats(dataPlayers.stats);
+
+        const [dataPlayers, dataTeams, dataSettings, dataRules, dataSizing] = await Promise.all([
+          resPlayers.json().catch(() => ({})),
+          resTeams.json().catch(() => ({})),
+          resSettings.json().catch(() => ({})),
+          resRules.json().catch(() => ({})),
+          resSizing.json().catch(() => ({}))
+        ]);
+
+        if (isMounted) {
+          if (dataPlayers.success) {
+            setPlayers(dataPlayers.players || []);
+            if (dataPlayers.stats) setStats(dataPlayers.stats);
+          }
+          if (dataTeams.success) setTeams(dataTeams.teams || []);
+          if (dataSettings.success) setSettings(dataSettings.settings || {});
+          if (dataRules.success && Array.isArray(dataRules.rules) && dataRules.rules.length > 0) setRules(dataRules.rules);
+          if (dataSizing.success) setSizing(dataSizing.matrix);
         }
-
-        const resTeams = await fetch("/api/admin/teams", { cache: "no-store" });
-        const dataTeams = await resTeams.json();
-        if (isMounted && dataTeams.success) setTeams(dataTeams.teams || []);
-
-        const resSettings = await fetch("/api/admin/settings", { cache: "no-store" });
-        const dataSettings = await resSettings.json();
-        if (isMounted && dataSettings.success) setSettings(dataSettings.settings || {});
-
-        const resRules = await fetch("/api/admin/rules", { cache: "no-store" });
-        const dataRules = await resRules.json();
-        if (isMounted && dataRules.success && Array.isArray(dataRules.rules) && dataRules.rules.length > 0) setRules(dataRules.rules);
-
-        const resSizing = await fetch("/api/admin/sizing", { cache: "no-store" });
-        const dataSizing = await resSizing.json();
-        if (isMounted && dataSizing.success) setSizing(dataSizing.matrix);
-
       } catch (err) {
-        console.error("Dashboard data load error:", err);
+        console.error("Dashboard init error:", err);
       } finally {
         if (isMounted) setLoading(false);
       }
@@ -185,21 +193,7 @@ export default function AdminDashboard() {
     setToast({ message, type });
     setTimeout(() => {
       setToast((cur) => (cur?.message === message ? null : cur));
-    }, 4000);
-  };
-
-  // Refresh all data from MongoDB
-  const refreshData = async () => {
-    try {
-      const [rPlayers, rTeams, rStats] = await Promise.all([
-        fetch("/api/admin/players", { cache: "no-store" }).then(r => r.json()),
-        fetch("/api/admin/teams", { cache: "no-store" }).then(r => r.json()),
-        fetch("/api/stats", { cache: "no-store" }).then(r => r.json()),
-      ]);
-      if (rPlayers.success) setPlayers(rPlayers.players || []);
-      if (rTeams.success) setTeams(rTeams.teams || []);
-      if (rStats.success) setStats(rStats.stats);
-    } catch (e) { console.error("Refresh error:", e); }
+    }, 3500);
   };
 
   const handleLogout = async () => {
@@ -207,10 +201,68 @@ export default function AdminDashboard() {
     router.push("/admin/login");
   };
 
-  // --- PLAYER ACTIONS ---
+  // --- PLAYER ACTIONS (INSTANT OPTIMISTIC FEEDBACK) ---
   const handleUpdateStatus = async (playerId, newStatus, notes = "") => {
-    const key = `status_${playerId}_${newStatus}`;
-    setActionLoading(prev => ({ ...prev, [key]: true }));
+    const prevPlayers = players;
+    const prevStats = stats;
+    const prevTeams = teams;
+    const targetPlayer = players.find((p) => p.id === playerId);
+    const oldStatus = targetPlayer?.paymentStatus || "Pending";
+
+    // 1. OPTIMISTIC UPDATE: Instant UI response in 0ms
+    setPlayers((prev) =>
+      prev.map((p) =>
+        p.id === playerId
+          ? {
+              ...p,
+              paymentStatus: newStatus,
+              ...(newStatus === "Rejected" ? { teamId: null, notes } : { notes: notes || p.notes })
+            }
+          : p
+      )
+    );
+
+    // If rejected, remove from any assigned team members locally
+    if (newStatus === "Rejected") {
+      setTeams((prev) =>
+        prev.map((t) => ({
+          ...t,
+          members: (t.members || []).filter((mid) => mid !== playerId)
+        }))
+      );
+    }
+
+    // Instantly update stats counters
+    setStats((prev) => {
+      if (!prev || oldStatus === newStatus) return prev;
+      const s = { ...prev };
+      if (oldStatus === "Pending") s.pending = Math.max(0, (s.pending || 0) - 1);
+      if (oldStatus === "Approved") s.approved = Math.max(0, (s.approved || 0) - 1);
+      if (oldStatus === "Rejected") s.rejected = Math.max(0, (s.rejected || 0) - 1);
+
+      if (newStatus === "Approved") s.approved = (s.approved || 0) + 1;
+      if (newStatus === "Rejected") s.rejected = (s.rejected || 0) + 1;
+      if (newStatus === "Pending") s.pending = (s.pending || 0) + 1;
+
+      s.available = Math.max(0, (s.maxCapacity || 154) - s.approved);
+      s.remainingSlots = s.available;
+      return s;
+    });
+
+    if (inspectPlayer && inspectPlayer.id === playerId) {
+      if (newStatus === "Rejected") {
+        setInspectPlayer(null);
+      } else {
+        setInspectPlayer((prev) => (prev ? { ...prev, paymentStatus: newStatus } : null));
+      }
+    }
+
+    showToast(
+      `Marked as ${newStatus}!${newStatus === "Rejected" ? " Rejection notice queued." : ""}`,
+      "success"
+    );
+
+    // 2. Perform DB update in background (lightweight & fast)
     try {
       const res = await fetch("/api/admin/players", {
         method: "POST",
@@ -218,28 +270,20 @@ export default function AdminDashboard() {
         body: JSON.stringify({ id: playerId, status: newStatus, notes }),
       });
       const data = await res.json();
-      if (data.success) {
-        if (newStatus === "Rejected") {
-          setPlayers(prev => prev.map(p => p.id === playerId ? { ...p, paymentStatus: "Rejected", teamId: null, notes } : p));
-        } else if (newStatus === "Approved") {
-          setPlayers(prev => prev.map(p => p.id === playerId ? { ...p, paymentStatus: "Approved" } : p));
-        }
-        await refreshData();
-        if (inspectPlayer && inspectPlayer.id === playerId) {
-          if (newStatus === "Rejected") {
-            setInspectPlayer(null);
-          } else {
-            setInspectPlayer(prev => prev ? { ...prev, paymentStatus: newStatus } : null);
-          }
-        }
-        showToast(`Registration marked as ${newStatus}!${newStatus === "Rejected" ? " Rejection reason dispatched." : ""}`, "success");
-      } else {
-        showToast(data.error || "Failed to update status", "error");
+      if (!data.success) {
+        // Rollback state on error
+        setPlayers(prevPlayers);
+        setStats(prevStats);
+        setTeams(prevTeams);
+        showToast(data.error || "Failed to update status on server", "error");
+      } else if (data.stats) {
+        setStats(data.stats);
       }
     } catch (err) {
+      setPlayers(prevPlayers);
+      setStats(prevStats);
+      setTeams(prevTeams);
       showToast("Failed to update status: " + err.message, "error");
-    } finally {
-      setActionLoading(prev => { const n = {...prev}; delete n[key]; return n; });
     }
   };
 
@@ -251,36 +295,60 @@ export default function AdminDashboard() {
   const handleConfirmReject = async (e) => {
     if (e) e.preventDefault();
     if (!rejectPlayerModal) return;
-    setIsRejecting(true);
-    await handleUpdateStatus(rejectPlayerModal.id, "Rejected", rejectReason);
+    const modalPlayer = rejectPlayerModal;
+    const reason = rejectReason;
     setIsRejecting(false);
     setRejectPlayerModal(null);
     setRejectReason("");
+    await handleUpdateStatus(modalPlayer.id, "Rejected", reason);
   };
 
   const handleSavePlayerEdit = async (e) => {
     e.preventDefault();
     setIsSavingPlayer(true);
+    const prevPlayers = players;
+    const prevInspect = inspectPlayer;
+
+    // Optimistic update
+    setPlayers((prev) =>
+      prev.map((p) => (p.id === editPlayer.id ? { ...p, ...editPlayer } : p))
+    );
+    if (inspectPlayer && inspectPlayer.id === editPlayer.id) {
+      setInspectPlayer((prev) => ({ ...prev, ...editPlayer }));
+    }
+    const targetPlayer = editPlayer;
+    setEditPlayer(null);
+    showToast("Player details updated!", "success");
+
     try {
       const res = await fetch("/api/admin/players", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: "edit",
-          id: editPlayer.id,
-          playerData: editPlayer
+          id: targetPlayer.id,
+          playerData: targetPlayer
         }),
       });
       const data = await res.json();
-      if (data.success) {
-        setPlayers(data.players);
-        setEditPlayer(null);
-        if (inspectPlayer && inspectPlayer.id === editPlayer.id) {
-          setInspectPlayer(data.player);
+      if (!data.success) {
+        setPlayers(prevPlayers);
+        setInspectPlayer(prevInspect);
+        showToast(data.error || "Failed to save player details", "error");
+      } else {
+        if (data.player) {
+          setPlayers((prev) =>
+            prev.map((p) => (p.id === data.player.id ? data.player : p))
+          );
+          if (inspectPlayer && inspectPlayer.id === data.player.id) {
+            setInspectPlayer(data.player);
+          }
         }
-        showToast("Player details updated successfully!", "success");
+        if (data.stats) setStats(data.stats);
       }
     } catch (err) {
+      setPlayers(prevPlayers);
+      setInspectPlayer(prevInspect);
       showToast("Failed to update player: " + err.message, "error");
     } finally {
       setIsSavingPlayer(false);
@@ -293,6 +361,14 @@ export default function AdminDashboard() {
       message: "Are you sure you want to permanently delete this registration? All submitted documents will be removed.",
       confirmText: "Yes, Delete Player",
       onConfirm: async () => {
+        const prevPlayers = players;
+        const prevStats = stats;
+
+        // Optimistic delete
+        setPlayers((prev) => prev.filter((p) => p.id !== playerId));
+        if (inspectPlayer && inspectPlayer.id === playerId) setInspectPlayer(null);
+        showToast("Player registration deleted!", "success");
+
         try {
           const res = await fetch("/api/admin/players", {
             method: "POST",
@@ -300,40 +376,69 @@ export default function AdminDashboard() {
             body: JSON.stringify({ action: "delete", id: playerId }),
           });
           const data = await res.json();
-          if (data.success) {
-            setPlayers(data.players);
-            if (data.stats) setStats(data.stats);
-            if (inspectPlayer && inspectPlayer.id === playerId) setInspectPlayer(null);
-            showToast("Player registration deleted successfully!", "success");
+          if (!data.success) {
+            setPlayers(prevPlayers);
+            setStats(prevStats);
+            showToast(data.error || "Failed to delete player", "error");
+          } else if (data.stats) {
+            setStats(data.stats);
           }
         } catch (err) {
+          setPlayers(prevPlayers);
+          setStats(prevStats);
           showToast("Failed to delete player: " + err.message, "error");
         }
       }
     });
   };
 
+  // --- TEAM ASSIGNMENT (ZERO DELAY OPTIMISTIC FEEDBACK) ---
   const handleAssignTeam = async (playerId, teamId) => {
-    const key = `assign_${playerId}`;
-    setActionLoading(prev => ({ ...prev, [key]: true }));
+    const cleanTeamId = teamId && teamId !== "unassign" && teamId !== "" ? teamId : null;
+    const prevPlayers = players;
+    const prevTeams = teams;
+
+    // 1. OPTIMISTIC UPDATE: Instant dropdown change and squad count update
+    setPlayers((prev) =>
+      prev.map((p) => (p.id === playerId ? { ...p, teamId: cleanTeamId } : p))
+    );
+
+    setTeams((prev) =>
+      prev.map((t) => {
+        const withoutPlayer = (t.members || []).filter((mid) => mid !== playerId);
+        if (cleanTeamId && t.id === cleanTeamId) {
+          return { ...t, members: [...withoutPlayer, playerId] };
+        }
+        return { ...t, members: withoutPlayer };
+      })
+    );
+
+    const teamObj = teams.find((t) => t.id === cleanTeamId);
+    showToast(
+      cleanTeamId ? `Assigned to ${teamObj?.name || "team"}!` : "Player unassigned from team.",
+      "success"
+    );
+
+    // 2. Perform background DB update without blocking UI
     try {
       const res = await fetch("/api/admin/teams", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "assign", playerId, teamId: teamId || null }),
+        body: JSON.stringify({ action: "assign", playerId, teamId: cleanTeamId }),
       });
       const data = await res.json();
-      if (data.success) {
-        setPlayers((prev) =>
-          prev.map((p) => (p.id === playerId ? { ...p, teamId: teamId || null } : p))
-        );
-        loadAllData();
-        showToast("Team assignment updated!", "success");
+      if (!data.success) {
+        // Rollback on server rejection (e.g. squad full)
+        setPlayers(prevPlayers);
+        setTeams(prevTeams);
+        showToast(data.error || "Failed to assign team", "error");
+      } else if (data.teams) {
+        setTeams(data.teams);
       }
     } catch (err) {
+      setPlayers(prevPlayers);
+      setTeams(prevTeams);
       showToast("Failed to assign team: " + err.message, "error");
-    } finally {
-      setActionLoading(prev => { const n = { ...prev }; delete n[key]; return n; });
     }
   };
 
@@ -405,7 +510,7 @@ export default function AdminDashboard() {
           const data = await res.json();
           if (data.success) {
             setTeams(data.teams);
-            loadAllData();
+            setPlayers(prev => prev.map(p => p.teamId === teamId ? { ...p, teamId: null } : p));
             showToast("Team deleted successfully!", "success");
           }
         } catch (err) {
@@ -958,7 +1063,6 @@ export default function AdminDashboard() {
                       <select
                         value={player.teamId || ""}
                         onChange={(e) => handleAssignTeam(player.id, e.target.value)}
-                        disabled={actionLoading[`assign_${player.id}`]}
                         className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-semibold text-slate-700"
                       >
                         <option value="">— Unassigned (Auction Pool) —</option>
@@ -1130,7 +1234,6 @@ export default function AdminDashboard() {
                               <select
                                 value={player.teamId || ""}
                                 onChange={(e) => handleAssignTeam(player.id, e.target.value)}
-                        disabled={actionLoading[`assign_${player.id}`]}
                                 className="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50 text-xs font-semibold text-slate-700"
                               >
                                 <option value="">— Unassigned —</option>
