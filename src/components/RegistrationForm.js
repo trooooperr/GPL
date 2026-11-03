@@ -322,8 +322,29 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
 
         {/* Success View */}
         {successData ? (
-          <div className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200 shadow-xl p-6 sm:p-10 text-center space-y-6 animate-scaleUp">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto rounded-full bg-emerald-50 border-2 border-emerald-400 flex items-center justify-center text-emerald-600 shadow-inner">
+          <div className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200 shadow-xl p-6 sm:p-10 text-center space-y-6 animate-scaleUp relative overflow-hidden">
+            {/* Confetti Explosion Particles */}
+            <div className="absolute inset-0 pointer-events-none overflow-hidden">
+              {[...Array(24)].map((_, i) => (
+                <div
+                  key={i}
+                  className="confetti-particle rounded-sm"
+                  style={{
+                    left: `${(i * 4.2) % 100}%`,
+                    width: `${6 + (i % 5) * 2}px`,
+                    height: `${10 + (i % 4) * 3}px`,
+                    backgroundColor: [
+                      "#10b981", "#f59e0b", "#3b82f6", "#ec4899", "#8b5cf6", "#eab308"
+                    ][i % 6],
+                    animationDelay: `${(i * 0.12).toFixed(2)}s`,
+                    animationDuration: `${2.5 + (i % 3) * 0.5}s`,
+                    transform: `rotate(${i * 35}deg)`,
+                  }}
+                />
+              ))}
+            </div>
+
+            <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto rounded-full bg-emerald-50 border-2 border-emerald-400 flex items-center justify-center text-emerald-600 shadow-inner relative z-10">
               <CheckCircle2 className="w-10 h-10 sm:w-12 sm:h-12" />
             </div>
 

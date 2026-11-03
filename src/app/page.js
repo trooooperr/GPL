@@ -6,16 +6,7 @@ import {
   MongoSetting
 } from "@/lib/mongodb";
 import { INITIAL_TEAMS, INITIAL_RULES, INITIAL_SETTINGS } from "@/lib/constants";
-import Navbar from "@/components/Navbar";
-import BannerCarousel from "@/components/BannerCarousel";
-import Hero from "@/components/Hero";
-import PrizesSection from "@/components/PrizesSection";
-
-import TeamsGrid from "@/components/TeamsGrid";
-import RulesSection from "@/components/RulesSection";
-import RegistrationForm from "@/components/RegistrationForm";
-import VenueMap from "@/components/VenueMap";
-import Footer from "@/components/Footer";
+import HomeClient from "@/components/HomeClient";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -39,6 +30,7 @@ export default async function Home() {
   let teams = INITIAL_TEAMS;
   let rules = INITIAL_RULES;
   let settings = INITIAL_SETTINGS;
+  let players = [];
   let stats = {
     totalRegistrations: 0,
     totalRegistered: 0,
@@ -58,7 +50,10 @@ export default async function Home() {
 
     const [mongoTeams, mongoRegs, ruleDoc, settingDoc] = await Promise.all([
       MongoTeam.find().lean(),
-      MongoRegistration.find({}, "id name speciality ward tshirtSize paymentStatus").lean(),
+      MongoRegistration.find(
+        {},
+        "id regNumber name speciality ward tshirtSize trackSize paymentStatus photoUrl teamId"
+      ).lean(),
       MongoRule.findOne().lean(),
       MongoSetting.findOne({ key: "global_settings" }).lean(),
     ]);
@@ -71,7 +66,19 @@ export default async function Home() {
       rules = ruleDoc.rules;
     }
 
-    const regs = mongoRegs || [];
+    const regs = (mongoRegs || []).map((r) => ({
+      id: r.id,
+      regNumber: r.regNumber || (r.id ? r.id.replace(/\D/g, "") : ""),
+      name: r.name,
+      speciality: r.speciality,
+      ward: r.ward,
+      tshirtSize: r.tshirtSize,
+      trackSize: r.trackSize,
+      paymentStatus: r.paymentStatus,
+      photoUrl: r.photoUrl,
+      teamId: r.teamId
+    }));
+    players = regs;
 
     if (mongoTeams && mongoTeams.length > 0) {
       teams = mongoTeams.map((t) => ({
@@ -101,7 +108,7 @@ export default async function Home() {
     const approved = regs.filter((p) => p.paymentStatus === "Approved").length;
     const rejected = regs.filter((p) => p.paymentStatus === "Rejected").length;
     const pending = regs.filter((p) => p.paymentStatus === "Pending").length;
-    const totalTeamsCount = teams.length || 11;
+    const totalTeamsCount = teams.length || 10;
     const cap = totalTeamsCount * 14;
 
     stats = {
@@ -122,17 +129,12 @@ export default async function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-[#0a0e1a] via-[#0d1526] to-[#111b2e] font-sans antialiased text-white">
-      <Navbar settings={settings} />
-      <BannerCarousel />
-      <Hero stats={stats} settings={settings} />
-      <PrizesSection stats={stats} settings={settings} />
-
-      <TeamsGrid teams={teams} />
-      <RulesSection rules={rules} />
-      <RegistrationForm stats={stats} settings={settings} />
-      <VenueMap />
-      <Footer settings={settings} />
-    </main>
+    <HomeClient
+      teams={teams}
+      rules={rules}
+      settings={settings}
+      stats={stats}
+      players={players}
+    />
   );
 }
