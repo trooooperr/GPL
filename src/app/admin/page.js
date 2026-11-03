@@ -40,8 +40,7 @@ import {
   ChevronRight,
   Printer,
   CheckSquare,
-  Square,
-  MessageSquare
+  Square
 } from "lucide-react";
 import QRCode from "qrcode";
 import { INITIAL_RULES } from "@/lib/constants";
@@ -1328,20 +1327,7 @@ export default function AdminDashboard() {
                           className="mt-1 w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
                         />
                         <div>
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <h3 className="font-bold text-slate-900 text-sm leading-tight">{player.name}</h3>
-                            {player.phone && (
-                              <a
-                                href={`https://wa.me/91${player.phone.replace(/\D/g, "")}?text=${encodeURIComponent(`Hi ${player.name}, regards from Goregaon Premier League (GPL). Reg #${player.regNumber || player.id}`)}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="p-1 rounded bg-emerald-50 text-emerald-600 hover:bg-emerald-100 inline-flex items-center"
-                                title="Chat on WhatsApp"
-                              >
-                                <MessageSquare className="w-3 h-3 text-emerald-600" />
-                              </a>
-                            )}
-                          </div>
+                          <h3 className="font-bold text-slate-900 text-sm leading-tight">{player.name}</h3>
                           <span className="text-xs font-mono font-bold text-blue-600 block mt-0.5">
                             #{player.regNumber || (player.id ? player.id.replace(/\D/g, "") : "")}
                           </span>
@@ -1544,20 +1530,7 @@ export default function AdminDashboard() {
                                   )}
                                 </div>
                                 <div>
-                                  <div className="flex items-center gap-1.5">
-                                    <span className="font-bold text-slate-900 text-sm">{player.name}</span>
-                                    {player.phone && (
-                                      <a
-                                        href={`https://wa.me/91${player.phone.replace(/\D/g, "")}?text=${encodeURIComponent(`Hi ${player.name}, greetings from Goregaon Premier League (GPL). Reg #${player.regNumber || player.id}`)}`}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="p-1 rounded bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors"
-                                        title="Chat on WhatsApp"
-                                      >
-                                        <MessageSquare className="w-3 h-3" />
-                                      </a>
-                                    )}
-                                  </div>
+                                  <div className="font-bold text-slate-900 text-sm">{player.name}</div>
                                   <div className="flex items-center gap-2 text-xs text-slate-500 mt-0.5">
                                     <span className="font-mono text-blue-600 font-bold">#{player.regNumber || (player.id ? player.id.replace(/\D/g, "") : "")}</span>
                                     <span>•</span>
@@ -2147,16 +2120,6 @@ export default function AdminDashboard() {
               </div>
 
               <div className="flex items-center gap-1.5">
-                <a
-                  href={`https://wa.me/91${inspectPlayer.phone.replace(/\D/g, "")}?text=${encodeURIComponent(`Hello ${inspectPlayer.name}, this is from Goregaon Premier League (Radhe Radhe Chashak) Organizing Committee regarding your application #${inspectPlayer.regNumber || inspectPlayer.id}.`)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-2 py-1 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 text-xs font-bold inline-flex items-center gap-1 border border-emerald-200"
-                  title="Chat on WhatsApp"
-                >
-                  <MessageSquare className="w-3.5 h-3.5 text-emerald-600" />
-                  <span className="hidden sm:inline">WhatsApp</span>
-                </a>
                 <a
                   href={`tel:${inspectPlayer.phone}`}
                   className="px-2 py-1 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 text-xs font-bold inline-flex items-center gap-1 border border-blue-200"
