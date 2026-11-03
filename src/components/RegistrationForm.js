@@ -18,10 +18,12 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
   });
 
   const [files, setFiles] = useState({
+    profilePhoto: null,
     aadhaarFront: null,
     aadhaarBack: null,
     paymentProof: null
   });
+  const [photoPreview, setPhotoPreview] = useState("");
 
   const [fieldErrors, setFieldErrors] = useState({});
   const [copiedUpi, setCopiedUpi] = useState(false);
@@ -149,6 +151,9 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
       try {
         const fileObj = await compressImageToDataUrl(rawFile);
         setFiles((prev) => ({ ...prev, [field]: fileObj }));
+        if (field === "profilePhoto") {
+          setPhotoPreview(fileObj.dataUrl);
+        }
         if (fieldErrors[field]) {
           setFieldErrors((prev) => ({ ...prev, [field]: "" }));
         }
@@ -255,6 +260,7 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
         tshirtSize: formData.tshirtSize,
         trackSize: formData.trackSize,
         utrNumber: formData.utrNumber.trim(),
+        photo: files.profilePhoto?.dataUrl || "",
         aadhaarFront: files.aadhaarFront?.dataUrl || files.aadhaarFront || "",
         aadhaarBack: files.aadhaarBack?.dataUrl || files.aadhaarBack || "",
         paymentProof: files.paymentProof?.dataUrl || files.paymentProof || "",
@@ -390,13 +396,29 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
                     ward: "Ward 51",
                     utrNumber: ""
                   });
-                  setFiles({ aadhaarFront: null, aadhaarBack: null, paymentProof: null });
+                  setFiles({ profilePhoto: null, aadhaarFront: null, aadhaarBack: null, paymentProof: null });
+                  setPhotoPreview("");
                   setFieldErrors({});
                 }}
                 className="w-full sm:w-auto px-6 py-2.5 bg-[#059669] text-white rounded-lg font-bold text-xs hover:bg-[#047857] transition-colors"
               >
                 Register Another Player
               </button>
+            </div>
+          </div>
+        ) : settings.registrationOpen === false ? (
+          <div className="bg-white/95 backdrop-blur-md rounded-2xl sm:rounded-3xl border border-slate-200/90 shadow-xl p-8 sm:p-12 text-center space-y-4">
+            <div className="w-16 h-16 mx-auto rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600">
+              <AlertCircle className="w-8 h-8" />
+            </div>
+            <h3 className="text-2xl sm:text-3xl font-black text-[#081a36]">
+              Registrations Are Currently Closed
+            </h3>
+            <p className="text-slate-600 text-sm sm:text-base max-w-md mx-auto">
+              Online player registrations for Goregaon Premier League are currently closed by the organizing committee. Please contact the tournament coordinators for inquiries.
+            </p>
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-full text-xs font-semibold text-slate-700">
+              <span>Ward 51 &amp; 54 • Mohsin Patel &amp; Balram Gupta (Ballu)</span>
             </div>
           </div>
         ) : (
@@ -583,6 +605,49 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
                 {fieldErrors.trackSize && (
                   <p className="text-[11px] text-red-600 font-medium mt-1">{fieldErrors.trackSize}</p>
                 )}
+              </div>
+            </div>
+
+            {/* Profile Photo Upload */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 p-4 rounded-xl border border-slate-200 bg-slate-50/60">
+              {/* Circle preview */}
+              <div className="shrink-0 relative">
+                <div className="w-24 h-24 rounded-full border-2 border-dashed border-slate-300 bg-white overflow-hidden flex items-center justify-center shadow-sm">
+                  {photoPreview ? (
+                    <img src={photoPreview} alt="Profile preview" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="flex flex-col items-center text-slate-400">
+                      <UploadCloud className="w-6 h-6 mb-1" />
+                      <span className="text-[9px] font-semibold">PHOTO</span>
+                    </div>
+                  )}
+                </div>
+                {photoPreview && (
+                  <button
+                    type="button"
+                    onClick={() => { setPhotoPreview(""); setFiles(p => ({ ...p, profilePhoto: null })); }}
+                    className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 text-white flex items-center justify-center text-[10px] font-bold hover:bg-red-600 transition-colors"
+                    title="Remove photo"
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Profile Photo <span className="text-slate-400 font-normal">(Optional)</span>
+                </label>
+                <p className="text-[11px] text-slate-500 mb-2">A clear face photo. Max 5 MB. JPG, PNG or WEBP.</p>
+                <label className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 cursor-pointer transition-all hover:border-[#059669] text-xs font-semibold text-slate-700">
+                  <UploadCloud className="w-3.5 h-3.5 text-[#059669]" />
+                  {files.profilePhoto ? files.profilePhoto.name : "Choose Photo"}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => handleFileChange("profilePhoto", e)}
+                    className="sr-only"
+                  />
+                </label>
               </div>
             </div>
 

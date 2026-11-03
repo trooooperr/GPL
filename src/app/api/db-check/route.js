@@ -8,10 +8,26 @@ import {
   MongoRule
 } from "@/lib/mongodb";
 
+import { verifyAuthCookie } from "@/lib/auth";
+
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-export async function GET() {
+export async function GET(request) {
+  const isAuthed = await verifyAuthCookie(request);
+  const secretParam = request.nextUrl?.searchParams?.get("secret");
+  const validSecret = process.env.ADMIN_PASSWORD || "GPL@AdminNew2026";
+
+  if (!isAuthed && (!secretParam || secretParam !== validSecret)) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Unauthorized access to diagnostics. Please log in to admin or supply ?secret= in the query parameters."
+      },
+      { status: 401 }
+    );
+  }
+
   const uri = process.env.MONGODB_URI;
   const isUriPresent = Boolean(uri);
 

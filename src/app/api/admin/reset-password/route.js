@@ -32,7 +32,9 @@ export async function POST(request) {
       );
     }
 
-    const otpData = global.__gplOtpStore || {};
+    await connectToDatabase();
+    const otpDoc = await MongoSetting.findOne({ key: "admin_password_otp" }).lean();
+    const otpData = otpDoc?.value || {};
 
     if (!otpData.code) {
       return NextResponse.json(
@@ -42,7 +44,7 @@ export async function POST(request) {
     }
 
     if (Date.now() > otpData.expiresAt) {
-      global.__gplOtpStore = {};
+      await MongoSetting.findOneAndDelete({ key: "admin_password_otp" });
       return NextResponse.json(
         { success: false, error: "Verification code has expired. Please request a new OTP." },
         { status: 400 }
@@ -57,7 +59,6 @@ export async function POST(request) {
     }
 
     // OTP is valid! Update admin password in Mongo
-    await connectToDatabase();
     const existing = await MongoSetting.findOne({ key: "global_settings" }).lean();
     const merged = { ...INITIAL_SETTINGS, ...(existing?.value || {}), adminPassword: newPassword.trim() };
 
@@ -67,7 +68,8 @@ export async function POST(request) {
       { upsert: true }
     );
 
-    global.__gplOtpStore = {};
+    // Delete verified OTP
+    await MongoSetting.findOneAndDelete({ key: "admin_password_otp" });
 
     return NextResponse.json({
       success: true,

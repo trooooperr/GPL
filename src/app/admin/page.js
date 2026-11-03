@@ -1046,8 +1046,19 @@ export default function AdminDashboard() {
                         return (
                           <tr key={player.id} className="hover:bg-slate-50/70 transition-colors">
                             <td className="py-4 px-5">
-                              <div className="font-bold text-slate-900 text-sm">{player.name}</div>
-                              <div className="text-xs text-slate-500 mt-0.5">{player.phone}</div>
+                              <div className="flex items-center gap-2.5">
+                                <div className="w-8 h-8 rounded-full bg-blue-100 text-[#0041b9] flex items-center justify-center font-bold text-xs shrink-0 overflow-hidden border border-blue-200">
+                                  {player.photoUrl && !player.photoUrl.includes('placeholder') ? (
+                                    <img src={player.photoUrl} alt={player.name} className="w-full h-full object-cover" />
+                                  ) : (
+                                    player.name[0]
+                                  )}
+                                </div>
+                                <div>
+                                  <div className="font-bold text-slate-900 text-sm">{player.name}</div>
+                                  <div className="text-xs text-slate-500 mt-0.5">{player.phone}</div>
+                                </div>
+                              </div>
                             </td>
                             <td className="py-4 px-5">
                               <div className="font-semibold text-slate-800">{player.speciality}</div>
@@ -1063,6 +1074,15 @@ export default function AdminDashboard() {
                             </td>
                             <td className="py-4 px-5">
                               <div className="flex items-center gap-1.5">
+                                {player.photoUrl && !player.photoUrl.includes('placeholder') && (
+                                  <button
+                                    onClick={() => setFullScreenImage({ url: player.photoUrl, title: `Profile Photo - ${player.name}` })}
+                                    className="p-1 rounded bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-mono text-[10px] px-1.5 cursor-pointer"
+                                    title="Profile Photo"
+                                  >
+                                    Ph
+                                  </button>
+                                )}
                                 <button
                                   onClick={() => setFullScreenImage({ url: player.aadhaarFrontUrl, title: `Aadhaar Front - ${player.name}` })}
                                   className="p-1 rounded bg-blue-50 text-[#0041b9] hover:bg-blue-100 font-mono text-[10px] px-1.5 cursor-pointer"
@@ -1377,6 +1397,27 @@ export default function AdminDashboard() {
 
             <form onSubmit={handleSaveSettings} className="space-y-4">
               
+              {/* Registration Status Toggle */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border border-slate-200 bg-slate-50 gap-3">
+                <div>
+                  <h4 className="text-xs font-bold text-slate-900">Online Player Registration Status</h4>
+                  <p className="text-[11px] text-slate-500">
+                    Control whether new players can submit registrations on the public website.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSettings({ ...settings, registrationOpen: settings.registrationOpen === false ? true : false })}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs self-start sm:self-auto ${
+                    settings.registrationOpen !== false
+                      ? "bg-emerald-600 text-white hover:bg-emerald-700"
+                      : "bg-red-600 text-white hover:bg-red-700"
+                  }`}
+                >
+                  {settings.registrationOpen !== false ? "✓ REGISTRATION ACTIVE" : "✕ REGISTRATION CLOSED"}
+                </button>
+              </div>
+              
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">
                   Payee UPI ID (Google Pay / PhonePe / Paytm)
@@ -1580,8 +1621,15 @@ export default function AdminDashboard() {
             </button>
 
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-blue-100 text-[#0041b9] flex items-center justify-center font-bold text-lg cursor-pointer">
-                {inspectPlayer.name[0]}
+              <div
+                className="w-12 h-12 rounded-full bg-blue-100 text-[#0041b9] flex items-center justify-center font-bold text-lg overflow-hidden cursor-pointer border-2 border-blue-200"
+                onClick={() => inspectPlayer.photoUrl && !inspectPlayer.photoUrl.includes('placeholder') && setFullScreenImage({ url: inspectPlayer.photoUrl, title: `Profile Photo - ${inspectPlayer.name}` })}
+              >
+                {inspectPlayer.photoUrl && !inspectPlayer.photoUrl.includes('placeholder') ? (
+                  <img src={inspectPlayer.photoUrl} alt={inspectPlayer.name} className="w-full h-full object-cover" />
+                ) : (
+                  inspectPlayer.name[0]
+                )}
               </div>
               <div>
                 <h3 className="text-lg font-bold text-slate-900 leading-tight">{inspectPlayer.name}</h3>
@@ -1590,8 +1638,24 @@ export default function AdminDashboard() {
             </div>
 
             {/* Document Previews */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+
+              {/* Profile Photo (only if provided) */}
+              {inspectPlayer.photoUrl && !inspectPlayer.photoUrl.includes('placeholder') && (
+                <div className="space-y-1">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase block">Profile Photo</span>
+                  <div
+                    onClick={() => setFullScreenImage({ url: inspectPlayer.photoUrl, title: `Profile Photo - ${inspectPlayer.name}` })}
+                    className="h-32 sm:h-36 rounded-xl bg-slate-100 border border-slate-200 overflow-hidden flex items-center justify-center cursor-pointer group relative hover:border-[#0041b9]"
+                  >
+                    <img src={inspectPlayer.photoUrl} alt="Profile" className="max-h-full max-w-full object-cover" />
+                    <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-white">
+                      <Maximize2 className="w-5 h-5" />
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Aadhaar Front */}
               <div className="space-y-1">
                 <span className="text-[10px] font-bold text-slate-500 uppercase block">Aadhaar Front</span>

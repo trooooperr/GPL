@@ -1,1 +1,42 @@
-[]
+[
+  {
+    "id": "EML-1793695822675",
+    "timestamp": "2026-11-03T08:50:22.675Z",
+    "type": "ADMIN_NOTIFICATION",
+    "playerId": "1057",
+    "status": "ERROR",
+    "error": "Invalid login: 535-5.7.8 Username and Password not accepted. For more information, go to\n535 5.7.8  https://support.google.com/mail/?p=BadCredentials 41be03b00d2f7-cdb364a987esm903261a12.22 - gsmtp"
+  },
+  {
+    "id": "EML-1793695822313",
+    "timestamp": "2026-11-03T08:50:22.313Z",
+    "type": "ADMIN_NOTIFICATION",
+    "playerId": "1055",
+    "status": "ERROR",
+    "error": "Invalid login: 535-5.7.8 Username and Password not accepted. For more information, go to\n535 5.7.8  https://support.google.com/mail/?p=BadCredentials d9443c01a7336-2eb39262c47sm37838135ad.38 - gsmtp"
+  },
+  {
+    "id": "EML-1793695822310",
+    "timestamp": "2026-11-03T08:50:22.310Z",
+    "type": "ADMIN_NOTIFICATION",
+    "playerId": "1054",
+    "status": "ERROR",
+    "error": "Invalid login: 535-5.7.8 Username and Password not accepted. For more information, go to\n535 5.7.8  https://support.google.com/mail/?p=BadCredentials d9443c01a7336-2eb392494edsm37610855ad.31 - gsmtp"
+  },
+  {
+    "id": "EML-1793695822299",
+    "timestamp": "2026-11-03T08:50:22.299Z",
+    "type": "ADMIN_NOTIFICATION",
+    "playerId": "1056",
+    "status": "ERROR",
+    "error": "Invalid login: 535-5.7.8 Username and Password not accepted. For more information, go to\n535 5.7.8  https://support.google.com/mail/?p=BadCredentials 98e67ed59e1d1-3b07c8b1913sm3300067a91.10 - gsmtp"
+  },
+  {
+    "id": "EML-1793695821919",
+    "timestamp": "2026-11-03T08:50:21.919Z",
+    "type": "ADMIN_NOTIFICATION",
+    "playerId": "1058",
+    "status": "ERROR",
+    "error": "Invalid login: 535-5.7.8 Username and Password not accepted. For more information, go to\n535 5.7.8  https://support.google.com/mail/?p=BadCredentials 98e67ed59e1d1-3ae8805ebc8sm10422797a91.3 - gsmtp"
+  }
+]

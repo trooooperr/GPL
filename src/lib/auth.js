@@ -10,8 +10,23 @@ export const COOKIE_NAME = "gpl_admin_jwt";
 export async function authenticateAdmin(username, password) {
   if (!username || !password) return false;
 
-  const configuredUser = (process.env.ADMIN_USERNAME || "admin").trim().toLowerCase();
-  const configuredPass = process.env.ADMIN_PASSWORD || "admin123";
+  let configuredUser = (process.env.ADMIN_USERNAME || "admin").trim().toLowerCase();
+  let configuredPass = process.env.ADMIN_PASSWORD || "GPL@AdminNew2026";
+
+  // Check MongoDB for updated credentials if available
+  try {
+    const { connectToDatabase, MongoSetting } = await import("@/lib/mongodb");
+    await connectToDatabase();
+    const doc = await MongoSetting.findOne({ key: "global_settings" }).lean();
+    if (doc?.value?.adminUsername) {
+      configuredUser = String(doc.value.adminUsername).trim().toLowerCase();
+    }
+    if (doc?.value?.adminPassword) {
+      configuredPass = String(doc.value.adminPassword);
+    }
+  } catch (e) {
+    // fallback to env vars / defaults if DB is temporarily unreachable
+  }
 
   const userValid = username.trim().toLowerCase() === configuredUser;
   if (!userValid) return false;

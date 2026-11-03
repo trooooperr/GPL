@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { rateLimiter, getClientIp } from "@/lib/rate-limit";
 import { sendRegistrationNotificationEmail } from "@/lib/email";
-import { connectToDatabase, MongoRegistration, MongoSetting } from "@/lib/mongodb";
+import { connectToDatabase, MongoRegistration, MongoSetting, getNextPlayerId } from "@/lib/mongodb";
 import { INITIAL_SETTINGS } from "@/lib/constants";
 import {
   sanitizeText, validatePhone, formatPhone, validateEmail,
@@ -128,28 +128,33 @@ export async function POST(request) {
       console.warn("[Register] Settings fetch error:", e.message);
     }
 
-    // Generate strictly 4-digit numeric Player ID (e.g. 1001, 1002, 1003...)
-    const existingPlayers = await MongoRegistration.find().select("id regNumber").lean();
-    let maxNumericId = 1000;
-    for (const p of existingPlayers) {
-      if (/^\d{4}$/.test(p.id)) {
-        const val = parseInt(p.id, 10);
-        if (val > maxNumericId) maxNumericId = val;
-      } else if (/^\d{4}$/.test(p.regNumber)) {
-        const val = parseInt(p.regNumber, 10);
-        if (val > maxNumericId) maxNumericId = val;
-      }
+    // 1. Check if tournament registration is closed by committee
+    if (settings.registrationOpen === false) {
+      return NextResponse.json({
+        success: false,
+        message: "Online player registrations for Goregaon Premier League are currently closed by the tournament committee."
+      }, { status: 400, headers: NO_CACHE_HEADERS });
     }
-    const nextIdNum = maxNumericId + 1;
-    const id = String(nextIdNum);
-    const regNumber = id;
 
-    const newPlayer = {
-      id,
-      regNumber,
+    const cleanPhone = (phone || "").replace(/\D/g, "").slice(0, 10);
+
+    // 2. Prevent duplicate active registrations for the same phone number
+    const existingActivePlayer = await MongoRegistration.findOne({
+      phone: cleanPhone,
+      paymentStatus: { $in: ["Approved", "Pending"] }
+    }).lean();
+
+    if (existingActivePlayer) {
+      return NextResponse.json({
+        success: false,
+        message: `A registration with mobile number ${cleanPhone} already exists (Status: ${existingActivePlayer.paymentStatus}, Player ID: #${existingActivePlayer.regNumber || existingActivePlayer.id}). Please contact the organizing committee for updates.`
+      }, { status: 400, headers: NO_CACHE_HEADERS });
+    }
+
+    const newPlayerBase = {
       name,
-      email: email || `${phone}@gplcricket.local`,
-      phone: (phone || "").replace(/\D/g, "").slice(0, 10),
+      email: email || `${cleanPhone}@gplcricket.local`,
+      phone: cleanPhone,
       dob: dob || "",
       age,
       ward: ward || "Ward 51",
@@ -175,9 +180,18 @@ export async function POST(request) {
       ]
     };
 
-    // Save to MongoDB — await and DO NOT swallow errors
-    await MongoRegistration.create(newPlayer);
-    console.log("[Register] Player saved to MongoDB with 4-digit ID:", id, name);
+    // 3. Ultra-Reliable Atomic MongoDB Counter ID Generation (Guarantees zero collisions)
+    const id = await getNextPlayerId();
+    const regNumber = id;
+
+    const candidatePlayer = {
+      ...newPlayerBase,
+      id,
+      regNumber
+    };
+
+    const newPlayer = await MongoRegistration.create(candidatePlayer);
+    console.log("[Register] Player saved to MongoDB with Atomic ID:", id, name);
 
     // Send email notification to configured admin email (defaults to goregaonpremierleague11@gmail.com)
     sendRegistrationNotificationEmail(newPlayer, settings.adminEmail).catch((err) => {

@@ -32,18 +32,20 @@ export async function POST(request) {
 
     let fileUrl = dataUrl;
 
-    try {
-      const uploadsDir = path.join(process.cwd(), "public", "uploads");
-      if (!fs.existsSync(uploadsDir)) {
-        fs.mkdirSync(uploadsDir, { recursive: true });
+    // In local development, save to public/uploads; in serverless/production (Vercel), use dataUrl
+    if (!process.env.VERCEL && process.env.NODE_ENV !== "production") {
+      try {
+        const uploadsDir = path.join(process.cwd(), "public", "uploads");
+        if (!fs.existsSync(uploadsDir)) {
+          fs.mkdirSync(uploadsDir, { recursive: true });
+        }
+        const savePath = path.join(uploadsDir, uniqueName);
+        await fs.promises.writeFile(savePath, buffer);
+        fileUrl = `/uploads/${uniqueName}`;
+      } catch (fsErr) {
+        console.warn("[Upload FS Warning - Using DataURI]:", fsErr.message);
+        fileUrl = dataUrl;
       }
-      const savePath = path.join(uploadsDir, uniqueName);
-      await fs.promises.writeFile(savePath, buffer);
-      fileUrl = `/uploads/${uniqueName}`;
-    } catch (fsErr) {
-      // On Vercel / read-only filesystem, use the dataUrl
-      console.warn("[Upload FS Warning - Using DataURI]:", fsErr.message);
-      fileUrl = dataUrl;
     }
 
     return NextResponse.json({

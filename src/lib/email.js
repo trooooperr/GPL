@@ -20,8 +20,21 @@ function logEmailDispatch(entry) {
     if (logs.length > 100) logs = logs.slice(0, 100);
     fs.writeFileSync(LOGS_FILE, JSON.stringify(logs, null, 2), "utf-8");
   } catch (e) {
-    console.error("Failed to write email log:", e);
+    // Expected on read-only serverless filesystems
   }
+
+  // Also record in MongoDB MongoAudit for serverless persistence
+  try {
+    import("@/lib/mongodb").then(async ({ connectToDatabase, MongoAudit }) => {
+      await connectToDatabase();
+      await MongoAudit.create({
+        id: `EML-${Date.now()}`,
+        timestamp: new Date().toISOString(),
+        action: "EMAIL_DISPATCH",
+        details: entry
+      });
+    }).catch(() => {});
+  } catch (e) {}
 }
 
 function getTransporter() {

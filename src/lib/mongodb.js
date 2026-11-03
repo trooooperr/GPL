@@ -52,11 +52,11 @@ const schemaOptions = { timestamps: true };
 
 // Mongoose Schemas
 const RegistrationSchema = new mongoose.Schema({
-  regNumber: { type: String },
+  regNumber: { type: String, index: true },
   id: { type: String, required: true, unique: true },
   name: { type: String, required: true },
   email: String,
-  phone: { type: String, required: true },
+  phone: { type: String, required: true, index: true },
   dob: String,
   age: Number,
   ward: { type: String, default: "Ward 51" },
@@ -65,14 +65,14 @@ const RegistrationSchema = new mongoose.Schema({
   trackSize: String,
   utrNumber: String,
   amount: { type: Number, default: 100 },
-  paymentStatus: { type: String, enum: ["Pending", "Approved", "Rejected"], default: "Pending" },
+  paymentStatus: { type: String, enum: ["Pending", "Approved", "Rejected"], default: "Pending", index: true },
   photoUrl: String,
   aadhaarFrontUrl: String,
   aadhaarBackUrl: String,
   paymentProofUrl: String,
-  teamId: { type: String, default: null },
+  teamId: { type: String, default: null, index: true },
   notes: String,
-  registeredAt: { type: String, default: () => new Date().toISOString() },
+  registeredAt: { type: String, default: () => new Date().toISOString(), index: true },
   history: [
     {
       timestamp: String,
@@ -81,6 +81,8 @@ const RegistrationSchema = new mongoose.Schema({
     }
   ]
 }, schemaOptions);
+
+RegistrationSchema.index({ registeredAt: -1, createdAt: -1 });
 
 const TeamSchema = new mongoose.Schema({
   id: { type: String, required: true, unique: true },
@@ -110,8 +112,55 @@ const AuditSchema = new mongoose.Schema({
   details: mongoose.Schema.Types.Mixed
 }, schemaOptions);
 
+const CounterSchema = new mongoose.Schema({
+  _id: { type: String, required: true },
+  seq: { type: Number, default: 1000 }
+}, { collection: "counters" });
+
 export const MongoRegistration = mongoose.models.Registration || mongoose.model("Registration", RegistrationSchema);
 export const MongoTeam = mongoose.models.Team || mongoose.model("Team", TeamSchema);
 export const MongoSetting = mongoose.models.Setting || mongoose.model("Setting", SettingSchema);
 export const MongoRule = mongoose.models.Rule || mongoose.model("Rule", RuleSchema);
 export const MongoAudit = mongoose.models.Audit || mongoose.model("Audit", AuditSchema);
+export const MongoCounter = mongoose.models.Counter || mongoose.model("Counter", CounterSchema);
+
+/**
+ * Atomic sequence generator: Guarantees sequential 4-digit numeric IDs (1001, 1002...)
+ * isolated and concurrency-safe by the MongoDB atomic engine.
+ */
+export async function getNextPlayerId() {
+  await connectToDatabase();
+  const counterId = "player_registration_seq";
+
+  // Check if counter already initialized
+  let counter = await MongoCounter.findById(counterId);
+  if (!counter) {
+    // Find current highest ID across all registered players
+    const players = await MongoRegistration.find().select("id regNumber").lean();
+    let maxNumericId = 1000;
+    for (const p of players) {
+      if (/^\d{4}$/.test(p.id)) {
+        const val = parseInt(p.id, 10);
+        if (val > maxNumericId) maxNumericId = val;
+      }
+      if (/^\d{4}$/.test(p.regNumber)) {
+        const val = parseInt(p.regNumber, 10);
+        if (val > maxNumericId) maxNumericId = val;
+      }
+    }
+    await MongoCounter.findByIdAndUpdate(
+      counterId,
+      { $setOnInsert: { seq: maxNumericId } },
+      { upsert: true }
+    );
+  }
+
+  // Atomic increment operation
+  const result = await MongoCounter.findByIdAndUpdate(
+    counterId,
+    { $inc: { seq: 1 } },
+    { returnDocument: "after", upsert: true }
+  );
+
+  return String(result.seq);
+}

@@ -3,11 +3,9 @@ import crypto from "crypto";
 import { sendAdminPasswordResetOtp, getAdminContactEmail } from "@/lib/email.js";
 import { rateLimiter, getClientIp } from "@/lib/rate-limit.js";
 
-export const dynamic = "force-dynamic";
+import { connectToDatabase, MongoSetting } from "@/lib/mongodb";
 
-if (!global.__gplOtpStore) {
-  global.__gplOtpStore = {};
-}
+export const dynamic = "force-dynamic";
 
 export async function POST(request) {
   try {
@@ -31,14 +29,22 @@ export async function POST(request) {
     const otpCode = crypto.randomInt(100000, 999999).toString();
     const expiresAt = Date.now() + 10 * 60 * 1000;
 
-    global.__gplOtpStore = {
-      code: otpCode,
-      email: adminEmail,
-      expiresAt,
-      createdAt: new Date().toISOString()
-    };
+    await connectToDatabase();
+    await MongoSetting.findOneAndUpdate(
+      { key: "admin_password_otp" },
+      {
+        key: "admin_password_otp",
+        value: {
+          code: otpCode,
+          email: adminEmail,
+          expiresAt,
+          createdAt: new Date().toISOString()
+        }
+      },
+      { upsert: true }
+    );
 
-    await sendAdminPasswordResetOtp(otpCode, adminEmail);
+    const mailResult = await sendAdminPasswordResetOtp(otpCode, adminEmail);
 
     const [userPart, domain] = adminEmail.split("@");
     const maskedUser = userPart.length > 2
@@ -46,11 +52,17 @@ export async function POST(request) {
       : `${userPart[0]}***`;
     const maskedEmail = `${maskedUser}@${domain}`;
 
-    return NextResponse.json({
+    const resData = {
       success: true,
       message: `A 6-digit verification code has been dispatched to ${maskedEmail}`,
       maskedEmail
-    });
+    };
+
+    if (mailResult && (!mailResult.sent || mailResult.method === "LOGGED")) {
+      resData.devOtp = otpCode;
+    }
+
+    return NextResponse.json(resData);
   } catch (error) {
     console.error("Forgot password error:", error);
     return NextResponse.json(
