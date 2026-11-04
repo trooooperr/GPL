@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Users, Search, Trophy, Shield, Filter, Award, Sparkles } from "lucide-react";
+import Link from "next/link";
+import { Users, Search, Trophy, Shield, Filter, Award, Sparkles, ArrowRight } from "lucide-react";
 
 export default function AuctionPool({ players = [], teams = [] }) {
   const [roleFilter, setRoleFilter] = useState("ALL");
@@ -116,8 +117,9 @@ export default function AuctionPool({ players = [], teams = [] }) {
 
         {/* Players Grid */}
         {filteredPool.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-            {filteredPool.map((player) => {
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+            {filteredPool.slice(0, 8).map((player) => {
               const assignedTeam = player.teamId ? teamMap[player.teamId] : null;
               return (
                 <div
@@ -184,6 +186,18 @@ export default function AuctionPool({ players = [], teams = [] }) {
               );
             })}
           </div>
+
+          {/* Dedicated Subdomain / Portal CTA */}
+          <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3 text-center">
+            <Link
+              href="/teams"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-[#081a36] hover:bg-[#0d2854] text-white text-xs sm:text-sm font-bold shadow-lg hover:shadow-xl transition-all cursor-pointer group"
+            >
+              <span>Explore All {approvedPlayers.length} Players on Custom Franchise Themed Pages</span>
+              <ArrowRight className="w-4 h-4 text-amber-400 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </div>
+          </>
         ) : (
           <div className="text-center py-16 bg-slate-50 rounded-3xl border border-dashed border-slate-200 space-y-2">
             <Users className="w-10 h-10 text-slate-300 mx-auto" />

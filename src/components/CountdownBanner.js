@@ -46,49 +46,49 @@ export default function CountdownBanner({ stats, onOpenStatusModal }) {
       <div className="absolute -left-20 top-0 w-72 h-72 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute -right-20 bottom-0 w-72 h-72 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-5">
+        <div className="flex flex-col lg:flex-row items-center justify-between gap-4 lg:gap-6">
           
           {/* Left: Tournament Event Title & Capacity */}
-          <div className="lg:col-span-5 space-y-3 sm:space-y-4">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-300 text-xs font-bold uppercase tracking-wider">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Season 2026 Kickoff Countdown</span>
+          <div className="w-full lg:max-w-xl space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-400/15 border border-amber-400/30 text-amber-300 text-[11px] font-bold uppercase tracking-wider">
+                <Sparkles className="w-3 h-3" />
+                <span>Season 2026 Kickoff</span>
+              </span>
+              <span className="text-[11px] text-slate-400 font-medium hidden sm:inline">
+                Sambhaji Maidan, Goregaon (E)
+              </span>
             </div>
 
-            <h3 className="text-xl sm:text-2xl md:text-3xl font-black text-white leading-tight">
-              Sambhaji Maidan Grand Tournament
-            </h3>
+            <div className="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-3">
+              <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight leading-tight">
+                Radhe Radhe Chasak GPL4
+              </h3>
+              <span className="text-xs text-slate-300 font-medium">
+                Organized by <strong className="text-white">Mohsin Patel &amp; Balram Gupta (Ballu)</strong>
+              </span>
+            </div>
 
-            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-              Ward 51 &amp; Ward 54 cricket extravaganza organized by <strong>Mohsin Patel &amp; Balram Gupta (Ballu)</strong>.
-            </p>
-
-            {/* Capacity Fill Progress */}
-            <div className="space-y-1.5 pt-1">
-              <div className="flex items-center justify-between text-xs font-semibold">
-                <span className="text-slate-300 flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                  Player Slots Filled:
-                </span>
-                <span className="font-mono text-emerald-400 font-bold">
-                  {approved} / {maxCapacity} ({fillPercentage}%)
-                </span>
-              </div>
-              <div className="w-full h-2.5 rounded-full bg-white/10 overflow-hidden border border-white/5">
+            {/* Capacity Fill Progress - Compact Bar */}
+            <div className="flex items-center gap-3 pt-0.5">
+              <div className="flex-1 max-w-xs h-2 rounded-full bg-white/10 overflow-hidden border border-white/5">
                 <div
                   className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-amber-400 transition-all duration-500"
                   style={{ width: `${Math.max(5, fillPercentage)}%` }}
                 />
               </div>
+              <span className="text-[11px] text-slate-300 font-medium whitespace-nowrap">
+                Slots: <span className="text-emerald-400 font-mono font-bold">{approved}/{maxCapacity}</span> ({fillPercentage}%)
+              </span>
             </div>
           </div>
 
           {/* Right: Live Countdown Units + Quick Action CTAs */}
-          <div className="lg:col-span-7 flex flex-col sm:flex-row items-center justify-between lg:justify-end gap-6">
+          <div className="w-full lg:w-auto flex flex-col sm:flex-row items-center justify-between lg:justify-end gap-3 sm:gap-4">
             
             {/* Countdown Flip Units */}
-            <div className="grid grid-cols-4 gap-2 sm:gap-3 w-full sm:w-auto text-center">
+            <div className="grid grid-cols-4 gap-1.5 sm:gap-2 text-center w-full sm:w-auto">
               {[
                 { label: "DAYS", value: timeLeft.days },
                 { label: "HOURS", value: timeLeft.hours },
@@ -97,12 +97,12 @@ export default function CountdownBanner({ stats, onOpenStatusModal }) {
               ].map((unit, idx) => (
                 <div
                   key={idx}
-                  className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-2.5 sm:p-3 min-w-[65px] sm:min-w-[76px] shadow-lg"
+                  className="bg-white/5 backdrop-blur-md border border-white/10 rounded-xl px-2.5 py-1.5 sm:px-3 sm:py-2 min-w-[56px] sm:min-w-[62px] shadow-sm text-center"
                 >
-                  <div className="font-mono font-black text-xl sm:text-3xl text-amber-400 leading-tight">
+                  <div className="font-mono font-black text-lg sm:text-xl text-amber-400 leading-none">
                     {String(unit.value).padStart(2, "0")}
                   </div>
-                  <div className="text-[9px] sm:text-[10px] font-bold text-slate-400 tracking-wider mt-0.5">
+                  <div className="text-[8px] sm:text-[9px] font-bold text-slate-400 tracking-wider mt-1">
                     {unit.label}
                   </div>
                 </div>
@@ -110,21 +110,21 @@ export default function CountdownBanner({ stats, onOpenStatusModal }) {
             </div>
 
             {/* CTAs: Register or Check Status */}
-            <div className="flex flex-col sm:flex-col gap-2.5 w-full sm:w-auto shrink-0">
+            <div className="flex items-center gap-2 w-full sm:w-auto shrink-0">
               <a
                 href="#register"
-                className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#059669] hover:bg-[#047857] text-white font-bold text-xs sm:text-sm text-center shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-1.5"
+                className="flex-1 sm:flex-initial px-4 py-2 rounded-xl bg-[#059669] hover:bg-[#047857] text-white font-bold text-xs text-center shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-1.5 whitespace-nowrap"
               >
                 <span>Register Player</span>
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight className="w-3.5 h-3.5" />
               </a>
 
               <button
                 type="button"
                 onClick={onOpenStatusModal}
-                className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs sm:text-sm border border-white/20 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                className="flex-1 sm:flex-initial px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs border border-white/20 transition-all flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap"
               >
-                <Search className="w-3.5 h-3.5 text-amber-400" />
+                <Search className="w-3 h-3 text-amber-400" />
                 <span>Check Status</span>
               </button>
             </div>

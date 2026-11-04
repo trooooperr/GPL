@@ -17,14 +17,13 @@ export default function Navbar({ onOpenStatusModal }) {
   }, []);
 
   const navLinks = [
-    { name: "Home", href: "#", icon: Trophy },
-    { name: "About", href: "#about", icon: Shield },
-    { name: "Auction Pool", href: "#auction-pool", icon: Users },
-    { name: "Teams", href: "#teams", icon: Trophy },
-    { name: "Awards", href: "#awards", icon: Gift },
-    { name: "Rules", href: "#rules", icon: FileText },
-    { name: "FAQ", href: "#faq", icon: HelpCircle },
-    { name: "Venue", href: "#location", icon: MapPin },
+    { name: "Home", href: "/", icon: Trophy },
+    { name: "Teams & Squads", href: "/teams", icon: Users },
+    { name: "About", href: "/#about", icon: Shield },
+    { name: "Awards", href: "/#awards", icon: Gift },
+    { name: "Rules", href: "/#rules", icon: FileText },
+    { name: "FAQ", href: "/#faq", icon: HelpCircle },
+    { name: "Venue", href: "/#location", icon: MapPin },
   ];
 
   return (

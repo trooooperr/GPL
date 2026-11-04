@@ -38,6 +38,7 @@ async function getPopulatedTeams() {
     established: t.established || "2024",
     championships: t.championships || 0,
     logo: t.logo || "/images/teams/team-csk.png",
+    themeColor: t.themeColor || "#0041b9",
     members: t.members || [],
     memberDetails: (t.members || [])
       .map((mid) => regs.find((r) => r.id === mid))

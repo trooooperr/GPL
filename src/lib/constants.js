@@ -37,6 +37,7 @@ export const INITIAL_TEAMS = [
     "established": "2024",
     "championships": 2,
     "logo": "/images/teams/team-csk.png",
+    "themeColor": "#eab308",
     "members": []
   },
   {
@@ -48,6 +49,7 @@ export const INITIAL_TEAMS = [
     "established": "2024",
     "championships": 1,
     "logo": "/images/teams/team-kkr.png",
+    "themeColor": "#7e22ce",
     "members": []
   },
   {
@@ -59,6 +61,7 @@ export const INITIAL_TEAMS = [
     "established": "2024",
     "championships": 1,
     "logo": "/images/teams/team-gt.png",
+    "themeColor": "#0d9488",
     "members": []
   },
   {
@@ -70,6 +73,7 @@ export const INITIAL_TEAMS = [
     "established": "2024",
     "championships": 0,
     "logo": "/images/teams/team-dc.png",
+    "themeColor": "#2563eb",
     "members": []
   },
   {
@@ -81,6 +85,7 @@ export const INITIAL_TEAMS = [
     "established": "2024",
     "championships": 2,
     "logo": "/images/teams/team-rr.png",
+    "themeColor": "#ec4899",
     "members": []
   },
   {
@@ -92,6 +97,7 @@ export const INITIAL_TEAMS = [
     "established": "2024",
     "championships": 1,
     "logo": "/images/teams/team-mi.png",
+    "themeColor": "#1d4ed8",
     "members": []
   },
   {
@@ -103,6 +109,7 @@ export const INITIAL_TEAMS = [
     "established": "2024",
     "championships": 0,
     "logo": "/images/teams/team-rcb.png",
+    "themeColor": "#dc2626",
     "members": []
   },
   {
@@ -114,6 +121,7 @@ export const INITIAL_TEAMS = [
     "established": "2024",
     "championships": 1,
     "logo": "/images/teams/team-srh.png",
+    "themeColor": "#ea580c",
     "members": []
   },
   {
@@ -125,6 +133,7 @@ export const INITIAL_TEAMS = [
     "established": "2024",
     "championships": 0,
     "logo": "/images/teams/team-pbks.png",
+    "themeColor": "#b91c1c",
     "members": []
   },
   {
@@ -136,6 +145,7 @@ export const INITIAL_TEAMS = [
     "established": "2024",
     "championships": 1,
     "logo": "/images/teams/team-vbsg.png",
+    "themeColor": "#0284c7",
     "members": []
   }
 ];

@@ -93,6 +93,7 @@ const TeamSchema = new mongoose.Schema({
   established: { type: String, default: "2024" },
   championships: { type: Number, default: 0 },
   logo: String,
+  themeColor: { type: String, default: "#0041b9" },
   members: [String]
 }, schemaOptions);
 

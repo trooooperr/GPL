@@ -1691,7 +1691,7 @@ export default function AdminDashboard() {
                 <p className="text-xs text-slate-500">Manage 10 tournament teams, owners, captains, and auction allocations</p>
               </div>
               <button
-                onClick={() => setEditTeam({ name: "", shortCode: "", owner: "", captain: "", logo: "" })}
+                onClick={() => setEditTeam({ name: "", shortCode: "", owner: "", captain: "", logo: "", themeColor: "#0041b9" })}
                 className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#0041b9] hover:bg-[#003399] text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
@@ -1705,24 +1705,32 @@ export default function AdminDashboard() {
                 return (
                   <div
                     key={team.id}
-                    className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-xs space-y-4 flex flex-col justify-between"
+                    className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-xs space-y-4 flex flex-col justify-between relative overflow-hidden"
+                    style={{ borderTop: `4px solid ${team.themeColor || "#0041b9"}` }}
                   >
-                    <div className="flex items-center gap-3.5">
-                      <div className="w-14 h-14 rounded-xl bg-slate-50 border border-slate-200 p-1.5 shrink-0 flex items-center justify-center">
-                        {team.logo ? (
-                          <img
-                            src={team.logo}
-                            alt={team.name}
-                            className="max-h-full max-w-full object-contain"
-                          />
-                        ) : (
-                          <ImageIcon className="w-6 h-6 text-slate-400" />
-                        )}
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-14 h-14 rounded-xl bg-slate-50 border border-slate-200 p-1.5 shrink-0 flex items-center justify-center">
+                          {team.logo ? (
+                            <img
+                              src={team.logo}
+                              alt={team.name}
+                              className="max-h-full max-w-full object-contain"
+                            />
+                          ) : (
+                            <ImageIcon className="w-6 h-6 text-slate-400" />
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <h3 className="font-bold text-slate-900 text-sm leading-tight truncate">{team.name}</h3>
+                          <span className="text-xs font-mono font-bold text-[#0041b9]">Code: {team.shortCode}</span>
+                        </div>
                       </div>
-                      <div>
-                        <h3 className="font-bold text-slate-900 text-sm leading-tight">{team.name}</h3>
-                        <span className="text-xs font-mono font-bold text-[#0041b9]">Code: {team.shortCode}</span>
-                      </div>
+                      <div
+                        className="w-4 h-4 rounded-full border border-black/10 shrink-0 shadow-xs"
+                        style={{ backgroundColor: team.themeColor || "#0041b9" }}
+                        title={`Theme Color: ${team.themeColor || "#0041b9"}`}
+                      />
                     </div>
 
                     <div
@@ -2555,6 +2563,67 @@ export default function AdminDashboard() {
                     </span>
                     <input type="file" accept="image/*" onChange={handleUploadLogo} className="sr-only" />
                   </label>
+                </div>
+              </div>
+
+              {/* Theme Color Customization */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="font-bold text-slate-700 text-xs">Franchise Theme Color</label>
+                  <span className="font-mono text-xs font-bold px-2 py-0.5 rounded border" style={{ borderColor: editTeam.themeColor || "#0041b9", color: editTeam.themeColor || "#0041b9" }}>
+                    {editTeam.themeColor || "#0041b9"}
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <input
+                    type="color"
+                    value={editTeam.themeColor || "#0041b9"}
+                    onChange={(e) => setEditTeam({ ...editTeam, themeColor: e.target.value })}
+                    className="w-12 h-10 rounded-lg border border-slate-300 p-0.5 cursor-pointer shrink-0"
+                    title="Click to choose custom hex color"
+                  />
+                  <input
+                    type="text"
+                    value={editTeam.themeColor || "#0041b9"}
+                    onChange={(e) => setEditTeam({ ...editTeam, themeColor: e.target.value })}
+                    placeholder="#0041b9"
+                    className="flex-1 px-3 py-2 rounded-lg border border-slate-200 text-xs font-mono font-semibold"
+                  />
+                </div>
+
+                {/* Popular Franchise Palette Presets */}
+                <div className="pt-2">
+                  <div className="text-[10px] text-slate-400 font-semibold mb-1">Preset Themes:</div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {[
+                      { name: "Gold / CSK", color: "#eab308" },
+                      { name: "Purple / KKR", color: "#7e22ce" },
+                      { name: "Teal / GT", color: "#0d9488" },
+                      { name: "Royal / DC", color: "#2563eb" },
+                      { name: "Pink / RR", color: "#ec4899" },
+                      { name: "Navy / MI", color: "#1d4ed8" },
+                      { name: "Crimson / RCB", color: "#dc2626" },
+                      { name: "Sunset / SRH", color: "#ea580c" },
+                      { name: "Wine / PBKS", color: "#b91c1c" },
+                      { name: "Sky / VBSG", color: "#0284c7" },
+                      { name: "Emerald", color: "#059669" },
+                      { name: "Dark", color: "#0f172a" }
+                    ].map((palette) => (
+                      <button
+                        key={palette.color}
+                        type="button"
+                        onClick={() => setEditTeam({ ...editTeam, themeColor: palette.color })}
+                        title={palette.name}
+                        className={`w-6 h-6 rounded-md border transition-transform hover:scale-110 cursor-pointer ${
+                          (editTeam.themeColor || "#0041b9").toLowerCase() === palette.color.toLowerCase()
+                            ? "ring-2 ring-slate-800 scale-110 shadow-sm"
+                            : "border-black/10"
+                        }`}
+                        style={{ backgroundColor: palette.color }}
+                      />
+                    ))}
+                  </div>
                 </div>
               </div>
 

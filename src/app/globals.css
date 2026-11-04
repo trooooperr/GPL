@@ -64,3 +64,42 @@ input[type="date"] {
   top: -10px;
   animation: confettiFall 3.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
 }
+
+/* Print Optimization for Digital Player Pass */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 15mm auto;
+  }
+  html, body {
+    background: #ffffff !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    height: 100vh !important;
+    overflow: hidden !important;
+  }
+  body * {
+    visibility: hidden !important;
+  }
+  #digital-player-pass, #digital-player-pass * {
+    visibility: visible !important;
+  }
+  #digital-player-pass {
+    position: fixed !important;
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    width: 380px !important;
+    max-width: 90% !important;
+    margin: 0 !important;
+    border-radius: 18px !important;
+    border: 2px solid #f59e0b !important;
+    box-shadow: none !important;
+    background: #081a36 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+}
+
