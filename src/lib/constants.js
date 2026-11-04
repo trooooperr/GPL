@@ -27,6 +27,37 @@ export const INITIAL_RULES = [
   "Foul language or misbehavior with the management or umpire will lead to penalty of 5 runs"
 ];
 
+export const INITIAL_FAQS = [
+  {
+    q: "Who is eligible to register for Goregaon Premier League (GPL)?",
+    a: "Participation is exclusively open to resident cricketers of Ward 51 and Ward 54 (Goregaon East). A valid Aadhaar card verifying your residential address within these wards is strictly required by the tournament governing committee."
+  },
+  {
+    q: "What documents do I need to submit during registration?",
+    a: "You will need: (1) Aadhaar Card Front, (2) Aadhaar Card Back with address, (3) A clear, recent passport-style profile photo, and (4) Screenshot of your ₹100 registration fee payment showing the 12-digit UPI UTR number."
+  },
+  {
+    q: "How can I verify if my registration has been approved?",
+    a: "You can click the 'Check Status' button on our top navigation bar or countdown banner at any time and enter your registered phone number. If verified, your official Digital Player Pass will be generated for download."
+  },
+  {
+    q: "How does the Player Auction & Franchise Draft work?",
+    a: "All approved players enter the official GPL Auction Pool. The 10 tournament franchise owners will bid on approved players in a live draft to assemble balanced 14-player tournament squads."
+  },
+  {
+    q: "What tournament kit will players receive?",
+    a: "Every player drafted into a franchise will be provided with an official custom tournament jersey (T-shirt) and track pant matching their team colors, tailored to the sizes submitted during registration."
+  },
+  {
+    q: "Where will the tournament matches be held?",
+    a: "All matches of the Radhe Radhe Chashak will be held at Sambhaji Maidan, Goregaon East under floodlights with official umpires, leather/heavy tennis ball rules, and live scoring."
+  },
+  {
+    q: "Whom should I contact if I made an error during registration?",
+    a: "Contact the organizing committee headed by Shri Mohsin Patel & Balram Gupta (Ballu), or email us at goregaonpremierleague11@gmail.com with your name, phone number, and registration number for prompt correction."
+  }
+];
+
 export const INITIAL_TEAMS = [
   {
     "id": "team-1",

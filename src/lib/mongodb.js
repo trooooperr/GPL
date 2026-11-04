@@ -108,6 +108,13 @@ const RuleSchema = new mongoose.Schema({
   rules: [String]
 }, schemaOptions);
 
+const FaqSchema = new mongoose.Schema({
+  faqs: [{
+    q: { type: String, required: true },
+    a: { type: String, required: true }
+  }]
+}, schemaOptions);
+
 const AuditSchema = new mongoose.Schema({
   id: String,
   timestamp: String,
@@ -124,6 +131,7 @@ export const MongoRegistration = mongoose.models.Registration || mongoose.model(
 export const MongoTeam = mongoose.models.Team || mongoose.model("Team", TeamSchema);
 export const MongoSetting = mongoose.models.Setting || mongoose.model("Setting", SettingSchema);
 export const MongoRule = mongoose.models.Rule || mongoose.model("Rule", RuleSchema);
+export const MongoFaq = mongoose.models.Faq || mongoose.model("Faq", FaqSchema);
 export const MongoAudit = mongoose.models.Audit || mongoose.model("Audit", AuditSchema);
 export const MongoCounter = mongoose.models.Counter || mongoose.model("Counter", CounterSchema);
 

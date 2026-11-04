@@ -15,7 +15,7 @@ import VenueMap from "@/components/VenueMap";
 import Footer from "@/components/Footer";
 import CheckStatusModal from "@/components/CheckStatusModal";
 
-export default function HomeClient({ teams, rules, settings, stats, players }) {
+export default function HomeClient({ teams, rules, faqs, settings, stats, players }) {
   const [statusModalOpen, setStatusModalOpen] = useState(false);
 
   return (
@@ -54,7 +54,7 @@ export default function HomeClient({ teams, rules, settings, stats, players }) {
       <RegistrationForm stats={stats} settings={settings} />
 
       {/* Interactive FAQ Section */}
-      <FaqSection />
+      <FaqSection faqs={faqs} />
 
       {/* Venue Location & Ground Map */}
       <VenueMap />

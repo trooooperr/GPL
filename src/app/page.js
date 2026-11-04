@@ -3,9 +3,10 @@ import {
   MongoTeam,
   MongoRegistration,
   MongoRule,
+  MongoFaq,
   MongoSetting
 } from "@/lib/mongodb";
-import { INITIAL_TEAMS, INITIAL_RULES, INITIAL_SETTINGS } from "@/lib/constants";
+import { INITIAL_TEAMS, INITIAL_RULES, INITIAL_FAQS, INITIAL_SETTINGS } from "@/lib/constants";
 import HomeClient from "@/components/HomeClient";
 
 export const dynamic = "force-dynamic";
@@ -29,6 +30,7 @@ export const metadata = {
 export default async function Home() {
   let teams = INITIAL_TEAMS;
   let rules = INITIAL_RULES;
+  let faqs = INITIAL_FAQS;
   let settings = INITIAL_SETTINGS;
   let players = [];
   let stats = {
@@ -48,13 +50,14 @@ export default async function Home() {
   try {
     await connectToDatabase();
 
-    const [mongoTeams, mongoRegs, ruleDoc, settingDoc] = await Promise.all([
+    const [mongoTeams, mongoRegs, ruleDoc, faqDoc, settingDoc] = await Promise.all([
       MongoTeam.find().lean(),
       MongoRegistration.find(
         {},
         "id regNumber name speciality ward tshirtSize trackSize paymentStatus photoUrl teamId"
       ).lean(),
       MongoRule.findOne().lean(),
+      MongoFaq.findOne().lean(),
       MongoSetting.findOne({ key: "global_settings" }).lean(),
     ]);
 
@@ -64,6 +67,10 @@ export default async function Home() {
 
     if (ruleDoc && ruleDoc.rules && Array.isArray(ruleDoc.rules) && ruleDoc.rules.length > 0) {
       rules = ruleDoc.rules;
+    }
+
+    if (faqDoc && faqDoc.faqs && Array.isArray(faqDoc.faqs) && faqDoc.faqs.length > 0) {
+      faqs = faqDoc.faqs;
     }
 
     const regs = (mongoRegs || []).map((r) => ({
@@ -133,6 +140,7 @@ export default async function Home() {
     <HomeClient
       teams={teams}
       rules={rules}
+      faqs={faqs}
       settings={settings}
       stats={stats}
       players={players}
