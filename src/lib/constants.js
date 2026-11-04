@@ -9,7 +9,8 @@ export const INITIAL_SETTINGS = {
   venue: "Sambhaji Maidan, Goregaon East, Mumbai",
   adminEmail: "goregaonpremierleague11@gmail.com",
   adminUsername: "admin",
-  adminPassword: "GPL@AdminNew2026"
+  adminPassword: "GPL@AdminNew2026",
+  registrationDeadline: "2026-11-28T09:00"
 };
 
 export const INITIAL_RULES = [

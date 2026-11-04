@@ -3,9 +3,16 @@
 import { useState, useEffect } from "react";
 import { Clock, Shield, Sparkles, AlertCircle, ArrowRight, Search, CheckCircle2 } from "lucide-react";
 
-export default function CountdownBanner({ stats, onOpenStatusModal }) {
-  // Target tournament date (can be adjusted by organizers)
-  const targetDate = new Date("2026-11-28T09:00:00+05:30").getTime();
+export default function CountdownBanner({ stats, settings, onOpenStatusModal }) {
+  // Target countdown date configurable via admin settings (defaults to 2026-11-28)
+  const deadlineStr = settings?.registrationDeadline || "2026-11-28T09:00";
+  let targetDate;
+  try {
+    const parsed = new Date(deadlineStr).getTime();
+    targetDate = isNaN(parsed) ? new Date("2026-11-28T09:00:00+05:30").getTime() : parsed;
+  } catch {
+    targetDate = new Date("2026-11-28T09:00:00+05:30").getTime();
+  }
 
   const [timeLeft, setTimeLeft] = useState({
     days: 0,

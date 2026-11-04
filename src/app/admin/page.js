@@ -62,7 +62,8 @@ export default function AdminDashboard() {
     upiId: "shahbazkhandm@okhdfcbank",
     registrationFee: 100,
     maxCapacity: 140,
-    adminEmail: "goregaonpremierleague11@gmail.com"
+    adminEmail: "goregaonpremierleague11@gmail.com",
+    registrationDeadline: "2026-11-28T09:00"
   });
   const [sizing, setSizing] = useState(null);
 
@@ -2057,6 +2058,22 @@ export default function AdminDashboard() {
                   onChange={(e) => setSettings({ ...settings, registrationFee: Number(e.target.value) })}
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm font-mono focus:ring-2 focus:ring-[#0041b9]"
                 />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Registration Deadline / Countdown Target Date &amp; Time
+                </label>
+                <input
+                  type="datetime-local"
+                  required
+                  value={settings.registrationDeadline || "2026-11-28T09:00"}
+                  onChange={(e) => setSettings({ ...settings, registrationDeadline: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm font-sans focus:ring-2 focus:ring-[#0041b9] outline-none"
+                />
+                <p className="text-[11px] text-slate-500 mt-1">
+                  Controls the live countdown timer on the homepage (Days, Hours, Minutes, Seconds remaining for registration).
+                </p>
               </div>
 
               <div>

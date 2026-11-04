@@ -32,6 +32,7 @@ export default function HomeClient({ teams, rules, faqs, settings, stats, player
       {/* Dynamic Tournament Countdown & Slot Urgency Bar */}
       <CountdownBanner
         stats={stats}
+        settings={settings}
         onOpenStatusModal={() => setStatusModalOpen(true)}
       />
 
