@@ -7,7 +7,7 @@ export default function Footer() {
         
         {/* Brand & Organizer details: Hidden on small devices (< sm), visible on desktop/tablet */}
         <div className="hidden sm:flex items-center gap-3">
-          <div className="h-9 w-auto bg-white p-1 rounded-md flex items-center justify-center">
+          <div className="h-10 w-10 flex items-center justify-center shrink-0 drop-shadow-sm">
             <img
               src="/images/logo.png"
               alt="GPL Logo"

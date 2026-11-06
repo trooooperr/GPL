@@ -118,7 +118,7 @@ export default function AdminLogin() {
     <div className="min-h-screen bg-[#f8fafc] flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 font-sans">
       
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center space-y-3">
-        <div className="w-16 h-16 rounded-2xl bg-white p-2 shadow-lg border border-slate-200 mx-auto flex items-center justify-center">
+        <div className="w-20 h-20 mx-auto flex items-center justify-center drop-shadow-lg">
           <img
             src="/images/logo.png"
             alt="GPL Logo"

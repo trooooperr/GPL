@@ -432,7 +432,7 @@ export default function CheckStatusModal({ isOpen, onClose }) {
                       <img
                         src="/images/logo.png"
                         alt="GPL Logo"
-                        className="w-10 h-10 object-contain shrink-0 bg-white/10 p-1 rounded-xl border border-white/10"
+                        className="w-11 h-11 object-contain shrink-0 drop-shadow-md"
                       />
                       <div>
                         <div className="font-black text-sm text-white tracking-wide">

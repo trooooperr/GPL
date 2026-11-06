@@ -1063,7 +1063,7 @@ export default function AdminDashboard() {
           
           {/* Brand Logo & Title */}
           <div className="flex items-center gap-2.5 sm:gap-3.5">
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white p-1 shrink-0 shadow-sm flex items-center justify-center">
+            <div className="w-10 h-10 sm:w-11 sm:h-11 shrink-0 flex items-center justify-center drop-shadow-md">
               <img
                 src="/images/logo.png"
                 alt="GPL Logo"

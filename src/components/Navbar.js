@@ -42,12 +42,12 @@ export default function Navbar({ onOpenStatusModal }) {
           <img
             src="/images/logo.png"
             alt="Goregaon Premier League"
-            className="block sm:hidden h-10 w-auto max-h-11 object-contain shrink-0"
+            className="block sm:hidden h-10 w-auto max-h-11 object-contain shrink-0 drop-shadow-sm"
           />
 
           {/* Desktop Logo + Text */}
           <div className="hidden sm:flex items-center gap-3">
-            <div className="w-12 h-12 lg:w-14 lg:h-14 rounded-xl bg-white p-1 border border-slate-100 shadow-xs flex items-center justify-center transition-transform group-hover:scale-105 shrink-0">
+            <div className="w-12 h-12 lg:w-14 lg:h-14 flex items-center justify-center transition-transform group-hover:scale-105 shrink-0 drop-shadow-sm">
               <img
                 src="/images/logo.png"
                 alt="Goregaon Premier League"
