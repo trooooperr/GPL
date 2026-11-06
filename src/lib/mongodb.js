@@ -136,37 +136,50 @@ export const MongoAudit = mongoose.models.Audit || mongoose.model("Audit", Audit
 export const MongoCounter = mongoose.models.Counter || mongoose.model("Counter", CounterSchema);
 
 /**
+ * Recalculates and synchronizes the registration sequence counter with the highest
+ * active numeric registration ID currently in the database.
+ * If all players were deleted, sequence resets to 1000 so the next player becomes 1001.
+ */
+export async function syncRegistrationCounter() {
+  await connectToDatabase();
+  const counterId = "player_registration_seq";
+
+  const players = await MongoRegistration.find().select("id regNumber").lean();
+  let maxNumericId = 1000;
+  for (const p of players) {
+    const raw = p.regNumber || p.id || "";
+    const digits = String(raw).replace(/\D/g, "");
+    if (digits.length >= 4) {
+      const val = parseInt(digits.slice(-4), 10);
+      if (!isNaN(val) && val > maxNumericId) maxNumericId = val;
+    } else if (digits.length > 0) {
+      const val = parseInt(digits, 10);
+      if (!isNaN(val) && val > maxNumericId) maxNumericId = val;
+    }
+  }
+
+  await MongoCounter.findByIdAndUpdate(
+    counterId,
+    { $set: { seq: maxNumericId } },
+    { upsert: true }
+  );
+
+  return maxNumericId;
+}
+
+/**
  * Atomic sequence generator: Guarantees sequential 4-digit numeric IDs (1001, 1002...)
- * isolated and concurrency-safe by the MongoDB atomic engine.
+ * dynamically synchronized with the highest active registration ID in MongoDB.
+ * If previous test players were deleted, this ensures no abandoned gaps occur.
  */
 export async function getNextPlayerId() {
   await connectToDatabase();
   const counterId = "player_registration_seq";
 
-  // Check if counter already initialized
-  let counter = await MongoCounter.findById(counterId);
-  if (!counter) {
-    // Find current highest ID across all registered players
-    const players = await MongoRegistration.find().select("id regNumber").lean();
-    let maxNumericId = 1000;
-    for (const p of players) {
-      if (/^\d{4}$/.test(p.id)) {
-        const val = parseInt(p.id, 10);
-        if (val > maxNumericId) maxNumericId = val;
-      }
-      if (/^\d{4}$/.test(p.regNumber)) {
-        const val = parseInt(p.regNumber, 10);
-        if (val > maxNumericId) maxNumericId = val;
-      }
-    }
-    await MongoCounter.findByIdAndUpdate(
-      counterId,
-      { $setOnInsert: { seq: maxNumericId } },
-      { upsert: true }
-    );
-  }
+  // 1. Sync counter with the maximum active registration number currently in the database
+  await syncRegistrationCounter();
 
-  // Atomic increment operation
+  // 2. Atomic increment operation
   const result = await MongoCounter.findByIdAndUpdate(
     counterId,
     { $inc: { seq: 1 } },

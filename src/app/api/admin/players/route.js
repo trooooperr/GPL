@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { verifyAuthCookie } from "@/lib/auth";
 import { sendPlayerStatusEmail, sendTeamAssignmentEmail } from "@/lib/email";
-import { connectToDatabase, MongoRegistration, MongoTeam, MongoSetting } from "@/lib/mongodb";
+import { connectToDatabase, MongoRegistration, MongoTeam, MongoSetting, syncRegistrationCounter } from "@/lib/mongodb";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -145,8 +145,40 @@ export async function POST(request) {
     if (action === "delete") {
       await MongoRegistration.findOneAndDelete({ id });
       await MongoTeam.updateMany({}, { $pull: { members: id } });
+      await syncRegistrationCounter();
       const stats = await getCalculatedStats();
       return NextResponse.json({ success: true, deletedId: id, stats }, { headers: NO_CACHE_HEADERS });
+    }
+
+    // 1b. BATCH DELETE players
+    if (action === "batchDelete" && Array.isArray(ids) && ids.length > 0) {
+      await MongoRegistration.deleteMany({ id: { $in: ids } });
+      await MongoTeam.updateMany({}, { $pull: { members: { $in: ids } } });
+      await syncRegistrationCounter();
+      const stats = await getCalculatedStats();
+      return NextResponse.json({ success: true, count: ids.length, stats }, { headers: NO_CACHE_HEADERS });
+    }
+
+    // 1c. SYNC REGISTRATION COUNTER
+    if (action === "syncCounter") {
+      const maxId = await syncRegistrationCounter();
+      return NextResponse.json({ success: true, maxId, nextId: maxId + 1 }, { headers: NO_CACHE_HEADERS });
+    }
+
+    // 1d. RESEQUENCE PLAYERS CONSECUTIVELY (1001, 1002...)
+    if (action === "resequence") {
+      const players = await MongoRegistration.find().sort({ createdAt: 1, registeredAt: 1 });
+      let currentNum = 1001;
+      for (const p of players) {
+        const newId = String(currentNum);
+        p.id = newId;
+        p.regNumber = newId;
+        await p.save();
+        currentNum++;
+      }
+      await syncRegistrationCounter();
+      const stats = await getCalculatedStats();
+      return NextResponse.json({ success: true, count: players.length, stats }, { headers: NO_CACHE_HEADERS });
     }
 
     // 2. ASSIGN / UNASSIGN TEAM
