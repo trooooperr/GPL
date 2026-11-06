@@ -430,7 +430,7 @@ export default function CheckStatusModal({ isOpen, onClose }) {
                   <div className="flex items-center justify-between pb-2.5 border-b border-white/10">
                     <div className="flex items-center gap-2.5">
                       <img
-                        src="/images/logo.png"
+                        src="/images/gpl-logo.png"
                         alt="GPL Logo"
                         className="w-11 h-11 object-contain shrink-0 drop-shadow-md"
                       />

@@ -99,7 +99,7 @@ export default function TeamsPortalClient({ teams = [], players = [], settings =
             <div className="hidden sm:block h-5 w-[1px] bg-white/10" />
 
             <div className="flex items-center gap-2">
-              <img src="/images/logo.png" alt="GPL Logo" className="w-7 h-7 object-contain" />
+              <img src="/images/gpl-logo.png" alt="GPL Logo" className="w-7 h-7 object-contain" />
               <div className="text-xs font-black tracking-wide">
                 <span className="text-white">GPL4</span>{" "}
                 <span className="text-amber-400 font-bold hidden md:inline">• Radhe Radhe Chasak</span>

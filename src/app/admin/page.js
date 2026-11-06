@@ -1065,7 +1065,7 @@ export default function AdminDashboard() {
           <div className="flex items-center gap-2.5 sm:gap-3.5">
             <div className="w-10 h-10 sm:w-11 sm:h-11 shrink-0 flex items-center justify-center drop-shadow-md">
               <img
-                src="/images/logo.png"
+                src="/images/gpl-logo.png"
                 alt="GPL Logo"
                 className="max-h-full max-w-full object-contain"
               />

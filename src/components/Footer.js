@@ -9,7 +9,7 @@ export default function Footer() {
         <div className="hidden sm:flex items-center gap-3">
           <div className="h-10 w-10 flex items-center justify-center shrink-0 drop-shadow-sm">
             <img
-              src="/images/logo.png"
+              src="/images/gpl-logo.png"
               alt="GPL Logo"
               className="h-full w-auto object-contain"
             />

@@ -22,8 +22,8 @@ export const metadata = {
     title: "GPL Cricket"
   },
   icons: {
-    icon: "/images/logo.png",
-    apple: "/images/logo.png",
+    icon: "/images/gpl-logo.png",
+    apple: "/images/gpl-logo.png",
   }
 };
 

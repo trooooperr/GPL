@@ -40,7 +40,7 @@ export default function Navbar({ onOpenStatusModal }) {
         <Link href="/" className="flex items-center gap-3 group shrink-0">
           {/* Mobile Only Logo */}
           <img
-            src="/images/logo.png"
+            src="/images/gpl-logo.png"
             alt="Goregaon Premier League"
             className="block sm:hidden h-10 w-auto max-h-11 object-contain shrink-0 drop-shadow-sm"
           />
@@ -49,7 +49,7 @@ export default function Navbar({ onOpenStatusModal }) {
           <div className="hidden sm:flex items-center gap-3">
             <div className="w-12 h-12 lg:w-14 lg:h-14 flex items-center justify-center transition-transform group-hover:scale-105 shrink-0 drop-shadow-sm">
               <img
-                src="/images/logo.png"
+                src="/images/gpl-logo.png"
                 alt="Goregaon Premier League"
                 className="h-full w-full object-contain"
               />
