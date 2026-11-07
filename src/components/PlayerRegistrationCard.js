@@ -131,27 +131,16 @@ export default function PlayerRegistrationCard({ player, regNum, photo, onClose 
       ctx.letterSpacing = "1.5px";
       ctx.fillText("RADHE RADHE FOUNDATION  |  REG. NO. E-0040526 (GBR)", W / 2, barY + 29);
 
-      // ─── 4. GPL LOGO (new, white bg removed) ────────────────────────────
+      // ─── 4. GPL LOGO (transparent background) ──────────────────────────
       try {
-        const logo = await loadImg("/images/gpl-logo-new.png");
-        const logoH = 230;
-        const logoW = logoH; // 1024x1024 square
+        const logo = await loadImg("/images/gpl-logo.png");
+        const logoSize = 210;
         ctx.save();
         ctx.shadowColor = "rgba(255, 215, 0, 0.6)";
         ctx.shadowBlur = 30;
-        ctx.drawImage(logo, W / 2 - logoW / 2, 92, logoW, logoH);
+        ctx.drawImage(logo, W / 2 - logoSize / 2, 86, logoSize, logoSize);
         ctx.restore();
-      } catch (_) {
-        // fallback: try old logo
-        try {
-          const logo = await loadImg("/images/gpl-logo.png");
-          ctx.save();
-          ctx.shadowColor = "rgba(255, 215, 0, 0.5)";
-          ctx.shadowBlur = 20;
-          ctx.drawImage(logo, W / 2 - 90, 95, 180, 180);
-          ctx.restore();
-        } catch (__) {}
-      }
+      } catch (_) {}
 
       // ─── 5. "GOREGAON PREMIER LEAGUE" ───────────────────────────────────
       ctx.textAlign = "center";

@@ -69,8 +69,8 @@ def generate_viral_instagram_card(output_path, sample_photo_path=None, player_na
     b_draw.text((bar_w // 2, bar_h // 2), "RADHE RADHE FOUNDATION   |   REG. NO. E-0040526 (GBR)", fill=(253, 224, 71, 255), font=font_bold_sm, anchor="mm")
     img.paste(bar_box, (bar_x, bar_y), bar_box)
 
-    # 5. NEW GPL LOGO (clean, 100% transparent background)
-    logo_path = "/Users/alok/Desktop/goregaon-premier-league/public/images/gpl-logo-new.png"
+    # 5. GPL LOGO (clean, 100% transparent background)
+    logo_path = "/Users/alok/Desktop/goregaon-premier-league/public/images/gpl-logo.png"
     if os.path.exists(logo_path):
         try:
             logo = Image.open(logo_path).convert("RGBA")
