@@ -37,13 +37,22 @@ export default function Navbar({ onOpenStatusModal }) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 sm:h-16 lg:h-20 flex items-center justify-between">
         
         {/* Left: Tournament Brand & Logo */}
-        <Link href="/" className="flex items-center gap-3 group shrink-0">
-          {/* Mobile Only Logo */}
+        <Link href="/" className="flex items-center gap-2 group shrink-0">
+          {/* Mobile: Logo + Title Text */}
           <img
             src="/images/gpl-logo.png"
             alt="Goregaon Premier League"
             className="block sm:hidden h-10 w-auto max-h-11 object-contain shrink-0 drop-shadow-sm"
           />
+          <div className="block sm:hidden min-w-0">
+            <div className="text-[11px] font-black text-[#081a36] leading-tight tracking-tight">
+              Goregaon Premier League{" "}
+              <span className="text-amber-500 bg-amber-50 px-1 py-0.5 rounded font-black">Season 4</span>
+            </div>
+            <div className="text-[9px] font-semibold text-slate-500 leading-tight mt-0.5 truncate">
+              Goregaon Purv Vidhan Sabha
+            </div>
+          </div>
 
           {/* Desktop Logo + Text */}
           <div className="hidden sm:flex items-center gap-3">
