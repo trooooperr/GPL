@@ -90,13 +90,7 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
       } catch (e) {}
     }
     fetchFreshStats();
-  }, [UPI_ID, REG_FEE]);
-
-  const handleCopyUpi = () => {
-    navigator.clipboard.writeText(UPI_ID);
-    setCopiedUpi(true);
-    setTimeout(() => setCopiedUpi(false), 2500);
-  };
+  }, [IG_URL]);
 
   const handleCopyReceipt = () => {
     if (!successData) return;
