@@ -358,19 +358,19 @@ export default function PlayerRegistrationCard({ player, regNum, photo, onClose 
       ctx.fillText(idVal, infoX + ovalW / 2, ovalY + 38);
 
       // ─── 11. SANDEEP JADHAV — RIGHT SIDE FOREGROUND CUTOUT ───────────────
-      // Stands prominently on the right half with transparent cutout
+      // Stands prominently on the right half with clean transparent cutout
       try {
         const sanImg = await loadImg("/images/sandeep-jadhav-transparent.png");
-        const targetH = 820;
-        const targetW = (sanImg.naturalWidth * (targetH / sanImg.naturalHeight));
+        const targetH = 780;
+        const targetW = sanImg.naturalWidth * (targetH / sanImg.naturalHeight);
         const sandeepDestX = W - targetW + 30;
-        const sandeepDestY = H - targetH - 65;
+        const sandeepDestY = 515;
 
         ctx.save();
-        ctx.shadowColor = "rgba(0, 0, 0, 0.8)";
+        ctx.shadowColor = "rgba(0, 0, 0, 0.75)";
         ctx.shadowBlur = 24;
-        ctx.shadowOffsetX = -6;
-        ctx.shadowOffsetY = 6;
+        ctx.shadowOffsetX = -8;
+        ctx.shadowOffsetY = 8;
         ctx.drawImage(sanImg, sandeepDestX, sandeepDestY, targetW, targetH);
         ctx.restore();
       } catch (e) {
@@ -380,83 +380,94 @@ export default function PlayerRegistrationCard({ player, regNum, photo, onClose 
       // ─── 12. BOTTOM BADGES: WARD + ROLE only ──────────────────────────────
       const badgeData = [
         { icon: "📍", label: "WARD", val: (player?.ward || "Ward 51").toUpperCase() },
-        { icon: "👤", label: "ROLE", val: (player?.speciality || "Batsman").toUpperCase() },
+        { icon: "🏏", label: "ROLE", val: (player?.speciality || "Batsman").toUpperCase() },
       ];
 
-      const bW = 460;
-      const bH = 70;
-      const bGap = 18;
-      const bStartX = 55;
-      const bY1 = 955;
+      const bW = 430;
+      const bH = 72;
+      const bGap = 16;
+      const bStartX = 70;
+      const bY1 = 865;
 
       badgeData.forEach((b, i) => {
         const bY = bY1 + i * (bH + bGap);
 
         // Badge background
         roundRect(bStartX, bY, bW, bH, 14);
-        ctx.fillStyle = "rgba(10, 14, 28, 0.88)";
+        ctx.fillStyle = "rgba(10, 14, 28, 0.9)";
         ctx.fill();
-        ctx.strokeStyle = "rgba(245, 158, 11, 0.6)";
+        ctx.strokeStyle = "rgba(245, 158, 11, 0.75)";
         ctx.lineWidth = 2;
         ctx.stroke();
 
         // Icon circle
-        const iconCX = bStartX + 46;
+        const iconCX = bStartX + 42;
         const iconCY = bY + bH / 2;
         ctx.beginPath();
-        ctx.arc(iconCX, iconCY, 24, 0, Math.PI * 2);
+        ctx.arc(iconCX, iconCY, 22, 0, Math.PI * 2);
         ctx.fillStyle = "rgba(245, 158, 11, 0.18)";
         ctx.fill();
-        ctx.strokeStyle = "rgba(245, 158, 11, 0.5)";
+        ctx.strokeStyle = "rgba(245, 158, 11, 0.55)";
         ctx.lineWidth = 1.5;
         ctx.stroke();
 
         ctx.textAlign = "center";
-        ctx.font = "22px Arial, sans-serif";
-        ctx.fillText(b.icon, iconCX, iconCY + 8);
+        ctx.font = "20px Arial, sans-serif";
+        ctx.fillText(b.icon, iconCX, iconCY + 7);
 
         // Label (small, gold)
         ctx.textAlign = "left";
-        ctx.fillStyle = "rgba(253, 224, 71, 0.9)";
+        ctx.fillStyle = "rgba(253, 224, 71, 0.95)";
         ctx.font = "bold 14px Arial, sans-serif";
         ctx.letterSpacing = "2px";
-        ctx.fillText(b.label, bStartX + 84, bY + 26);
+        ctx.fillText(b.label, bStartX + 82, bY + 24);
 
         // Value (white, bold)
         ctx.fillStyle = "#ffffff";
-        ctx.font = `bold ${b.val.length > 16 ? 20 : 24}px 'Arial Black', Impact, sans-serif`;
+        ctx.font = `bold ${b.val.length > 16 ? 20 : 25}px 'Arial Black', Impact, sans-serif`;
         ctx.letterSpacing = "1px";
-        ctx.fillText(b.val, bStartX + 84, bY + 54);
+        ctx.fillText(b.val, bStartX + 82, bY + 54);
       });
 
-      // ─── 13. SANDEEP ATTRIBUTION (Hindi text, right side) ────────────────
-      const attrX = 530;
-      const attrY = 1130;
+      // ─── 13. SANDEEP ATTRIBUTION (Hindi text with background badge) ───────
+      const attrPlateW = 420;
+      const attrPlateH = 100;
+      const attrX = 590;
+      const attrY = 1150;
 
-      ctx.textAlign = "left";
+      roundRect(attrX, attrY, attrPlateW, attrPlateH, 14);
+      ctx.fillStyle = "rgba(8, 4, 18, 0.85)";
+      ctx.fill();
+      ctx.strokeStyle = "rgba(245, 158, 11, 0.6)";
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
 
-      ctx.fillStyle = "rgba(203, 213, 225, 0.85)";
-      ctx.font = "bold 18px Arial Unicode MS, Arial, sans-serif";
-      ctx.letterSpacing = "1px";
-      ctx.fillText("शुभेच्छुक", attrX, attrY);
+      ctx.textAlign = "center";
+      const attrCX = attrX + attrPlateW / 2;
 
-      // Name in gold large
-      ctx.save();
-      ctx.shadowColor = "rgba(0,0,0,0.9)";
-      ctx.shadowBlur = 10;
       ctx.fillStyle = "#fde047";
-      ctx.font = "bold 34px Arial Unicode MS, Arial, sans-serif";
-      ctx.letterSpacing = "0px";
-      ctx.fillText("श्री. संदीप जाधव", attrX, attrY + 42);
+      ctx.font = "bold 18px 'Arial Unicode MS', Arial, sans-serif";
+      ctx.letterSpacing = "1px";
+      ctx.fillText("शुभेच्छुक", attrCX, attrY + 25);
+
+      // Name in red with white stroke
+      ctx.save();
+      const nameText = "श्री. संदीप जाधव";
+      ctx.font = "bold 32px 'Arial Unicode MS', Arial, sans-serif";
+      ctx.strokeStyle = "#ffffff";
+      ctx.lineWidth = 4;
+      ctx.strokeText(nameText, attrCX, attrY + 58);
+      ctx.fillStyle = "#dc2626";
+      ctx.fillText(nameText, attrCX, attrY + 58);
       ctx.restore();
 
       ctx.fillStyle = "#ffffff";
-      ctx.font = "bold 17px Arial Unicode MS, Arial, sans-serif";
-      ctx.letterSpacing = "0px";
-      ctx.fillText("संस्थापक-राधे राधे फाऊंडेशन", attrX, attrY + 72);
+      ctx.font = "bold 16px 'Arial Unicode MS', Arial, sans-serif";
+      ctx.letterSpacing = "0.5px";
+      ctx.fillText("संस्थापक-राधे राधे फाऊंडेशन", attrCX, attrY + 85);
 
       // ─── 14. BOTTOM GOLD DECORATIVE STRIP ────────────────────────────────
-      const stripH = 48;
+      const stripH = 42;
       const stripY = H - stripH - 18;
 
       const stripGrad = ctx.createLinearGradient(0, stripY, 0, stripY + stripH);
@@ -468,6 +479,15 @@ export default function PlayerRegistrationCard({ player, regNum, photo, onClose 
       ctx.fill();
 
       // Strip text
+      ctx.textAlign = "center";
+      ctx.fillStyle = "rgba(10, 6, 2, 0.95)";
+      ctx.font = "bold 14px Arial, sans-serif";
+      ctx.letterSpacing = "2px";
+      ctx.fillText(
+        "RADHE RADHE FOUNDATION   •   REG. NO. E-0040526 (GBR)   •   GOREGAON PREMIER LEAGUE",
+        W / 2,
+        stripY + 26
+      );
       ctx.textAlign = "center";
       ctx.fillStyle = "rgba(10, 6, 2, 0.9)";
       ctx.font = "bold 14px Arial, sans-serif";
