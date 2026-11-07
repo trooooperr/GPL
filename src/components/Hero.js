@@ -3,8 +3,11 @@
 import { useState } from "react";
 import { X, ArrowRight } from "lucide-react";
 
-export default function Hero() {
+export default function Hero({ settings }) {
   const [showModal, setShowModal] = useState(false);
+  const photos = (settings?.aboutPhotos && Array.isArray(settings.aboutPhotos) && settings.aboutPhotos.length > 0)
+    ? settings.aboutPhotos
+    : ["/images/gpl-card-1.jpg", "/images/gpl-card-2.jpg"];
 
   return (
     <section id="about" className="bg-white text-slate-900 py-8 sm:py-16 lg:py-20 border-b border-slate-100">
@@ -41,30 +44,19 @@ export default function Hero() {
 
           </div>
 
-          {/* Right Column: 2 Posters Side-by-Side in 1 Line on Mobile & Desktop */}
+          {/* Right Column: Dynamic About Photos */}
           <div className="lg:col-span-7 flex justify-center lg:justify-end">
-            <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:gap-6 w-full max-w-2xl">
-              
-              {/* Place 1: Official GPL Logo / Stadium Poster (GPL Ward 51-54) */}
-              <div className="rounded-xl sm:rounded-2xl overflow-hidden shadow-md sm:shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 bg-slate-900 border border-slate-200">
-                <img
-                  src="/images/gpl-card-1.jpg"
-                  alt="GPL Ward 51-54 Radhe Radhe Chashak Poster"
-                  className="w-full h-auto object-cover block"
-                  loading="lazy"
-                />
-              </div>
-
-              {/* Place 2: Shri Mohsin Patel & Balram Gupta (Ballu) - A Link Between You & Your Dream */}
-              <div className="rounded-xl sm:rounded-2xl overflow-hidden shadow-md sm:shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 bg-slate-900 border border-slate-200">
-                <img
-                  src="/images/gpl-card-2.jpg"
-                  alt="A Link Between You & Your Dream - Mohsin Patel & Balram Gupta (Ballu)"
-                  className="w-full h-auto object-cover block"
-                  loading="lazy"
-                />
-              </div>
-
+            <div className={`grid gap-3 sm:gap-5 lg:gap-6 w-full max-w-2xl ${photos.length <= 2 ? 'grid-cols-2' : photos.length === 3 ? 'grid-cols-3' : 'grid-cols-2 sm:grid-cols-3'}`}>
+              {photos.map((src, i) => (
+                <div key={i} className="rounded-xl sm:rounded-2xl overflow-hidden shadow-md sm:shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 bg-slate-900 border border-slate-200">
+                  <img
+                    src={src}
+                    alt={`GPL About Photo ${i + 1}`}
+                    className="w-full h-auto object-cover block"
+                    loading="lazy"
+                  />
+                </div>
+              ))}
             </div>
           </div>
 

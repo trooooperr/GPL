@@ -543,6 +543,28 @@ export default function AdminDashboard() {
     }
   };
 
+  // --- ABOUT PHOTOS MANAGEMENT ---
+  const handleReplacePhoto = async (idx, e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const { dataUrl } = await compressImageToDataUrl(file, 1200, 0.80);
+    if (!dataUrl) return;
+    const newPhotos = [...(settings.aboutPhotos || [])];
+    newPhotos[idx] = dataUrl;
+    setSettings({ ...settings, aboutPhotos: newPhotos });
+  };
+  const handleNewPhotoUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const { dataUrl } = await compressImageToDataUrl(file, 1200, 0.80);
+    if (!dataUrl) return;
+    setSettings({ ...settings, aboutPhotos: [...(settings.aboutPhotos || []), dataUrl] });
+  };
+  const handleRemovePhoto = (idx) => {
+    const newPhotos = (settings.aboutPhotos || []).filter((_, i) => i !== idx);
+    setSettings({ ...settings, aboutPhotos: newPhotos });
+  };
+
   // --- TEAM SAVE & LOGO UPLOAD ---
   const handleSaveTeam = async (e) => {
     e.preventDefault();
@@ -2021,7 +2043,7 @@ export default function AdminDashboard() {
                 <h2 className="text-lg sm:text-xl font-bold text-[#081a36]">Instagram Page &amp; Tournament Settings</h2>
               </div>
               <p className="text-xs text-slate-500">
-                Registrations are 100% Free. Updating the official Instagram handle below automatically updates the dynamic scan-to-follow QR code across the website and registration flow.
+                Updating the official Instagram handle below automatically updates the dynamic scan-to-follow QR code across the website and registration flow.
               </p>
             </div>
 
@@ -2034,26 +2056,6 @@ export default function AdminDashboard() {
 
             <form onSubmit={handleSaveSettings} className="space-y-4">
               
-              {/* Registration Status Toggle */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border border-slate-200 bg-slate-50 gap-3">
-                <div>
-                  <h4 className="text-xs font-bold text-slate-900">Online Player Registration Status</h4>
-                  <p className="text-[11px] text-slate-500">
-                    Control whether new players can submit registrations on the public website.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setSettings({ ...settings, registrationOpen: settings.registrationOpen === false ? true : false })}
-                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs self-start sm:self-auto ${
-                    settings.registrationOpen !== false
-                      ? "bg-emerald-600 text-white hover:bg-emerald-700"
-                      : "bg-red-600 text-white hover:bg-red-700"
-                  }`}
-                >
-                  {settings.registrationOpen !== false ? "✓ REGISTRATION ACTIVE" : "✕ REGISTRATION CLOSED"}
-                </button>
-              </div>
               
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">
@@ -2086,21 +2088,6 @@ export default function AdminDashboard() {
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Registration Fee (₹ INR)
-                </label>
-                <input
-                  type="number"
-                  value={settings.registrationFee || 0}
-                  onChange={(e) => setSettings({ ...settings, registrationFee: Number(e.target.value) })}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm font-mono focus:ring-2 focus:ring-[#0041b9]"
-                />
-                <p className="text-[11px] text-slate-500 mt-1">
-                  Currently set to <strong>₹0</strong> (100% Free Registration for all players).
-                </p>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
                   Registration Deadline / Countdown Target Date &amp; Time
                 </label>
                 <input
@@ -2126,6 +2113,50 @@ export default function AdminDashboard() {
                   onChange={(e) => setSettings({ ...settings, adminEmail: e.target.value })}
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm focus:ring-2 focus:ring-[#0041b9]"
                 />
+              </div>
+
+              {/* About Section Photos Manager */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-bold text-slate-700">About Section Photos</label>
+                  <button
+                    type="button"
+                    onClick={() => document.getElementById("add-about-photo-input").click()}
+                    className="text-xs px-2.5 py-1 rounded-lg bg-[#0041b9]/10 text-[#0041b9] hover:bg-[#0041b9]/20 font-semibold transition-colors"
+                  >
+                    + Add Photo
+                  </button>
+                </div>
+                <input
+                  type="file"
+                  id="add-about-photo-input"
+                  accept="image/*"
+                  className="sr-only"
+                  onChange={handleNewPhotoUpload}
+                />
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {(settings.aboutPhotos || ["/images/gpl-card-1.jpg", "/images/gpl-card-2.jpg"]).map((photo, idx) => (
+                    <div key={idx} className="relative group rounded-xl overflow-hidden border border-slate-200 bg-slate-50 aspect-[9/16]">
+                      <img src={photo} alt={`About ${idx + 1}`} className="w-full h-full object-cover" />
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                        <label className="cursor-pointer p-1.5 rounded-lg bg-white/90 text-slate-800 text-[10px] font-bold hover:bg-white">
+                          Replace
+                          <input type="file" accept="image/*" className="sr-only" onChange={(e) => handleReplacePhoto(idx, e)} />
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => handleRemovePhoto(idx)}
+                          className="p-1.5 rounded-lg bg-red-500 text-white text-[10px] font-bold hover:bg-red-600"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-[11px] text-slate-500">
+                  Hover over a photo to replace or remove it. Click &quot;+ Add Photo&quot; to upload a new one. Changes save when you click &quot;Save Tournament Settings&quot;.
+                </p>
               </div>
 
               {/* Dynamic QR Live Preview */}
