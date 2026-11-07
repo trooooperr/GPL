@@ -54,7 +54,7 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
   const [maxCapacity, setMaxCapacity] = useState(calcMaxCap);
 
   // Dynamic Instagram Handle from database settings
-  const IG_HANDLE = (settings.instagramUsername || stats?.instagramUsername || "goregaonpremierleague").replace(/^@/, "");
+  const IG_HANDLE = (settings.instagramUsername || stats?.instagramUsername || "mi_sandeep_jadhav").replace(/^@/, "");
   const IG_URL = `https://instagram.com/${IG_HANDLE}`;
 
   // Generate Dynamic Instagram Profile QR Code

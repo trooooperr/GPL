@@ -69,7 +69,7 @@ export default function AdminDashboard() {
   const [rules, setRules] = useState(INITIAL_RULES);
   const [faqs, setFaqs] = useState(INITIAL_FAQS);
   const [settings, setSettings] = useState({
-    instagramUsername: "goregaonpremierleague",
+    instagramUsername: "mi_sandeep_jadhav",
     registrationFee: 0,
     maxCapacity: 140,
     adminEmail: "goregaonpremierleague11@gmail.com",
@@ -253,8 +253,8 @@ export default function AdminDashboard() {
   useEffect(() => {
     async function genPreview() {
       try {
-        const cleanHandle = (settings.instagramUsername || "goregaonpremierleague").replace(/^@/, "").trim();
-        const profileUrl = `https://instagram.com/${cleanHandle || "goregaonpremierleague"}`;
+        const cleanHandle = (settings.instagramUsername || "mi_sandeep_jadhav").replace(/^@/, "").trim();
+        const profileUrl = `https://instagram.com/${cleanHandle || "mi_sandeep_jadhav"}`;
         const dataUrl = await QRCode.toDataURL(profileUrl, {
           width: 260,
           margin: 1.5,
@@ -1304,7 +1304,7 @@ export default function AdminDashboard() {
                 100% FREE
               </span>
               <span className="text-[10px] sm:text-[11px] text-slate-500 block mt-0.5 sm:mt-1 truncate">
-                IG: @{(settings.instagramUsername || "goregaonpremierleague").replace(/^@/, '')}
+                IG: @{(settings.instagramUsername || "mi_sandeep_jadhav").replace(/^@/, '')}
               </span>
             </div>
 
@@ -2064,13 +2064,13 @@ export default function AdminDashboard() {
                   <input
                     type="text"
                     required
-                    placeholder="goregaonpremierleague"
+                    placeholder="mi_sandeep_jadhav"
                     value={(settings.instagramUsername || "").replace(/^@/, '')}
                     onChange={(e) => setSettings({ ...settings, instagramUsername: e.target.value.replace(/^@/, '').trim() })}
                     className="w-full pl-8 pr-28 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm font-semibold focus:ring-2 focus:ring-[#0041b9] outline-none"
                   />
                   <a
-                    href={`https://instagram.com/${(settings.instagramUsername || "goregaonpremierleague").replace(/^@/, '')}`}
+                    href={`https://instagram.com/${(settings.instagramUsername || "mi_sandeep_jadhav").replace(/^@/, '')}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="absolute right-2 px-2.5 py-1 rounded-lg bg-pink-100 hover:bg-pink-200 text-pink-700 text-xs font-bold transition-colors flex items-center gap-1"
@@ -2144,7 +2144,7 @@ export default function AdminDashboard() {
                   </div>
                   <h4 className="text-xs font-bold text-slate-900">Official Instagram Follow QR Code</h4>
                   <p className="text-[11px] text-slate-500">
-                    This QR code automatically encodes <code className="bg-slate-200 px-1 py-0.5 rounded font-mono text-[10px] text-slate-800">https://instagram.com/{(settings.instagramUsername || "goregaonpremierleague").replace(/^@/, '')}</code>. Players scan it to follow your profile before uploading screenshot proof.
+                    This QR code automatically encodes <code className="bg-slate-200 px-1 py-0.5 rounded font-mono text-[10px] text-slate-800">https://instagram.com/{(settings.instagramUsername || "mi_sandeep_jadhav").replace(/^@/, '')}</code>. Players scan it to follow your profile before uploading screenshot proof.
                   </p>
                 </div>
               </div>
