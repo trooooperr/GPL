@@ -5,11 +5,19 @@ import { Download, Share2, X, CheckCircle2 } from "lucide-react";
 
 /**
  * PlayerRegistrationCard
- * - Pure cricket stadium background (no clutter)
- * - Dual foreground hero portraits: Registered Player + Shri Sandeep Jadhav (with Trophy)
- * - High-impact 3D metallic typography for Instagram viral sharing
- * - Radhe Radhe Foundation Reg. No. E-0040526 (GBR)
- * - Goregaon Purv Vidhan Sabha
+ * Matches the ISPL-style reference card:
+ * - Stadium background (purple)
+ * - New GPL logo (white bg removed) centered top
+ * - RADHE RADHE FOUNDATION | REG. NO. E-0040526 (GBR) top bar
+ * - GOREGAON PREMIER LEAGUE + GOREGAON PURV VIDHAN SABHA
+ * - SEASON 4 red badge
+ * - PLAYER (giant gold) + REGISTRATION CARD
+ * - Left: Player photo box (dark, gold border)
+ * - Right of photo box: Player name (large white bold italic) + PLAYER ID in gold oval
+ * - Right side FOREGROUND: Sandeep Jadhav full cutout (not in box, overlapping)
+ * - Bottom: WARD + ROLE badges only (no ZONE)
+ * - Sandeep attribution text in Hindi near him
+ * - Bottom gold decorative strip
  */
 export default function PlayerRegistrationCard({ player, regNum, photo, onClose }) {
   const canvasRef = useRef(null);
@@ -20,7 +28,7 @@ export default function PlayerRegistrationCard({ player, regNum, photo, onClose 
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    // 1080x1350 (4:5 vertical sports poster ratio for Instagram)
+    // 1080x1350 — 4:5 Instagram portrait
     const W = 1080;
     const H = 1350;
     canvas.width = W;
@@ -37,6 +45,7 @@ export default function PlayerRegistrationCard({ player, regNum, photo, onClose 
         img.src = src;
       });
 
+    /** Draw a rounded rectangle path */
     const roundRect = (x, y, w, h, r) => {
       ctx.beginPath();
       ctx.moveTo(x + r, y);
@@ -51,325 +60,423 @@ export default function PlayerRegistrationCard({ player, regNum, photo, onClose 
       ctx.closePath();
     };
 
+    /** Stroke text with shadow for readability */
+    const strokeText = (text, x, y, strokeColor = "rgba(0,0,0,0.9)", strokeW = 4) => {
+      ctx.save();
+      ctx.strokeStyle = strokeColor;
+      ctx.lineWidth = strokeW;
+      ctx.lineJoin = "round";
+      ctx.strokeText(text, x, y);
+      ctx.restore();
+    };
+
     const draw = async () => {
-      // 1. Draw pure cricket stadium background
+      // ─── 1. STADIUM BACKGROUND ───────────────────────────────────────────
       try {
         const stadiumBg = await loadImg("/images/stadium-pure-bg.jpg");
         ctx.drawImage(stadiumBg, 0, 0, W, H);
       } catch (_) {
-        // fallback gradient
         const bg = ctx.createLinearGradient(0, 0, 0, H);
-        bg.addColorStop(0, "#080310");
-        bg.addColorStop(0.5, "#180824");
-        bg.addColorStop(1, "#080310");
+        bg.addColorStop(0, "#0a0118");
+        bg.addColorStop(0.5, "#1a0535");
+        bg.addColorStop(1, "#0a0118");
         ctx.fillStyle = bg;
         ctx.fillRect(0, 0, W, H);
       }
 
-      // 2. Subtle contrast darkening overlay
-      const topOverlay = ctx.createLinearGradient(0, 0, 0, 360);
-      topOverlay.addColorStop(0, "rgba(8, 3, 16, 0.85)");
-      topOverlay.addColorStop(1, "rgba(8, 3, 16, 0.45)");
-      ctx.fillStyle = topOverlay;
-      ctx.fillRect(0, 0, W, 360);
+      // Dark gradient overlay over upper region for readability
+      const topGrad = ctx.createLinearGradient(0, 0, 0, 500);
+      topGrad.addColorStop(0, "rgba(5, 2, 15, 0.82)");
+      topGrad.addColorStop(1, "rgba(5, 2, 15, 0.0)");
+      ctx.fillStyle = topGrad;
+      ctx.fillRect(0, 0, W, 500);
 
-      const botOverlay = ctx.createLinearGradient(0, 820, 0, H);
-      botOverlay.addColorStop(0, "rgba(8, 3, 16, 0.65)");
-      botOverlay.addColorStop(1, "rgba(8, 3, 16, 0.95)");
-      ctx.fillStyle = botOverlay;
-      ctx.fillRect(0, 820, W, H - 820);
+      // Dark gradient over bottom region
+      const botGrad = ctx.createLinearGradient(0, 850, 0, H);
+      botGrad.addColorStop(0, "rgba(5, 2, 15, 0.0)");
+      botGrad.addColorStop(0.4, "rgba(5, 2, 15, 0.75)");
+      botGrad.addColorStop(1, "rgba(5, 2, 15, 0.97)");
+      ctx.fillStyle = botGrad;
+      ctx.fillRect(0, 850, W, H - 850);
 
-      // 3. Championship Gold Double Border
-      const m = 22;
-      roundRect(m, m, W - 2 * m, H - 2 * m, 24);
-      ctx.strokeStyle = "rgba(245, 158, 11, 0.78)";
+      // ─── 2. OUTER GOLD BORDER ────────────────────────────────────────────
+      const bm = 18;
+      roundRect(bm, bm, W - 2 * bm, H - 2 * bm, 20);
+      ctx.strokeStyle = "rgba(245, 158, 11, 0.85)";
       ctx.lineWidth = 3;
       ctx.stroke();
 
-      roundRect(m + 6, m + 6, W - 2 * (m + 6), H - 2 * (m + 6), 20);
-      ctx.strokeStyle = "rgba(253, 224, 71, 0.28)";
+      roundRect(bm + 7, bm + 7, W - 2 * (bm + 7), H - 2 * (bm + 7), 15);
+      ctx.strokeStyle = "rgba(253, 224, 71, 0.22)";
       ctx.lineWidth = 1;
       ctx.stroke();
 
-      // 4. TOP: RADHE RADHE FOUNDATION (REG. NO. E-0040526 GBR)
-      const rrW = 760;
-      const rrH = 42;
-      const rrY = 38;
-      roundRect(W / 2 - rrW / 2, rrY, rrW, rrH, 21);
-      ctx.fillStyle = "rgba(180, 83, 9, 0.95)";
+      // ─── 3. TOP BAR: RADHE RADHE FOUNDATION ─────────────────────────────
+      const barW = 820;
+      const barH = 44;
+      const barY = 36;
+      const barX = W / 2 - barW / 2;
+
+      // Dark bar with gold border
+      roundRect(barX, barY, barW, barH, 22);
+      ctx.fillStyle = "rgba(10, 6, 2, 0.88)";
       ctx.fill();
-      ctx.strokeStyle = "rgba(253, 224, 71, 0.95)";
+      ctx.strokeStyle = "#f59e0b";
       ctx.lineWidth = 2;
       ctx.stroke();
 
       ctx.textAlign = "center";
-      ctx.fillStyle = "#ffffff";
-      ctx.font = "bold 15px Arial, sans-serif";
+      ctx.fillStyle = "#fde047";
+      ctx.font = "bold 16px Arial, sans-serif";
       ctx.letterSpacing = "1.5px";
-      ctx.fillText("★ RADHE RADHE FOUNDATION  |  REG. NO. E-0040526 (GBR) ★", W / 2, rrY + 27);
+      ctx.fillText("RADHE RADHE FOUNDATION  |  REG. NO. E-0040526 (GBR)", W / 2, barY + 29);
 
-      // 5. GPL Shield Logo
+      // ─── 4. GPL LOGO (new, white bg removed) ────────────────────────────
       try {
-        const logo = await loadImg("/images/gpl-logo.png");
-        const logoSize = 95;
+        const logo = await loadImg("/images/gpl-logo-new.png");
+        const logoH = 230;
+        const logoW = logoH; // 1024x1024 square
         ctx.save();
-        ctx.shadowColor = "rgba(255, 255, 255, 0.35)";
-        ctx.shadowBlur = 18;
-        ctx.drawImage(logo, W / 2 - logoSize / 2, 90, logoSize, logoSize);
+        ctx.shadowColor = "rgba(255, 215, 0, 0.6)";
+        ctx.shadowBlur = 30;
+        ctx.drawImage(logo, W / 2 - logoW / 2, 92, logoW, logoH);
         ctx.restore();
-      } catch (_) {}
+      } catch (_) {
+        // fallback: try old logo
+        try {
+          const logo = await loadImg("/images/gpl-logo.png");
+          ctx.save();
+          ctx.shadowColor = "rgba(255, 215, 0, 0.5)";
+          ctx.shadowBlur = 20;
+          ctx.drawImage(logo, W / 2 - 90, 95, 180, 180);
+          ctx.restore();
+        } catch (__) {}
+      }
 
-      // Title & Subtitle
+      // ─── 5. "GOREGAON PREMIER LEAGUE" ───────────────────────────────────
+      ctx.textAlign = "center";
+      ctx.save();
+      ctx.shadowColor = "rgba(0,0,0,0.9)";
+      ctx.shadowBlur = 10;
       ctx.fillStyle = "#ffffff";
-      ctx.font = "bold 24px Arial, sans-serif";
-      ctx.letterSpacing = "2px";
-      ctx.fillText("GOREGAON PREMIER LEAGUE", W / 2, 202);
+      ctx.font = "bold 52px 'Arial Black', Impact, sans-serif";
+      ctx.letterSpacing = "1px";
+      ctx.fillText("GOREGAON PREMIER LEAGUE", W / 2, 348);
+      ctx.restore();
+
+      // Decorative gold line + subtitle
+      const lineY = 362;
+      ctx.strokeStyle = "#f59e0b";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(80, lineY);
+      ctx.lineTo(W / 2 - 230, lineY);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(W / 2 + 230, lineY);
+      ctx.lineTo(W - 80, lineY);
+      ctx.stroke();
 
       ctx.fillStyle = "#f59e0b";
-      ctx.font = "bold 18px Arial, sans-serif";
-      ctx.letterSpacing = "2px";
-      ctx.fillText("GOREGAON PURV VIDHAN SABHA", W / 2, 230);
+      ctx.font = "bold 22px Arial, sans-serif";
+      ctx.letterSpacing = "3px";
+      ctx.fillText("GOREGAON PURV VIDHAN SABHA", W / 2, 384);
 
-      // 6. Red "SEASON 4" Stamp
-      const s4W = 180;
-      const s4H = 34;
-      const s4Y = 256;
-      roundRect(W / 2 - s4W / 2, s4Y, s4W, s4H, 9);
-      ctx.fillStyle = "#dc2626";
+      // ─── 6. SEASON 4 BADGE ───────────────────────────────────────────────
+      const s4W = 220;
+      const s4H = 42;
+      const s4Y = 406;
+      roundRect(W / 2 - s4W / 2, s4Y, s4W, s4H, 11);
+      ctx.fillStyle = "#b91c1c";
       ctx.fill();
-      ctx.strokeStyle = "rgba(248, 113, 113, 0.9)";
-      ctx.lineWidth = 1;
+      ctx.strokeStyle = "rgba(248, 113, 113, 0.8)";
+      ctx.lineWidth = 1.5;
       ctx.stroke();
 
       ctx.fillStyle = "#ffffff";
-      ctx.font = "bold 20px Impact, Arial Black, sans-serif";
-      ctx.letterSpacing = "2px";
-      ctx.fillText("SEASON 4", W / 2, s4Y + 24);
+      ctx.font = "bold 24px Impact, 'Arial Black', sans-serif";
+      ctx.letterSpacing = "3px";
+      ctx.fillText("SEASON 4", W / 2, s4Y + 30);
 
-      // 7. AUCTION POOL Title (Giant 3D Metallic Gold)
-      const apY = 330;
-      ctx.font = "900 82px Impact, Arial Black, sans-serif";
-      ctx.letterSpacing = "4px";
+      // ─── 7. "PLAYER" GIANT GOLD METALLIC ────────────────────────────────
+      const playerTitleY = 500;
+      ctx.font = "900 108px Impact, 'Arial Black', sans-serif";
+      ctx.letterSpacing = "6px";
+      ctx.textAlign = "center";
 
-      ctx.fillStyle = "rgba(0, 0, 0, 0.85)";
-      ctx.fillText("AUCTION POOL", W / 2 + 2, apY + 2);
+      // Shadow
+      ctx.fillStyle = "rgba(0,0,0,0.9)";
+      ctx.fillText("PLAYER", W / 2 + 3, playerTitleY + 3);
 
-      const goldGrad = ctx.createLinearGradient(0, apY - 60, 0, apY + 10);
-      goldGrad.addColorStop(0, "#fef08a");
-      goldGrad.addColorStop(0.5, "#f59e0b");
-      goldGrad.addColorStop(1, "#b45309");
-      ctx.fillStyle = goldGrad;
-      ctx.fillText("AUCTION POOL", W / 2, apY);
+      // Gold gradient
+      const goldG = ctx.createLinearGradient(0, playerTitleY - 90, 0, playerTitleY + 10);
+      goldG.addColorStop(0, "#fff176");
+      goldG.addColorStop(0.3, "#fbbf24");
+      goldG.addColorStop(0.65, "#f59e0b");
+      goldG.addColorStop(1, "#92400e");
+      ctx.fillStyle = goldG;
+      ctx.fillText("PLAYER", W / 2, playerTitleY);
 
-      // 8. Red "✔ QUALIFIED & REGISTERED" Ribbon
-      const qW = 320;
-      const qH = 36;
-      const qY = 372;
-      roundRect(W / 2 - qW / 2, qY, qW, qH, 18);
-      ctx.fillStyle = "rgba(185, 28, 28, 0.95)";
-      ctx.fill();
-      ctx.strokeStyle = "rgba(252, 165, 165, 0.75)";
-      ctx.lineWidth = 1;
-      ctx.stroke();
-
+      // ─── 8. "REGISTRATION CARD" spaced text ──────────────────────────────
       ctx.fillStyle = "#ffffff";
-      ctx.font = "bold 18px Impact, Arial, sans-serif";
-      ctx.letterSpacing = "2px";
-      ctx.fillText("✔  QUALIFIED & REGISTERED", W / 2, qY + 25);
+      ctx.font = "bold 28px Arial, sans-serif";
+      ctx.letterSpacing = "10px";
+      ctx.fillText("REGISTRATION CARD", W / 2, 540);
 
-      // 9. FOREGROUND DUAL HERO PORTRAITS (PLAYER + SHRI SANDEEP JADHAV)
-      const cardW = 420;
-      const cardH = 420;
-      const cardRad = 28;
-      const gap = 40;
-      const startX = (W - (2 * cardW + gap)) / 2;
-      const cardsY = 430;
+      // ─── 9. INFO SECTION ─────────────────────────────────────────────────
+      // Player photo box — left side, starts x=60
+      const photoX = 55;
+      const photoY = 575;
+      const photoW = 300;
+      const photoH = 320;
+      const photoR = 20;
 
-      // --- LEFT FOREGROUND: REGISTERED PLAYER ---
-      const pX = startX;
-      const pY = cardsY;
-
+      // Gold glow behind photo box
       ctx.save();
       ctx.shadowColor = "#f59e0b";
-      ctx.shadowBlur = 28;
-      roundRect(pX - 3, pY - 3, cardW + 6, cardH + 6, cardRad + 3);
+      ctx.shadowBlur = 32;
+      roundRect(photoX - 4, photoY - 4, photoW + 8, photoH + 8, photoR + 4);
       ctx.strokeStyle = "#f59e0b";
       ctx.lineWidth = 4;
       ctx.stroke();
       ctx.restore();
 
+      // Photo box dark background
+      roundRect(photoX, photoY, photoW, photoH, photoR);
+      ctx.fillStyle = "rgba(10, 14, 28, 0.92)";
+      ctx.fill();
+
+      // Draw player photo (clipped)
       ctx.save();
-      roundRect(pX, pY, cardW, cardH, cardRad);
+      roundRect(photoX, photoY, photoW, photoH, photoR);
       ctx.clip();
 
-      let playerDrawn = false;
+      let playerPhotoDrawn = false;
       if (photo) {
         try {
           const pImg = await loadImg(photo);
-          ctx.drawImage(pImg, pX, pY, cardW, cardH);
-          playerDrawn = true;
+          // Smart crop: square from center
+          const pSrc = pImg.naturalWidth;
+          const pSrcH = pImg.naturalHeight;
+          const sq = Math.min(pSrc, pSrcH);
+          const sx = (pSrc - sq) / 2;
+          const sy = pSrcH > pSrc ? 0 : (pSrcH - sq) / 2;
+          ctx.drawImage(pImg, sx, sy, sq, sq, photoX, photoY, photoW, photoH);
+          playerPhotoDrawn = true;
         } catch (_) {}
       }
 
-      if (!playerDrawn) {
-        const avGrad = ctx.createLinearGradient(pX, pY, pX + cardW, pY + cardH);
-        avGrad.addColorStop(0, "#0e1a33");
-        avGrad.addColorStop(1, "#071124");
-        ctx.fillStyle = avGrad;
-        ctx.fillRect(pX, pY, cardW, cardH);
+      if (!playerPhotoDrawn) {
+        // Silhouette placeholder
+        ctx.fillStyle = "rgba(10, 14, 28, 0.95)";
+        ctx.fillRect(photoX, photoY, photoW, photoH);
 
-        const initials = (player?.name || "GPL")
-          .split(" ")
-          .map((n) => n[0])
-          .join("")
-          .toUpperCase()
-          .slice(0, 2);
-        ctx.fillStyle = "rgba(245, 158, 11, 0.85)";
-        ctx.font = "bold 110px Arial Black, sans-serif";
-        ctx.fillText(initials, pX + cardW / 2, pY + cardH / 2 + 38);
+        // Person silhouette (head + body)
+        ctx.fillStyle = "rgba(100, 116, 139, 0.6)";
+        const cx = photoX + photoW / 2;
+        const cy = photoY + photoH / 2;
+        // Head circle
+        ctx.beginPath();
+        ctx.arc(cx, cy - 60, 52, 0, Math.PI * 2);
+        ctx.fill();
+        // Body trapezoid
+        ctx.beginPath();
+        ctx.moveTo(cx - 70, cy + 125);
+        ctx.lineTo(cx + 70, cy + 125);
+        ctx.lineTo(cx + 55, cy - 10);
+        ctx.lineTo(cx - 55, cy - 10);
+        ctx.closePath();
+        ctx.fill();
       }
       ctx.restore();
 
-      // Player tag at bottom
-      const ptagW = 240;
-      const ptagH = 32;
-      roundRect(pX + cardW / 2 - ptagW / 2, pY + cardH - 22, ptagW, ptagH, 16);
-      ctx.fillStyle = "rgba(10, 20, 38, 0.95)";
-      ctx.fill();
-      ctx.strokeStyle = "#f59e0b";
-      ctx.lineWidth = 2;
-      ctx.stroke();
+      // ─── 10. PLAYER NAME & ID (right of photo box) ───────────────────────
+      const infoX = photoX + photoW + 32;
+      const infoW = W / 2 - infoX - 20; // leaves space on right for Sandeep
+      // Actually let's give more space since sandeep overlaps from right
+      const infoWide = 390;
 
-      ctx.fillStyle = "#fde047";
-      ctx.font = "bold 13px Arial, sans-serif";
-      ctx.letterSpacing = "1px";
-      ctx.fillText("★ REGISTERED PLAYER ★", pX + cardW / 2, pY + cardH - 2);
-
-      // --- RIGHT FOREGROUND: SHRI SANDEEP JADHAV ---
-      const sX = startX + cardW + gap;
-      const sY = cardsY;
-
-      ctx.save();
-      ctx.shadowColor = "#f59e0b";
-      ctx.shadowBlur = 28;
-      roundRect(sX - 3, sY - 3, cardW + 6, cardH + 6, cardRad + 3);
-      ctx.strokeStyle = "#f59e0b";
-      ctx.lineWidth = 4;
-      ctx.stroke();
-      ctx.restore();
-
-      ctx.save();
-      roundRect(sX, sY, cardW, cardH, cardRad);
-      ctx.clip();
-
-      try {
-        const sandeepImg = await loadImg("/images/sandeep-excellence.jpg");
-        // Crop centered upper-torso holding trophy (source 768x1024)
-        const sx = 90;
-        const sy = 160;
-        const sSize = 588;
-        ctx.drawImage(sandeepImg, sx, sy, sSize, sSize, sX, sY, cardW, cardH);
-      } catch (_) {}
-      ctx.restore();
-
-      // Sandeep tag at bottom
-      const stagW = 260;
-      const stagH = 32;
-      roundRect(sX + cardW / 2 - stagW / 2, sY + cardH - 22, stagW, stagH, 16);
-      ctx.fillStyle = "rgba(10, 20, 38, 0.95)";
-      ctx.fill();
-      ctx.strokeStyle = "#f59e0b";
-      ctx.lineWidth = 2;
-      ctx.stroke();
-
-      ctx.fillStyle = "#fde047";
-      ctx.font = "bold 13px Arial, sans-serif";
-      ctx.letterSpacing = "1px";
-      ctx.fillText("★ संस्थापक: श्री. संदीप जाधव ★", sX + cardW / 2, sY + cardH - 2);
-
-      // 10. PLAYER FULL NAME
       const playerName = (player?.name || "PLAYER NAME").toUpperCase();
+
+      // Player name — large white bold italic
+      ctx.textAlign = "left";
       ctx.save();
-      ctx.font = `900 ${playerName.length > 18 ? 40 : 46}px Arial Black, Impact, sans-serif`;
-      ctx.letterSpacing = "2px";
-      ctx.fillStyle = "rgba(0, 0, 0, 0.9)";
-      ctx.fillText(playerName, W / 2 + 2, 892 + 2);
+      ctx.shadowColor = "rgba(0,0,0,0.95)";
+      ctx.shadowBlur = 12;
+
+      const nameFontSize = playerName.length > 14 ? 44 : playerName.length > 10 ? 50 : 56;
+
+      // Split name into words and render on two lines if needed
+      const nameParts = playerName.split(" ");
+      ctx.font = `900 italic ${nameFontSize}px 'Arial Black', Impact, sans-serif`;
+      ctx.letterSpacing = "1px";
       ctx.fillStyle = "#ffffff";
-      ctx.fillText(playerName, W / 2, 892);
+
+      if (nameParts.length >= 2) {
+        // Two lines
+        const line1 = nameParts[0];
+        const line2 = nameParts.slice(1).join(" ");
+        ctx.fillText(line1, infoX, photoY + 70);
+        ctx.fillText(line2, infoX, photoY + 70 + nameFontSize + 10);
+      } else {
+        ctx.fillText(playerName, infoX, photoY + 70);
+      }
       ctx.restore();
 
-      // 11. Clean ID Chip: GPL ID : GPL2026-XXXX
-      const idStr = `GPL ID : GPL2026-${String(regNum || "0001").padStart(4, "0")}`;
-      const chipW = 380;
-      const chipH = 48;
-      const chipY = 930;
-      roundRect(W / 2 - chipW / 2, chipY, chipW, chipH, 24);
-      ctx.fillStyle = "rgba(10, 20, 38, 0.92)";
+      // "PLAYER ID" label
+      const idLabelY = photoY + 185;
+      ctx.textAlign = "left";
+      ctx.fillStyle = "rgba(203, 213, 225, 0.85)";
+      ctx.font = "bold 18px Arial, sans-serif";
+      ctx.letterSpacing = "3px";
+      ctx.fillText("PLAYER ID", infoX, idLabelY);
+
+      // Player ID in gold oval
+      const idVal = String(regNum || "0001");
+      const ovalY = idLabelY + 14;
+      const ovalH = 56;
+      const ovalW = Math.max(160, idVal.length * 28 + 60);
+
+      roundRect(infoX, ovalY, ovalW, ovalH, 28);
+      ctx.fillStyle = "rgba(10, 14, 28, 0.9)";
       ctx.fill();
-      ctx.strokeStyle = "#f59e0b";
-      ctx.lineWidth = 2;
+
+      // Gold gradient oval border
+      const ovalBorderG = ctx.createLinearGradient(infoX, ovalY, infoX + ovalW, ovalY + ovalH);
+      ovalBorderG.addColorStop(0, "#fbbf24");
+      ovalBorderG.addColorStop(0.5, "#f59e0b");
+      ovalBorderG.addColorStop(1, "#d97706");
+      ctx.strokeStyle = ovalBorderG;
+      ctx.lineWidth = 3;
       ctx.stroke();
 
+      // ID number text
+      ctx.textAlign = "center";
       ctx.fillStyle = "#fde047";
-      ctx.font = "bold 22px Courier New, monospace";
-      ctx.letterSpacing = "2px";
-      ctx.fillText(idStr, W / 2, chipY + 32);
+      ctx.font = `bold 32px 'Courier New', monospace`;
+      ctx.letterSpacing = "3px";
+      ctx.fillText(idVal, infoX + ovalW / 2, ovalY + 38);
 
-      // 12. 3 Clean Badges: WARD, ROLE, ZONE
-      const badges = [
-        { label: "📍 WARD", val: (player?.ward || "Ward 51").toUpperCase() },
-        { label: "🏏 ROLE", val: (player?.speciality || "Batsman").toUpperCase() },
-        { label: "🛡️ ZONE", val: "GOREGAON PURV" },
+      // ─── 11. SANDEEP JADHAV — RIGHT SIDE FOREGROUND CUTOUT ───────────────
+      // Stands prominently on the right half with transparent cutout
+      try {
+        const sanImg = await loadImg("/images/sandeep-jadhav-transparent.png");
+        const targetH = 820;
+        const targetW = (sanImg.naturalWidth * (targetH / sanImg.naturalHeight));
+        const sandeepDestX = W - targetW + 30;
+        const sandeepDestY = H - targetH - 65;
+
+        ctx.save();
+        ctx.shadowColor = "rgba(0, 0, 0, 0.8)";
+        ctx.shadowBlur = 24;
+        ctx.shadowOffsetX = -6;
+        ctx.shadowOffsetY = 6;
+        ctx.drawImage(sanImg, sandeepDestX, sandeepDestY, targetW, targetH);
+        ctx.restore();
+      } catch (e) {
+        console.error("Sandeep cutout load error:", e);
+      }
+
+      // ─── 12. BOTTOM BADGES: WARD + ROLE only ──────────────────────────────
+      const badgeData = [
+        { icon: "📍", label: "WARD", val: (player?.ward || "Ward 51").toUpperCase() },
+        { icon: "👤", label: "ROLE", val: (player?.speciality || "Batsman").toUpperCase() },
       ];
 
-      const bW = 280;
-      const bH = 86;
-      const bGap = 24;
-      const totalBW = 3 * bW + 2 * bGap;
-      const startBX = (W - totalBW) / 2;
-      const bY = 1008;
+      const bW = 460;
+      const bH = 70;
+      const bGap = 18;
+      const bStartX = 55;
+      const bY1 = 955;
 
-      badges.forEach((b, i) => {
-        const bx = startBX + i * (bW + bGap);
-        roundRect(bx, bY, bW, bH, 16);
-        ctx.fillStyle = "rgba(14, 24, 46, 0.92)";
+      badgeData.forEach((b, i) => {
+        const bY = bY1 + i * (bH + bGap);
+
+        // Badge background
+        roundRect(bStartX, bY, bW, bH, 14);
+        ctx.fillStyle = "rgba(10, 14, 28, 0.88)";
         ctx.fill();
-        ctx.strokeStyle = "rgba(245, 158, 11, 0.45)";
-        ctx.lineWidth = 1;
+        ctx.strokeStyle = "rgba(245, 158, 11, 0.6)";
+        ctx.lineWidth = 2;
         ctx.stroke();
 
-        ctx.fillStyle = "rgba(148, 163, 184, 0.9)";
-        ctx.font = "bold 15px Arial, sans-serif";
-        ctx.letterSpacing = "2px";
-        ctx.fillText(b.label, bx + bW / 2, bY + 28);
+        // Icon circle
+        const iconCX = bStartX + 46;
+        const iconCY = bY + bH / 2;
+        ctx.beginPath();
+        ctx.arc(iconCX, iconCY, 24, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(245, 158, 11, 0.18)";
+        ctx.fill();
+        ctx.strokeStyle = "rgba(245, 158, 11, 0.5)";
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
 
+        ctx.textAlign = "center";
+        ctx.font = "22px Arial, sans-serif";
+        ctx.fillText(b.icon, iconCX, iconCY + 8);
+
+        // Label (small, gold)
+        ctx.textAlign = "left";
+        ctx.fillStyle = "rgba(253, 224, 71, 0.9)";
+        ctx.font = "bold 14px Arial, sans-serif";
+        ctx.letterSpacing = "2px";
+        ctx.fillText(b.label, bStartX + 84, bY + 26);
+
+        // Value (white, bold)
         ctx.fillStyle = "#ffffff";
-        ctx.font = `bold ${b.val.length > 14 ? 17 : 21}px Impact, Arial, sans-serif`;
+        ctx.font = `bold ${b.val.length > 16 ? 20 : 24}px 'Arial Black', Impact, sans-serif`;
         ctx.letterSpacing = "1px";
-        ctx.fillText(b.val, bx + bW / 2, bY + 62);
+        ctx.fillText(b.val, bStartX + 84, bY + 54);
       });
 
-      // 13. Kit Size Strip
-      const kitW = 580;
-      const kitH = 46;
-      const kitY = 1120;
-      roundRect(W / 2 - kitW / 2, kitY, kitW, kitH, 23);
-      ctx.fillStyle = "rgba(12, 22, 42, 0.88)";
-      ctx.fill();
-      ctx.strokeStyle = "rgba(245, 158, 11, 0.4)";
-      ctx.lineWidth = 1;
-      ctx.stroke();
+      // ─── 13. SANDEEP ATTRIBUTION (Hindi text, right side) ────────────────
+      const attrX = 530;
+      const attrY = 1130;
 
-      ctx.fillStyle = "#f59e0b";
-      ctx.font = "bold 15px Arial, sans-serif";
-      ctx.letterSpacing = "1.5px";
-      ctx.fillText(`OFFICIAL KIT: T-SHIRT ${player?.tshirtSize || "M"} • TRACK ${player?.trackSize || "M"}  |  VERIFIED ENTRY`, W / 2, kitY + 28);
+      ctx.textAlign = "left";
 
-      // 14. Minimalist Baseline
       ctx.fillStyle = "rgba(203, 213, 225, 0.85)";
+      ctx.font = "bold 18px Arial Unicode MS, Arial, sans-serif";
+      ctx.letterSpacing = "1px";
+      ctx.fillText("शुभेच्छुक", attrX, attrY);
+
+      // Name in gold large
+      ctx.save();
+      ctx.shadowColor = "rgba(0,0,0,0.9)";
+      ctx.shadowBlur = 10;
+      ctx.fillStyle = "#fde047";
+      ctx.font = "bold 34px Arial Unicode MS, Arial, sans-serif";
+      ctx.letterSpacing = "0px";
+      ctx.fillText("श्री. संदीप जाधव", attrX, attrY + 42);
+      ctx.restore();
+
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 17px Arial Unicode MS, Arial, sans-serif";
+      ctx.letterSpacing = "0px";
+      ctx.fillText("संस्थापक-राधे राधे फाऊंडेशन", attrX, attrY + 72);
+
+      // ─── 14. BOTTOM GOLD DECORATIVE STRIP ────────────────────────────────
+      const stripH = 48;
+      const stripY = H - stripH - 18;
+
+      const stripGrad = ctx.createLinearGradient(0, stripY, 0, stripY + stripH);
+      stripGrad.addColorStop(0, "#f59e0b");
+      stripGrad.addColorStop(0.5, "#fbbf24");
+      stripGrad.addColorStop(1, "#d97706");
+      ctx.fillStyle = stripGrad;
+      roundRect(bm + 4, stripY, W - 2 * (bm + 4), stripH, 10);
+      ctx.fill();
+
+      // Strip text
+      ctx.textAlign = "center";
+      ctx.fillStyle = "rgba(10, 6, 2, 0.9)";
       ctx.font = "bold 14px Arial, sans-serif";
       ctx.letterSpacing = "2px";
-      ctx.fillText("RADHE RADHE FOUNDATION (REG. NO. E-0040526 GBR)  •  GOREGAON PREMIER LEAGUE", W / 2, 1215);
+      ctx.fillText(
+        "RADHE RADHE FOUNDATION  •  REG. NO. E-0040526 (GBR)  •  GOREGAON PREMIER LEAGUE",
+        W / 2,
+        stripY + 30
+      );
 
       setRendered(true);
     };
@@ -399,8 +506,8 @@ export default function PlayerRegistrationCard({ player, regNum, photo, onClose 
         try {
           await navigator.share({
             files: [file],
-            title: "GPL Season 4 — Registered Player",
-            text: `I just registered for Goregaon Premier League Season 4! 🏏 #GPL4 #Goregaon`,
+            title: "GPL Season 4 — Player Registration Card",
+            text: `मी Goregaon Premier League Season 4 साठी नोंदणी केली! 🏏 #GPL4 #GoregaonPremierLeague #RadheRadheFoundation`,
           });
         } catch (_) {}
       } else {
@@ -431,24 +538,25 @@ export default function PlayerRegistrationCard({ player, regNum, photo, onClose 
           <p className="text-white/70 text-xs">Download or share your official GPL Season 4 player card</p>
         </div>
 
-        {/* Live Canvas Card Container */}
-        <div
-          className={`w-full rounded-2xl overflow-hidden shadow-2xl border border-amber-500/30 transition-all duration-300 ${
-            rendered ? "opacity-100 scale-100" : "opacity-0 scale-95"
-          }`}
-          style={{ boxShadow: "0 20px 50px -10px rgba(245, 158, 11, 0.35)" }}
-        >
-          <canvas ref={canvasRef} className="w-full h-auto block" />
-        </div>
-
+        {/* Loader while drawing */}
         {!rendered && (
           <div className="w-full aspect-[4/5] rounded-2xl bg-[#060b18] border border-amber-500/20 flex items-center justify-center">
             <div className="text-center space-y-2">
-              <div className="w-8 h-8 border-3 border-amber-400 border-t-transparent rounded-full animate-spin mx-auto" />
+              <div className="w-8 h-8 border-[3px] border-amber-400 border-t-transparent rounded-full animate-spin mx-auto" />
               <p className="text-amber-300 text-xs font-bold">Generating Official Player Card…</p>
             </div>
           </div>
         )}
+
+        {/* Canvas Card */}
+        <div
+          className={`w-full rounded-2xl overflow-hidden shadow-2xl border border-amber-500/30 transition-all duration-300 ${
+            rendered ? "opacity-100 scale-100" : "opacity-0 scale-95 absolute pointer-events-none"
+          }`}
+          style={{ boxShadow: "0 20px 50px -10px rgba(245, 158, 11, 0.4)" }}
+        >
+          <canvas ref={canvasRef} className="w-full h-auto block" />
+        </div>
 
         {/* Action Buttons */}
         {rendered && (
