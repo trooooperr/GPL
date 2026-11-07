@@ -10,35 +10,47 @@ export const COOKIE_NAME = "gpl_admin_jwt";
 export async function authenticateAdmin(username, password) {
   if (!username || !password) return false;
 
-  let configuredUser = (process.env.ADMIN_USERNAME || "admin").trim().toLowerCase();
-  let configuredPass = process.env.ADMIN_PASSWORD || "GPL@AdminNew2026";
+  // 1. First priority: Environment variables (.env / .env.local / Vercel env)
+  const envUser = (process.env.ADMIN_USERNAME || process.env.CONSOLE_USERNAME || "").trim();
+  const envPass = (process.env.ADMIN_PASSWORD || process.env.CONSOLE_PASSWORD || "").trim();
 
-  // Check MongoDB for updated credentials if available
-  try {
-    const { connectToDatabase, MongoSetting } = await import("@/lib/mongodb");
-    await connectToDatabase();
-    const doc = await MongoSetting.findOne({ key: "global_settings" }).lean();
-    if (doc?.value?.adminUsername) {
-      configuredUser = String(doc.value.adminUsername).trim().toLowerCase();
+  let configuredUser = envUser.toLowerCase();
+  let configuredPass = envPass;
+
+  // 2. Fallback to MongoDB only if env variables are not set
+  if (!configuredUser || !configuredPass) {
+    try {
+      const { connectToDatabase, MongoSetting } = await import("@/lib/mongodb");
+      await connectToDatabase();
+      const doc = await MongoSetting.findOne({ key: "global_settings" }).lean();
+      if (!configuredUser && doc?.value?.adminUsername) {
+        configuredUser = String(doc.value.adminUsername).trim().toLowerCase();
+      }
+      if (!configuredPass && doc?.value?.adminPassword) {
+        configuredPass = String(doc.value.adminPassword).trim();
+      }
+    } catch (e) {
+      // fallback to defaults if DB is temporarily unreachable
     }
-    if (doc?.value?.adminPassword) {
-      configuredPass = String(doc.value.adminPassword);
-    }
-  } catch (e) {
-    // fallback to env vars / defaults if DB is temporarily unreachable
   }
+
+  // 3. Fallbacks
+  if (!configuredUser) configuredUser = "admin";
+  if (!configuredPass) configuredPass = "GPL@AdminNew2026";
 
   const userValid = username.trim().toLowerCase() === configuredUser;
   if (!userValid) return false;
 
-  // Check password
+  const inputPass = String(password).trim();
+  const targetPass = String(configuredPass).trim();
+
+  if (inputPass === targetPass) return true;
+
   try {
-    const a = Buffer.from(password);
-    const b = Buffer.from(configuredPass);
+    const a = Buffer.from(inputPass);
+    const b = Buffer.from(targetPass);
     if (a.length === b.length && crypto.timingSafeEqual(a, b)) return true;
-  } catch {
-    if (password === configuredPass) return true;
-  }
+  } catch {}
 
   return false;
 }

@@ -5,122 +5,91 @@ from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
 def generate_gpl_card(output_path, sample_photo_path=None):
     W, H = 1080, 1350
-    
-    # 1. Base Gradient Background (Midnight Sports Blue)
-    arr = np.zeros((H, W, 4), dtype=np.uint8)
-    t = np.linspace(0, 1, H)[:, None]
-    arr[:, :, 0] = (6 + t * 6).astype(np.uint8)
-    arr[:, :, 1] = (12 + t * 8).astype(np.uint8)
-    arr[:, :, 2] = (24 + (1 - t) * 16).astype(np.uint8)
-    arr[:, :, 3] = 255
-    img = Image.fromarray(arr)
 
-    # 2. Atmospheric ambient glows
+    # 1. Load the pre-baked stadium background (featuring the user's uploaded stadium & Sandeep Jadhav)
+    bg_path = "/Users/alok/Desktop/goregaon-premier-league/public/images/card-stadium-bg-overlay.jpg"
+    if os.path.exists(bg_path):
+        img = Image.open(bg_path).convert("RGBA")
+    else:
+        img = Image.new("RGBA", (W, H), (12, 6, 24, 255))
+
+    # Ambient golden light on center
     glow = Image.new("RGBA", (W, H), (0, 0, 0, 0))
     gdraw = ImageDraw.Draw(glow)
-    gdraw.ellipse([W - 350, -100, W + 300, 500], fill=(245, 158, 11, 26))
-    gdraw.ellipse([-200, -100, 350, 450], fill=(14, 165, 233, 22))
-    gdraw.ellipse([W//2 - 320, 300, W//2 + 320, 920], fill=(245, 158, 11, 35))
-    glow = glow.filter(ImageFilter.GaussianBlur(70))
+    gdraw.ellipse([W//2 - 280, 420, W//2 + 280, 960], fill=(245, 158, 11, 40))
+    glow = glow.filter(ImageFilter.GaussianBlur(60))
     img = Image.alpha_composite(img, glow)
-
-    # 3. BACKGROUND: Shri Sandeep Jadhav portrait blended into upper-right
-    sj_path = "/Users/alok/Desktop/goregaon-premier-league/public/images/sandeep-jadhav.png"
-    if os.path.exists(sj_path):
-        sj = Image.open(sj_path).convert("RGBA")
-        aspect = sj.height / sj.width
-        new_w = 540
-        new_h = int(new_w * aspect)
-        sj_scaled = sj.resize((new_w, new_h), Image.Resampling.LANCZOS)
-
-        # Smooth alpha mask
-        mask_arr = np.ones((new_h, new_w), dtype=np.float32)
-        # Fade bottom
-        fade_y = np.linspace(1, 0, int(new_h * 0.42), dtype=np.float32)
-        mask_arr[-len(fade_y):, :] *= fade_y[:, None]
-        # Fade left
-        fade_x = np.linspace(0, 1, int(new_w * 0.38), dtype=np.float32)
-        mask_arr[:, :len(fade_x)] *= fade_x[None, :]
-        # Opacity 48% for clear, prestigious visibility
-        mask_arr = (mask_arr * 0.48 * 255).astype(np.uint8)
-        mask_img = Image.fromarray(mask_arr)
-
-        paste_x = W - new_w + 30
-        paste_y = 100
-        img.paste(sj_scaled, (paste_x, paste_y), mask_img)
 
     draw = ImageDraw.Draw(img)
 
-    # 4. Crisp Outer Card Border
-    m = 26
-    draw.rounded_rectangle([m, m, W - m, H - m], radius=26, outline=(245, 158, 11, 140), width=2)
-    draw.rounded_rectangle([m + 6, m + 6, W - m - 6, H - m - 6], radius=22, outline=(245, 158, 11, 40), width=1)
+    # 2. Outer Card Border
+    m = 24
+    draw.rounded_rectangle([m, m, W - m, H - m], radius=24, outline=(245, 158, 11, 170), width=2)
+    draw.rounded_rectangle([m + 6, m + 6, W - m - 6, H - m - 6], radius=20, outline=(253, 224, 71, 55), width=1)
 
     # Fonts
     font_dir = "/System/Library/Fonts/Supplemental"
-    font_impact_lg = ImageFont.truetype(f"{font_dir}/Impact.ttf", 88)
+    font_impact_lg = ImageFont.truetype(f"{font_dir}/Impact.ttf", 86)
     font_impact_md = ImageFont.truetype(f"{font_dir}/Impact.ttf", 32)
-    font_impact_sm = ImageFont.truetype(f"{font_dir}/Impact.ttf", 26)
+    font_impact_sm = ImageFont.truetype(f"{font_dir}/Impact.ttf", 24)
     font_name = ImageFont.truetype(f"{font_dir}/Arial Black.ttf", 46)
-    font_bold_lg = ImageFont.truetype(f"{font_dir}/Arial Bold.ttf", 24)
-    font_bold_md = ImageFont.truetype(f"{font_dir}/Arial Bold.ttf", 19)
+    font_bold_lg = ImageFont.truetype(f"{font_dir}/Arial Bold.ttf", 23)
+    font_bold_md = ImageFont.truetype(f"{font_dir}/Arial Bold.ttf", 18)
     font_bold_sm = ImageFont.truetype(f"{font_dir}/Arial Bold.ttf", 15)
-    font_mono = ImageFont.truetype(f"{font_dir}/Arial Bold.ttf", 23)
+    font_mono = ImageFont.truetype(f"{font_dir}/Arial Bold.ttf", 22)
 
-    # 5. MOST PROMINENT: RADHE RADHE FOUNDATION (REG. NO. E-0040526 GBR) PRESENTS
-    rr_w, rr_h = 720, 44
+    # 3. TOP: RADHE RADHE FOUNDATION (REG. NO. E-0040526 GBR)
+    rr_w, rr_h = 740, 44
     rr_box = Image.new("RGBA", (rr_w, rr_h), (0, 0, 0, 0))
     r_draw = ImageDraw.Draw(rr_box)
-    r_draw.rounded_rectangle([0, 0, rr_w, rr_h], radius=22, fill=(180, 83, 9, 235), outline=(253, 224, 71, 235), width=2)
+    r_draw.rounded_rectangle([0, 0, rr_w, rr_h], radius=22, fill=(180, 83, 9, 235), outline=(253, 224, 71, 240), width=2)
     r_draw.text((rr_w // 2, rr_h // 2), "★ RADHE RADHE FOUNDATION  |  REG. NO. E-0040526 (GBR) ★", fill=(255, 255, 255, 255), font=font_bold_sm, anchor="mm")
-    img.paste(rr_box, (W // 2 - rr_w // 2, 48), rr_box)
+    img.paste(rr_box, (W // 2 - rr_w // 2, 42), rr_box)
 
-    # 6. Logo & Top Header (with "GOREGAON PURV VIDHAN SABHA")
+    # 4. Logo + GOREGAON PREMIER LEAGUE + GOREGAON PURV VIDHAN SABHA
     logo_path = "/Users/alok/Desktop/goregaon-premier-league/public/images/gpl-logo.png"
     if os.path.exists(logo_path):
         try:
             logo = Image.open(logo_path).convert("RGBA")
-            logo.thumbnail((110, 110), Image.Resampling.LANCZOS)
-            img.paste(logo, (W // 2 - logo.width // 2, 105), logo)
+            logo.thumbnail((105, 105), Image.Resampling.LANCZOS)
+            img.paste(logo, (W // 2 - logo.width // 2, 98), logo)
         except Exception as e:
             print("Logo load error:", e)
 
-    # Title: GOREGAON PREMIER LEAGUE
-    draw.text((W // 2, 230), "GOREGAON PREMIER LEAGUE", fill=(255, 255, 255, 255), font=font_bold_lg, anchor="mm")
-    # Subtitle: GOREGAON PURV VIDHAN SABHA (replaced ward 51 & 54)
-    draw.text((W // 2, 260), "GOREGAON PURV VIDHAN SABHA", fill=(245, 158, 11, 240), font=font_bold_md, anchor="mm")
+    draw.text((W // 2, 220), "GOREGAON PREMIER LEAGUE", fill=(255, 255, 255, 255), font=font_bold_lg, anchor="mm")
+    draw.text((W // 2, 248), "GOREGAON PURV VIDHAN SABHA", fill=(245, 158, 11, 240), font=font_bold_md, anchor="mm")
 
-    # 7. Red "SEASON 4" Stamp + "AUCTION POOL" + "✔ QUALIFIED"
-    s4_w, s4_h = 200, 38
+    # 5. Red "SEASON 4" Stamp
+    s4_w, s4_h = 190, 36
     s4_box = Image.new("RGBA", (s4_w, s4_h), (0, 0, 0, 0))
     s4_draw = ImageDraw.Draw(s4_box)
     s4_draw.rounded_rectangle([0, 0, s4_w, s4_h], radius=10, fill=(220, 38, 38, 255), outline=(248, 113, 113, 220), width=1)
     s4_draw.text((s4_w // 2, s4_h // 2), "SEASON 4", fill=(255, 255, 255, 255), font=font_impact_sm, anchor="mm")
-    img.paste(s4_box, (W // 2 - s4_w // 2, 290), s4_box)
+    img.paste(s4_box, (W // 2 - s4_w // 2, 276), s4_box)
 
-    # AUCTION POOL Title
-    ap_y = 372
-    draw.text((W // 2 + 2, ap_y + 3), "AUCTION POOL", fill=(0, 0, 0, 180), font=font_impact_lg, anchor="mm")
+    # 6. AUCTION POOL Title
+    ap_y = 356
+    draw.text((W // 2 + 2, ap_y + 2), "AUCTION POOL", fill=(0, 0, 0, 200), font=font_impact_lg, anchor="mm")
     draw.text((W // 2, ap_y), "AUCTION POOL", fill=(253, 224, 71, 255), font=font_impact_lg, anchor="mm")
 
-    # ✔ QUALIFIED Ribbon
-    q_w, q_h = 290, 40
+    # 7. Red "✔ QUALIFIED" Ribbon
+    q_w, q_h = 280, 38
     q_box = Image.new("RGBA", (q_w, q_h), (0, 0, 0, 0))
     q_draw = ImageDraw.Draw(q_box)
-    q_draw.rounded_rectangle([0, 0, q_w, q_h], radius=20, fill=(185, 28, 28, 240), outline=(252, 165, 165, 180), width=1)
+    q_draw.rounded_rectangle([0, 0, q_w, q_h], radius=19, fill=(185, 28, 28, 240), outline=(252, 165, 165, 180), width=1)
     q_draw.text((q_w // 2, q_h // 2), "✔  QUALIFIED", fill=(255, 255, 255, 255), font=font_impact_sm, anchor="mm")
-    img.paste(q_box, (W // 2 - q_w // 2, 422), q_box)
+    img.paste(q_box, (W // 2 - q_w // 2, 404), q_box)
 
     # 8. Hero Player Portrait
     p_size = 360
     p_x = W // 2 - p_size // 2
-    p_y = 488
+    p_y = 470
     p_rad = 32
 
     # Glow behind photo
     glow_p = Image.new("RGBA", (p_size + 60, p_size + 60), (0, 0, 0, 0))
     gp_draw = ImageDraw.Draw(glow_p)
-    gp_draw.rounded_rectangle([15, 15, p_size + 45, p_size + 45], radius=44, fill=(245, 158, 11, 75))
+    gp_draw.rounded_rectangle([15, 15, p_size + 45, p_size + 45], radius=44, fill=(245, 158, 11, 80))
     glow_p = glow_p.filter(ImageFilter.GaussianBlur(22))
     img.paste(glow_p, (p_x - 30, p_y - 30), glow_p)
 
@@ -151,18 +120,18 @@ def generate_gpl_card(output_path, sample_photo_path=None):
     draw.rounded_rectangle([p_x - 4, p_y - 4, p_x + p_size + 4, p_y + p_size + 4], radius=p_rad + 4, outline=(245, 158, 11, 255), width=4)
     draw.rounded_rectangle([p_x - 10, p_y - 10, p_x + p_size + 10, p_y + p_size + 10], radius=p_rad + 10, outline=(251, 191, 36, 90), width=1)
 
-    # 9. Player Name
+    # 9. Player Full Name
     name_str = "R. THAVITH KUMAR"
-    draw.text((W // 2 + 2, 898), name_str, fill=(0, 0, 0, 200), font=font_name, anchor="mm")
-    draw.text((W // 2, 896), name_str, fill=(255, 255, 255, 255), font=font_name, anchor="mm")
+    draw.text((W // 2 + 2, 882), name_str, fill=(0, 0, 0, 220), font=font_name, anchor="mm")
+    draw.text((W // 2, 880), name_str, fill=(255, 255, 255, 255), font=font_name, anchor="mm")
 
-    # 10. Clean ID Pill: GPL ID : GPL1109533
+    # 10. Clean ID Chip: GPL ID : GPL1109533
     id_w, id_h = 380, 48
     id_box = Image.new("RGBA", (id_w, id_h), (0, 0, 0, 0))
     id_draw = ImageDraw.Draw(id_box)
-    id_draw.rounded_rectangle([0, 0, id_w, id_h], radius=24, fill=(10, 20, 38, 220), outline=(245, 158, 11, 255), width=2)
+    id_draw.rounded_rectangle([0, 0, id_w, id_h], radius=24, fill=(10, 20, 38, 230), outline=(245, 158, 11, 255), width=2)
     id_draw.text((id_w // 2, id_h // 2), "GPL ID : GPL1109533", fill=(253, 224, 71, 255), font=font_mono, anchor="mm")
-    img.paste(id_box, (W // 2 - id_w // 2, 936), id_box)
+    img.paste(id_box, (W // 2 - id_w // 2, 920), id_box)
 
     # 11. 3 Clean Minimalist Badges (Ward, Role, Zone)
     badges = [
@@ -175,13 +144,13 @@ def generate_gpl_card(output_path, sample_photo_path=None):
     b_gap = 24
     total_bw = 3 * b_w + 2 * b_gap
     start_bx = (W - total_bw) // 2
-    b_y = 1014
+    b_y = 998
 
     for i, (label, val) in enumerate(badges):
         bx = start_bx + i * (b_w + b_gap)
         bbox = Image.new("RGBA", (b_w, b_h), (0, 0, 0, 0))
         bdraw = ImageDraw.Draw(bbox)
-        bdraw.rounded_rectangle([0, 0, b_w, b_h], radius=16, fill=(14, 24, 46, 210), outline=(245, 158, 11, 100), width=1)
+        bdraw.rounded_rectangle([0, 0, b_w, b_h], radius=16, fill=(14, 24, 46, 225), outline=(245, 158, 11, 100), width=1)
         bdraw.text((b_w // 2, 28), label, fill=(148, 163, 184, 255), font=font_bold_sm, anchor="mm")
         bdraw.text((b_w // 2, 58), val, fill=(255, 255, 255, 255), font=font_bold_lg, anchor="mm")
         img.paste(bbox, (bx, b_y), bbox)
@@ -190,20 +159,20 @@ def generate_gpl_card(output_path, sample_photo_path=None):
     kit_w, kit_h = 580, 46
     kit_box = Image.new("RGBA", (kit_w, kit_h), (0, 0, 0, 0))
     kdraw = ImageDraw.Draw(kit_box)
-    kdraw.rounded_rectangle([0, 0, kit_w, kit_h], radius=23, fill=(12, 22, 42, 190), outline=(245, 158, 11, 80), width=1)
+    kdraw.rounded_rectangle([0, 0, kit_w, kit_h], radius=23, fill=(12, 22, 42, 210), outline=(245, 158, 11, 80), width=1)
     kdraw.text((kit_w // 2, kit_h // 2), "OFFICIAL KIT: T-SHIRT L  •  TRACK L  |  VERIFIED", fill=(245, 158, 11, 240), font=font_bold_sm, anchor="mm")
-    img.paste(kit_box, (W // 2 - kit_w // 2, 1130), kit_box)
+    img.paste(kit_box, (W // 2 - kit_w // 2, 1114), kit_box)
 
-    # 13. Minimalist Baseline (NO footer box)
-    draw.text((W // 2, 1225), "RADHE RADHE FOUNDATION (REG. NO. E-0040526 GBR)  •  GOREGAON PREMIER LEAGUE", fill=(148, 163, 184, 190), font=font_bold_sm, anchor="mm")
+    # 13. Minimalist Baseline
+    draw.text((W // 2, 1210), "RADHE RADHE FOUNDATION (REG. NO. E-0040526 GBR)  •  GOREGAON PREMIER LEAGUE", fill=(203, 213, 225, 210), font=font_bold_sm, anchor="mm")
 
     # Save
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     img.save(output_path, "PNG", quality=95)
-    print(f"Generated clean card at {output_path}")
+    print(f"Generated card at {output_path}")
 
 if __name__ == "__main__":
-    sample = "/Users/alok/Desktop/goregaon-premier-league/public/images/gpl-card-2.jpg"
+    sample = "/Users/alok/Desktop/goregaon-premier-league/public/images/gpl-card-1.jpg"
     out1 = "/Users/alok/Desktop/goregaon-premier-league/template-player-card.png"
     out2 = "/Users/alok/Desktop/goregaon-premier-league/public/images/template-player-card.png"
     generate_gpl_card(out1, sample)

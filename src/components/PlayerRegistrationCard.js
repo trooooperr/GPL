@@ -81,20 +81,14 @@ export default function PlayerRegistrationCard({ player, regNum, photo, onClose 
       ctx.fillRect(W - 400, 0, 400, 400);
       ctx.restore();
 
-      // 3. BACKGROUND: Sandeep Jadhav portrait blended into upper-right
+      // 3. BACKGROUND: Stadium with Sandeep Jadhav
       try {
-        const bgSandeep = await loadImg("/images/card-bg-sandeep.png");
-        ctx.drawImage(bgSandeep, 0, 0, W, H);
+        const bgStadium = await loadImg("/images/card-stadium-bg-overlay.jpg");
+        ctx.drawImage(bgStadium, 0, 0, W, H);
       } catch (_) {
-        // Fallback: load directly from sandeep-jadhav.png with opacity
         try {
-          const sjImg = await loadImg("/images/sandeep-jadhav.png");
-          ctx.save();
-          ctx.globalAlpha = 0.45;
-          const sjW = 540;
-          const sjH = (sjW * sjImg.height) / sjImg.width;
-          ctx.drawImage(sjImg, W - sjW + 30, 100, sjW, sjH);
-          ctx.restore();
+          const bgSandeep = await loadImg("/images/card-bg-sandeep.png");
+          ctx.drawImage(bgSandeep, 0, 0, W, H);
         } catch (e) {}
       }
 
