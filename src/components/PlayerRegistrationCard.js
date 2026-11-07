@@ -5,8 +5,8 @@ import { Download, Share2, X, CheckCircle2 } from "lucide-react";
 
 /**
  * PlayerRegistrationCard
- * High-definition IPL/ISPL broadcast style Auction Pool card.
- * Renders directly on HTML5 Canvas and exports a 1080x1350 PNG for players.
+ * Ultra-clean, modern, broadcast-grade Auction Pool card.
+ * No heavy footer box. High-contrast sports design.
  */
 export default function PlayerRegistrationCard({ player, regNum, photo, onClose }) {
   const canvasRef = useRef(null);
@@ -17,7 +17,7 @@ export default function PlayerRegistrationCard({ player, regNum, photo, onClose 
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    // 1080x1350 (4:5 vertical sports poster ratio)
+    // 1080x1350 (4:5 high-res ratio)
     const W = 1080;
     const H = 1350;
     canvas.width = W;
@@ -49,146 +49,141 @@ export default function PlayerRegistrationCard({ player, regNum, photo, onClose 
     };
 
     const draw = async () => {
-      // 1. Luxury Dark Navy Sports Background
+      // 1. Deep Obsidian Navy Luxury Gradient
       const bg = ctx.createLinearGradient(0, 0, 0, H);
-      bg.addColorStop(0, "#050c1e");
-      bg.addColorStop(0.35, "#091733");
-      bg.addColorStop(0.7, "#0d1f42");
-      bg.addColorStop(1, "#040915");
+      bg.addColorStop(0, "#060b18");
+      bg.addColorStop(0.35, "#0a1326");
+      bg.addColorStop(0.7, "#0c1730");
+      bg.addColorStop(1, "#050914");
       ctx.fillStyle = bg;
       ctx.fillRect(0, 0, W, H);
 
-      // 2. Diagonal sports stadium lines
-      ctx.save();
-      ctx.strokeStyle = "rgba(245, 158, 11, 0.05)";
-      ctx.lineWidth = 2;
-      for (let i = -300; i < W + 500; i += 90) {
-        ctx.beginPath();
-        ctx.moveTo(i, 0);
-        ctx.lineTo(i + 400, H);
-        ctx.stroke();
-      }
-      ctx.restore();
-
-      // 3. Stadium Light Flares & Glow
+      // 2. Soft Ambient Lighting (Clean & Professional)
       ctx.save();
       // Center gold glow
-      const radialCenter = ctx.createRadialGradient(W / 2, 280, 50, W / 2, 280, 450);
-      radialCenter.addColorStop(0, "rgba(245, 158, 11, 0.16)");
+      const radialCenter = ctx.createRadialGradient(W / 2, 600, 30, W / 2, 600, 420);
+      radialCenter.addColorStop(0, "rgba(245, 158, 11, 0.14)");
       radialCenter.addColorStop(1, "rgba(245, 158, 11, 0)");
       ctx.fillStyle = radialCenter;
-      ctx.fillRect(0, 0, W, 700);
+      ctx.fillRect(0, 200, W, 800);
 
-      // Top corner blue floodlight flares
-      const radialLeft = ctx.createRadialGradient(0, 0, 20, 0, 0, 380);
-      radialLeft.addColorStop(0, "rgba(59, 130, 246, 0.22)");
-      radialLeft.addColorStop(1, "rgba(59, 130, 246, 0)");
+      // Top corner blue floodlight
+      const radialLeft = ctx.createRadialGradient(0, 0, 10, 0, 0, 360);
+      radialLeft.addColorStop(0, "rgba(14, 165, 233, 0.16)");
+      radialLeft.addColorStop(1, "rgba(14, 165, 233, 0)");
       ctx.fillStyle = radialLeft;
-      ctx.fillRect(0, 0, 450, 450);
+      ctx.fillRect(0, 0, 400, 400);
 
-      const radialRight = ctx.createRadialGradient(W, 0, 20, W, 0, 380);
-      radialRight.addColorStop(0, "rgba(59, 130, 246, 0.22)");
-      radialRight.addColorStop(1, "rgba(59, 130, 246, 0)");
+      // Top corner gold ambient
+      const radialRight = ctx.createRadialGradient(W, 0, 10, W, 0, 360);
+      radialRight.addColorStop(0, "rgba(245, 158, 11, 0.18)");
+      radialRight.addColorStop(1, "rgba(245, 158, 11, 0)");
       ctx.fillStyle = radialRight;
-      ctx.fillRect(W - 450, 0, 450, 450);
+      ctx.fillRect(W - 400, 0, 400, 400);
       ctx.restore();
 
-      // Top & Bottom Gold Bars
-      const goldBar = ctx.createLinearGradient(0, 0, W, 0);
-      goldBar.addColorStop(0, "#f59e0b");
-      goldBar.addColorStop(0.5, "#fde68a");
-      goldBar.addColorStop(1, "#d97706");
-      ctx.fillStyle = goldBar;
-      ctx.fillRect(0, 0, W, 8);
-      ctx.fillRect(0, H - 8, W, 8);
+      // 3. Crisp Card Borders
+      const margin = 28;
+      roundRect(margin, margin, W - 2 * margin, H - 2 * margin, 28);
+      ctx.strokeStyle = "rgba(245, 158, 11, 0.55)";
+      ctx.lineWidth = 2;
+      ctx.stroke();
 
-      // 4. Logo + Header
+      roundRect(margin + 6, margin + 6, W - 2 * (margin + 6), H - 2 * (margin + 6), 24);
+      ctx.strokeStyle = "rgba(245, 158, 11, 0.15)";
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      // 4. Logo & Top Header
       try {
         const logo = await loadImg("/images/gpl-logo.png");
-        const logoSize = 120;
+        const logoSize = 110;
         ctx.save();
-        ctx.shadowColor = "rgba(255, 255, 255, 0.35)";
-        ctx.shadowBlur = 24;
-        ctx.drawImage(logo, W / 2 - logoSize / 2, 28, logoSize, logoSize);
+        ctx.shadowColor = "rgba(255, 255, 255, 0.25)";
+        ctx.shadowBlur = 18;
+        ctx.drawImage(logo, W / 2 - logoSize / 2, 48, logoSize, logoSize);
         ctx.restore();
       } catch (_) {}
 
       ctx.textAlign = "center";
-      ctx.fillStyle = "#f59e0b";
-      ctx.font = "bold 18px Arial, sans-serif";
-      ctx.letterSpacing = "4px";
-      ctx.fillText("RADHE RADHE CHASHAK", W / 2, 172);
+      ctx.fillStyle = "rgba(255, 255, 255, 0.95)";
+      ctx.font = "bold 20px Arial, sans-serif";
+      ctx.letterSpacing = "3px";
+      ctx.fillText("GOREGAON PREMIER LEAGUE", W / 2, 185);
 
-      // 5. Slanted Red Stamp: ★ SEASON 4 ★
-      ctx.save();
-      ctx.translate(W / 2, 218);
-      ctx.rotate(-0.03); // slight energetic slant
-      roundRect(-130, -22, 260, 44, 8);
+      ctx.fillStyle = "#f59e0b";
+      ctx.font = "bold 15px Arial, sans-serif";
+      ctx.letterSpacing = "2px";
+      ctx.fillText("RADHE RADHE CHASHAK • WARD 51-54", W / 2, 214);
+
+      // 5. Red "SEASON 4" Stamp
+      const s4W = 210;
+      const s4H = 42;
+      const s4Y = 246;
+      roundRect(W / 2 - s4W / 2, s4Y, s4W, s4H, 10);
       ctx.fillStyle = "#dc2626";
       ctx.fill();
-      ctx.strokeStyle = "#f87171";
-      ctx.lineWidth = 2;
+      ctx.strokeStyle = "rgba(248, 113, 113, 0.85)";
+      ctx.lineWidth = 1.5;
       ctx.stroke();
 
       ctx.fillStyle = "#ffffff";
-      ctx.font = "bold 24px Impact, Arial Black, sans-serif";
+      ctx.font = "bold 22px Impact, Arial Black, sans-serif";
       ctx.letterSpacing = "3px";
-      ctx.fillText("★ SEASON 4 ★", 0, 8);
-      ctx.restore();
+      ctx.fillText("★ SEASON 4 ★", W / 2, s4Y + 28);
 
-      // 6. Giant 3D Metallic Gold: AUCTION POOL
-      const apY = 312;
-      ctx.font = "900 82px Impact, Arial Black, sans-serif";
-      ctx.letterSpacing = "5px";
+      // 6. Bold "AUCTION POOL" Title
+      const apY = 345;
+      ctx.font = "900 88px Impact, Arial Black, sans-serif";
+      ctx.letterSpacing = "4px";
 
-      // 3D Extrusion Shadows
-      for (let s = 6; s >= 1; s--) {
-        ctx.fillStyle = "rgba(60, 25, 0, 0.7)";
-        ctx.fillText("AUCTION POOL", W / 2 + s, apY + s);
-      }
-      // Top metallic gradient fill
-      const goldGrad = ctx.createLinearGradient(0, apY - 60, 0, apY + 20);
+      // subtle drop shadow
+      ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+      ctx.fillText("AUCTION POOL", W / 2 + 3, apY + 3);
+
+      // Metallic gold fill
+      const goldGrad = ctx.createLinearGradient(0, apY - 60, 0, apY + 10);
       goldGrad.addColorStop(0, "#fef08a");
       goldGrad.addColorStop(0.5, "#f59e0b");
       goldGrad.addColorStop(1, "#b45309");
       ctx.fillStyle = goldGrad;
       ctx.fillText("AUCTION POOL", W / 2, apY);
 
-      // 7. Red Pill Ribbon: ✔ QUALIFIED & REGISTERED
-      const ribW = 440;
-      const ribH = 48;
-      const ribY = 352;
-      roundRect(W / 2 - ribW / 2, ribY, ribW, ribH, 12);
-      ctx.fillStyle = "#b91c1c";
+      // 7. Clean "✔ QUALIFIED" Ribbon
+      const qW = 300;
+      const qH = 42;
+      const qY = 395;
+      roundRect(W / 2 - qW / 2, qY, qW, qH, 21);
+      ctx.fillStyle = "rgba(185, 28, 28, 0.95)";
       ctx.fill();
-      ctx.strokeStyle = "rgba(254, 202, 202, 0.8)";
-      ctx.lineWidth = 2;
+      ctx.strokeStyle = "rgba(252, 165, 165, 0.7)";
+      ctx.lineWidth = 1.5;
       ctx.stroke();
 
       ctx.fillStyle = "#ffffff";
-      ctx.font = "bold 22px Impact, Arial, sans-serif";
+      ctx.font = "bold 20px Impact, Arial, sans-serif";
       ctx.letterSpacing = "2px";
-      ctx.fillText("✔  QUALIFIED & REGISTERED", W / 2, ribY + 32);
+      ctx.fillText("✔  QUALIFIED", W / 2, qY + 28);
 
-      // 8. Player Photo Frame
-      const pSize = 310;
+      // 8. Hero Player Portrait
+      const pSize = 360;
       const pX = W / 2 - pSize / 2;
-      const pY = 435;
-      const pRadius = 28;
+      const pY = 470;
+      const pRad = 32;
 
-      // Glow behind photo
+      // Glow behind portrait
       ctx.save();
       ctx.shadowColor = "#f59e0b";
-      ctx.shadowBlur = 36;
-      roundRect(pX - 6, pY - 6, pSize + 12, pSize + 12, pRadius + 6);
+      ctx.shadowBlur = 32;
+      roundRect(pX - 5, pY - 5, pSize + 10, pSize + 10, pRad + 5);
       ctx.strokeStyle = "#f59e0b";
-      ctx.lineWidth = 6;
+      ctx.lineWidth = 4;
       ctx.stroke();
       ctx.restore();
 
-      // Clip and draw image or avatar
+      // Mask and draw image or avatar
       ctx.save();
-      roundRect(pX, pY, pSize, pSize, pRadius);
+      roundRect(pX, pY, pSize, pSize, pRad);
       ctx.clip();
 
       let photoDrawn = false;
@@ -201,14 +196,12 @@ export default function PlayerRegistrationCard({ player, regNum, photo, onClose 
       }
 
       if (!photoDrawn) {
-        // Fallback stylish avatar
         const avGrad = ctx.createLinearGradient(pX, pY, pX + pSize, pY + pSize);
-        avGrad.addColorStop(0, "#0f2042");
-        avGrad.addColorStop(1, "#071126");
+        avGrad.addColorStop(0, "#0e1a33");
+        avGrad.addColorStop(1, "#071124");
         ctx.fillStyle = avGrad;
         ctx.fillRect(pX, pY, pSize, pSize);
 
-        // Initials
         const initials = (player?.name || "GPL")
           .split(" ")
           .map((n) => n[0])
@@ -221,117 +214,95 @@ export default function PlayerRegistrationCard({ player, regNum, photo, onClose 
       }
       ctx.restore();
 
-      // Outer gold border
-      roundRect(pX - 12, pY - 12, pSize + 24, pSize + 24, pRadius + 10);
-      ctx.strokeStyle = "rgba(251, 191, 36, 0.5)";
+      // Outer gold accent ring
+      roundRect(pX - 10, pY - 10, pSize + 20, pSize + 20, pRad + 10);
+      ctx.strokeStyle = "rgba(251, 191, 36, 0.4)";
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      // 9. Player Full Name
+      const playerName = (player?.name || "PLAYER NAME").toUpperCase();
+      ctx.save();
+      ctx.font = `900 ${playerName.length > 18 ? 44 : 50}px Arial Black, Impact, sans-serif`;
+      ctx.letterSpacing = "2px";
+      ctx.fillStyle = "rgba(0, 0, 0, 0.8)";
+      ctx.fillText(playerName, W / 2 + 2, 892 + 2);
+      ctx.fillStyle = "#ffffff";
+      ctx.fillText(playerName, W / 2, 892);
+      ctx.restore();
+
+      // 10. Clean ID Chip: GPL ID : GPL2026-XXXX
+      const idStr = `GPL ID : GPL2026-${String(regNum || "0001").padStart(4, "0")}`;
+      const chipW = 380;
+      const chipH = 48;
+      const chipY = 930;
+      roundRect(W / 2 - chipW / 2, chipY, chipW, chipH, 24);
+      ctx.fillStyle = "rgba(10, 20, 38, 0.85)";
+      ctx.fill();
+      ctx.strokeStyle = "#f59e0b";
       ctx.lineWidth = 2;
       ctx.stroke();
 
-      // 9. Big Bold Player Name (Slanted Athletic Style)
-      const playerName = (player?.name || "PLAYER NAME").toUpperCase();
-      ctx.save();
-      ctx.font = `italic 900 ${playerName.length > 18 ? 44 : 52}px Arial Black, Impact, sans-serif`;
-      ctx.letterSpacing = "2px";
-      // Shadow
-      ctx.fillStyle = "rgba(0, 0, 0, 0.8)";
-      ctx.fillText(playerName, W / 2 + 3, 808 + 3);
-      // White text
-      ctx.fillStyle = "#ffffff";
-      ctx.fillText(playerName, W / 2, 808);
-      ctx.restore();
-
-      // 10. Golden ID Chip: GPL ID : GPL2026-0042
-      const idStr = `GPL ID : GPL2026-${String(regNum || "0001").padStart(4, "0")}`;
-      const chipW = 420;
-      const chipH = 50;
-      const chipY = 840;
-      roundRect(W / 2 - chipW / 2, chipY, chipW, chipH, 25);
-      ctx.fillStyle = "rgba(10, 22, 45, 0.85)";
-      ctx.fill();
-      ctx.strokeStyle = "#f59e0b";
-      ctx.lineWidth = 2.5;
-      ctx.stroke();
-
       ctx.fillStyle = "#fde047";
-      ctx.font = "bold 24px Courier New, monospace";
+      ctx.font = "bold 22px Courier New, monospace";
       ctx.letterSpacing = "2px";
-      ctx.fillText(idStr, W / 2, chipY + 34);
+      ctx.fillText(idStr, W / 2, chipY + 32);
 
-      // 11. 3 Stat Badges: WARD, ROLE, ZONE
+      // 11. 3 Clean Minimalist Badges (Ward, Role, Zone)
       const badges = [
         { label: "📍 WARD", val: (player?.ward || "Ward 51").toUpperCase() },
         { label: "🏏 ROLE", val: (player?.speciality || "Batsman").toUpperCase() },
         { label: "🛡️ ZONE", val: "GOREGAON PURV" },
       ];
 
-      const bW = 290;
-      const bH = 92;
-      const bGap = 25;
+      const bW = 280;
+      const bH = 88;
+      const bGap = 24;
       const totalBW = 3 * bW + 2 * bGap;
       const startBX = (W - totalBW) / 2;
-      const bY = 925;
+      const bY = 1010;
 
       badges.forEach((b, i) => {
         const bx = startBX + i * (bW + bGap);
         roundRect(bx, bY, bW, bH, 16);
-        ctx.fillStyle = "rgba(15, 30, 60, 0.85)";
+        ctx.fillStyle = "rgba(14, 24, 46, 0.85)";
         ctx.fill();
         ctx.strokeStyle = "rgba(245, 158, 11, 0.35)";
-        ctx.lineWidth = 1.5;
+        ctx.lineWidth = 1;
         ctx.stroke();
 
-        // Top gold accent
-        ctx.beginPath();
-        ctx.moveTo(bx + 20, bY + 2);
-        ctx.lineTo(bx + bW - 20, bY + 2);
-        ctx.strokeStyle = "#f59e0b";
-        ctx.lineWidth = 2.5;
-        ctx.stroke();
-
-        ctx.fillStyle = "rgba(203, 213, 225, 0.8)";
-        ctx.font = "bold 16px Arial, sans-serif";
+        ctx.fillStyle = "rgba(148, 163, 184, 0.9)";
+        ctx.font = "bold 15px Arial, sans-serif";
         ctx.letterSpacing = "2px";
-        ctx.fillText(b.label, bx + bW / 2, bY + 32);
+        ctx.fillText(b.label, bx + bW / 2, bY + 30);
 
         ctx.fillStyle = "#ffffff";
         ctx.font = `bold ${b.val.length > 14 ? 18 : 22}px Impact, Arial, sans-serif`;
         ctx.letterSpacing = "1px";
-        ctx.fillText(b.val, bx + bW / 2, bY + 68);
+        ctx.fillText(b.val, bx + bW / 2, bY + 64);
       });
 
-      // 12. Kit Size Strip
-      const kitStr = `OFFICIAL KIT: T-SHIRT ${player?.tshirtSize || "M"}  •  TRACK ${player?.trackSize || "M"}   |   AUCTION POOL CONFIRMED`;
-      ctx.fillStyle = "#f59e0b";
-      ctx.font = "bold 17px Arial, sans-serif";
-      ctx.letterSpacing = "2px";
-      ctx.fillText(kitStr, W / 2, 1060);
-
-      // 13. Bottom Organizer Banner
-      const botY = 1110;
-      const botH = 170;
-      ctx.fillStyle = "rgba(4, 10, 24, 0.95)";
-      ctx.fillRect(0, botY, W, botH);
-      ctx.strokeStyle = "rgba(245, 158, 11, 0.4)";
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(0, botY);
-      ctx.lineTo(W, botY);
+      // 12. Clean Kit & Verified Status Pill (NO heavy footer block)
+      const kitW = 560;
+      const kitH = 46;
+      const kitY = 1130;
+      roundRect(W / 2 - kitW / 2, kitY, kitW, kitH, 23);
+      ctx.fillStyle = "rgba(12, 22, 42, 0.8)";
+      ctx.fill();
+      ctx.strokeStyle = "rgba(245, 158, 11, 0.35)";
+      ctx.lineWidth = 1;
       ctx.stroke();
 
-      ctx.fillStyle = "#ffffff";
-      ctx.font = "bold 26px Impact, Arial Black, sans-serif";
-      ctx.letterSpacing = "3px";
-      ctx.fillText("GOREGAON PREMIER LEAGUE • SEASON 4", W / 2, botY + 44);
+      ctx.fillStyle = "#f59e0b";
+      ctx.font = "bold 15px Arial, sans-serif";
+      ctx.letterSpacing = "1.5px";
+      ctx.fillText(`OFFICIAL KIT: T-SHIRT ${player?.tshirtSize || "M"} • TRACK ${player?.trackSize || "M"}  |  VERIFIED ENTRY`, W / 2, kitY + 28);
 
-      ctx.fillStyle = "#fde047";
-      ctx.font = "bold 22px Arial, sans-serif";
-      ctx.letterSpacing = "1px";
-      ctx.fillText("Organised by: Mohsin Patel & Balram Gupta (Ballu)", W / 2, botY + 85);
-
-      ctx.fillStyle = "rgba(156, 163, 175, 0.85)";
-      ctx.font = "16px Arial, sans-serif";
-      ctx.letterSpacing = "1px";
-      ctx.fillText("Ward 51 & Ward 54  •  Goregaon Purv Vidhan Sabha  •  goregaonpl.vercel.app", W / 2, botY + 125);
+      // 13. Minimalist Clean Baseline (NO footer box)
+      ctx.fillStyle = "rgba(148, 163, 184, 0.75)";
+      ctx.font = "bold 14px Arial, sans-serif";
+      ctx.letterSpacing = "2px";
+      ctx.fillText("GOREGAON PREMIER LEAGUE • SEASON 4", W / 2, 1235);
 
       setRendered(true);
     };
@@ -378,7 +349,7 @@ export default function PlayerRegistrationCard({ player, regNum, photo, onClose 
         <button
           onClick={onClose}
           type="button"
-          className="absolute -top-3 -right-2 z-20 w-10 h-10 rounded-full bg-slate-800/80 hover:bg-slate-700 border border-slate-600 flex items-center justify-center text-white transition-all shadow-lg"
+          className="absolute -top-3 -right-2 z-20 w-10 h-10 rounded-full bg-slate-800/80 hover:bg-slate-700 border border-slate-600 flex items-center justify-center text-white transition-all shadow-lg cursor-pointer"
           aria-label="Close"
         >
           <X className="w-5 h-5" />
@@ -404,7 +375,7 @@ export default function PlayerRegistrationCard({ player, regNum, photo, onClose 
         </div>
 
         {!rendered && (
-          <div className="w-full aspect-[4/5] rounded-2xl bg-[#071126] border border-amber-500/20 flex items-center justify-center">
+          <div className="w-full aspect-[4/5] rounded-2xl bg-[#060b18] border border-amber-500/20 flex items-center justify-center">
             <div className="text-center space-y-2">
               <div className="w-8 h-8 border-3 border-amber-400 border-t-transparent rounded-full animate-spin mx-auto" />
               <p className="text-amber-300 text-xs font-bold">Generating Official Player Card…</p>
@@ -418,7 +389,7 @@ export default function PlayerRegistrationCard({ player, regNum, photo, onClose 
             <button
               type="button"
               onClick={handleShare}
-              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-slate-800/90 hover:bg-slate-700 border border-slate-600 text-white text-xs font-bold transition-all"
+              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-slate-800/90 hover:bg-slate-700 border border-slate-600 text-white text-xs font-bold transition-all cursor-pointer"
             >
               <Share2 className="w-4 h-4 text-amber-400" />
               <span>Share</span>
@@ -439,7 +410,7 @@ export default function PlayerRegistrationCard({ player, regNum, photo, onClose 
         <button
           type="button"
           onClick={onClose}
-          className="text-xs text-slate-400 hover:text-white underline pt-1"
+          className="text-xs text-slate-400 hover:text-white underline pt-1 cursor-pointer"
         >
           View Registration Details
         </button>
