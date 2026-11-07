@@ -36,45 +36,32 @@ export default function Navbar({ onOpenStatusModal }) {
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 sm:h-16 lg:h-20 flex items-center justify-between">
         
-        {/* Left: Tournament Brand & Logo */}
-        <Link href="/" className="flex items-center gap-2 group shrink-0">
-          {/* Mobile: Logo + Title Text */}
+        {/* Left: Tournament Brand & Logo — All Screen Sizes */}
+        <Link href="/" className="flex items-center gap-2 sm:gap-3 group shrink-0 min-w-0">
+          {/* Logo */}
           <img
             src="/images/gpl-logo.png"
             alt="Goregaon Premier League"
-            className="block sm:hidden h-10 w-auto max-h-11 object-contain shrink-0 drop-shadow-sm"
+            className="h-10 sm:h-12 lg:h-14 w-auto object-contain shrink-0 drop-shadow-sm transition-transform group-hover:scale-105"
           />
-          <div className="block sm:hidden min-w-0">
-            <div className="text-[11px] font-black text-[#081a36] leading-tight tracking-tight">
-              Goregaon Premier League{" "}
-              <span className="text-amber-500 bg-amber-50 px-1 py-0.5 rounded font-black">Season 4</span>
-            </div>
-            <div className="text-[9px] font-semibold text-slate-500 leading-tight mt-0.5 truncate">
-              Goregaon Purv Vidhan Sabha
-            </div>
-          </div>
 
-          {/* Desktop Logo + Text */}
-          <div className="hidden sm:flex items-center gap-3">
-            <div className="w-12 h-12 lg:w-14 lg:h-14 flex items-center justify-center transition-transform group-hover:scale-105 shrink-0 drop-shadow-sm">
-              <img
-                src="/images/gpl-logo.png"
-                alt="Goregaon Premier League"
-                className="h-full w-full object-contain"
-              />
+          {/* Text block */}
+          <div className="min-w-0">
+            {/* Line 1: Name + Season 4 badge */}
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="text-[11px] sm:text-base lg:text-lg font-black text-[#081a36] tracking-tight leading-tight group-hover:text-[#059669] transition-colors">
+                Goregaon Premier League
+              </span>
+              {/* Season 4 highlight badge */}
+              <span className="inline-flex items-center gap-0.5 px-1.5 sm:px-2 py-0.5 rounded-md sm:rounded-lg font-black text-[10px] sm:text-xs text-white leading-tight shadow-md"
+                style={{ background: "linear-gradient(135deg, #f59e0b 0%, #ef4444 60%, #7c3aed 100%)" }}>
+                ✦ SEASON 4
+              </span>
             </div>
-            <div>
-              <div className="flex items-center gap-1.5">
-                <span className="text-base lg:text-lg font-black text-[#081a36] tracking-tight group-hover:text-[#059669] transition-colors">
-                  Goregaon Premier League
-                </span>
-              </div>
-              <p className="text-[10px] lg:text-[11px] font-bold text-amber-600 uppercase tracking-wider flex items-center gap-1">
-                <span>Radhe Radhe Chashak</span>
-                <span className="text-slate-300">•</span>
-                <span className="text-slate-500 font-medium">Ward 51-54</span>
-              </p>
-            </div>
+            {/* Line 2: Subtitle */}
+            <p className="text-[9px] sm:text-[10px] lg:text-[11px] font-semibold text-slate-500 uppercase tracking-wider leading-tight mt-0.5 truncate">
+              Goregaon Purv Vidhan Sabha
+            </p>
           </div>
         </Link>
 
