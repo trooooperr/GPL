@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Check, AlertCircle, UploadCloud, Loader2, CheckCircle2, Copy } from "lucide-react";
+import { Check, AlertCircle, UploadCloud, Loader2, CheckCircle2, Copy, Trophy } from "lucide-react";
 import QRCode from "qrcode";
+import PlayerRegistrationCard from "./PlayerRegistrationCard";
 
 function InstagramIcon({ className = "w-4 h-4" }) {
   return (
@@ -42,6 +43,8 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [successData, setSuccessData] = useState(null);
+  const [showPlayerCard, setShowPlayerCard] = useState(false);
+  const [savedPlayerPhoto, setSavedPlayerPhoto] = useState("");
   const [dynamicQrDataUrl, setDynamicQrDataUrl] = useState("");
 
   // Dynamic capacity & remaining slots calculation based on teams count (totalTeams * 14)
@@ -282,7 +285,10 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
         throw new Error(result.message || result.error || "Registration submission failed. Please try again.");
       }
 
+      const submittedPhoto = files.profilePhoto?.dataUrl || photoPreview || result.player?.photo || "";
+      setSavedPlayerPhoto(submittedPhoto);
       setSuccessData(result);
+      setShowPlayerCard(true);
       setRemainingSlots((prev) => Math.max(0, prev - 1));
       if (onRegistrationSuccess) onRegistrationSuccess(result);
     } catch (err) {
@@ -320,111 +326,146 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
 
         {/* Success View */}
         {successData ? (
-          <div className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200 shadow-xl p-6 sm:p-10 text-center space-y-6 animate-scaleUp relative overflow-hidden">
-            {/* Confetti Explosion Particles */}
-            <div className="absolute inset-0 pointer-events-none overflow-hidden">
-              {[...Array(24)].map((_, i) => (
-                <div
-                  key={i}
-                  className="confetti-particle rounded-sm"
-                  style={{
-                    left: `${(i * 4.2) % 100}%`,
-                    width: `${6 + (i % 5) * 2}px`,
-                    height: `${10 + (i % 4) * 3}px`,
-                    backgroundColor: [
-                      "#10b981", "#f59e0b", "#3b82f6", "#ec4899", "#8b5cf6", "#eab308"
-                    ][i % 6],
-                    animationDelay: `${(i * 0.12).toFixed(2)}s`,
-                    animationDuration: `${2.5 + (i % 3) * 0.5}s`,
-                    transform: `rotate(${i * 35}deg)`,
+          <>
+            {/* High-Resolution Auction Pool Player Card Modal */}
+            {showPlayerCard && (
+              <PlayerRegistrationCard
+                player={successData.player}
+                regNum={successData.registrationNumber}
+                photo={savedPlayerPhoto || successData.player?.photo}
+                onClose={() => setShowPlayerCard(false)}
+              />
+            )}
+
+            <div className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200 shadow-xl p-6 sm:p-10 text-center space-y-6 animate-scaleUp relative overflow-hidden">
+              {/* Confetti Explosion Particles */}
+              <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                {[...Array(24)].map((_, i) => (
+                  <div
+                    key={i}
+                    className="confetti-particle rounded-sm"
+                    style={{
+                      left: `${(i * 4.2) % 100}%`,
+                      width: `${6 + (i % 5) * 2}px`,
+                      height: `${10 + (i % 4) * 3}px`,
+                      backgroundColor: [
+                        "#10b981", "#f59e0b", "#3b82f6", "#ec4899", "#8b5cf6", "#eab308"
+                      ][i % 6],
+                      animationDelay: `${(i * 0.12).toFixed(2)}s`,
+                      animationDuration: `${2.5 + (i % 3) * 0.5}s`,
+                      transform: `rotate(${i * 35}deg)`,
+                    }}
+                  />
+                ))}
+              </div>
+
+              <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto rounded-full bg-emerald-50 border-2 border-emerald-400 flex items-center justify-center text-emerald-600 shadow-inner relative z-10">
+                <CheckCircle2 className="w-10 h-10 sm:w-12 sm:h-12" />
+              </div>
+
+              <div className="space-y-2">
+                <div className="inline-block px-3 py-1 bg-emerald-100 text-[#059669] rounded-full text-xs font-bold font-mono">
+                  Registration #{successData.registrationNumber}
+                </div>
+                <h3 className="text-2xl sm:text-3xl font-extrabold text-[#081a36]">
+                  Application Submitted Successfully!
+                </h3>
+                <p className="text-slate-600 text-sm sm:text-base max-w-lg mx-auto">
+                  Thank you, <strong>{successData.player?.name}</strong>! Your registration has been received and submitted for administrative document verification.
+                </p>
+              </div>
+
+              {/* Prominent Card CTA Banner */}
+              <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-500/15 via-amber-400/10 to-amber-500/15 border-2 border-amber-400/40 text-center space-y-2.5 max-w-md mx-auto">
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500 text-slate-950 text-[10px] font-black uppercase tracking-wider">
+                  <Trophy className="w-3 h-3" />
+                  <span>Season 4 Player Card Ready</span>
+                </div>
+                <p className="text-xs text-slate-700 font-medium">
+                  Your customized GPL Season 4 Auction Pool card has been created with your photo and details.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setShowPlayerCard(true)}
+                  className="w-full py-2.5 px-4 rounded-xl font-black text-xs text-slate-950 shadow-md hover:shadow-lg transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2"
+                  style={{ background: "linear-gradient(135deg, #f59e0b 0%, #fbbf24 50%, #d97706 100%)" }}
+                >
+                  <Trophy className="w-4 h-4 text-slate-950" />
+                  <span>View &amp; Download Official Player Card</span>
+                </button>
+              </div>
+
+              {/* Registration Summary Card */}
+              <div className="max-w-md mx-auto bg-slate-50 rounded-xl p-4 sm:p-5 border border-slate-200 text-left text-xs sm:text-sm space-y-2.5 font-medium">
+                <div className="flex justify-between border-b border-slate-200 pb-2">
+                  <span className="text-slate-500">Applicant:</span>
+                  <span className="font-bold text-slate-900">{successData.player?.name}</span>
+                </div>
+                <div className="flex justify-between border-b border-slate-200 pb-2">
+                  <span className="text-slate-500">Mobile Phone:</span>
+                  <span className="font-mono text-slate-800">{successData.player?.phone}</span>
+                </div>
+                <div className="flex justify-between border-b border-slate-200 pb-2">
+                  <span className="text-slate-500">Ward:</span>
+                  <span className="font-semibold text-slate-800">{successData.player?.ward}</span>
+                </div>
+                <div className="flex justify-between border-b border-slate-200 pb-2">
+                  <span className="text-slate-500">Speciality:</span>
+                  <span className="font-semibold text-slate-800">{successData.player?.speciality}</span>
+                </div>
+                <div className="flex justify-between border-b border-slate-200 pb-2">
+                  <span className="text-slate-500">Kit Sizes:</span>
+                  <span className="font-semibold text-slate-800">
+                    T-Shirt: {successData.player?.tshirtSize} • Track: {successData.player?.trackSize}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Status:</span>
+                  <span className="px-2 py-0.5 rounded bg-amber-100 text-amber-800 text-xs font-bold">
+                    Pending Verification
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={handleCopyReceipt}
+                  className="w-full sm:w-auto px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                >
+                  <Copy className="w-4 h-4" />
+                  <span>{copiedReceipt ? "Copied Slip!" : "Copy Slip Details"}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSuccessData(null);
+                    setShowPlayerCard(false);
+                    setSavedPlayerPhoto("");
+                    setFormData({
+                      name: "",
+                      email: "",
+                      phone: "",
+                      dob: "",
+                      tshirtSize: "—Please choose an option—",
+                      trackSize: "—Please choose an option—",
+                      speciality: "Right-hand batsman",
+                      ward: "Ward 51",
+                      instagramHandle: "",
+                      utrNumber: ""
+                    });
+                    setFiles({ profilePhoto: null, aadhaarFront: null, aadhaarBack: null, paymentProof: null });
+                    setPhotoPreview("");
+                    setFieldErrors({});
                   }}
-                />
-              ))}
-            </div>
-
-            <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto rounded-full bg-emerald-50 border-2 border-emerald-400 flex items-center justify-center text-emerald-600 shadow-inner relative z-10">
-              <CheckCircle2 className="w-10 h-10 sm:w-12 sm:h-12" />
-            </div>
-
-            <div className="space-y-2">
-              <div className="inline-block px-3 py-1 bg-emerald-100 text-[#059669] rounded-full text-xs font-bold font-mono">
-                Registration #{successData.registrationNumber}
-              </div>
-              <h3 className="text-2xl sm:text-3xl font-extrabold text-[#081a36]">
-                Application Submitted Successfully!
-              </h3>
-              <p className="text-slate-600 text-sm sm:text-base max-w-lg mx-auto">
-                Thank you, <strong>{successData.player?.name}</strong>! Your registration has been received and submitted for administrative document verification.
-              </p>
-            </div>
-
-            {/* Registration Summary Card */}
-            <div className="max-w-md mx-auto bg-slate-50 rounded-xl p-4 sm:p-5 border border-slate-200 text-left text-xs sm:text-sm space-y-2.5 font-medium">
-              <div className="flex justify-between border-b border-slate-200 pb-2">
-                <span className="text-slate-500">Applicant:</span>
-                <span className="font-bold text-slate-900">{successData.player?.name}</span>
-              </div>
-              <div className="flex justify-between border-b border-slate-200 pb-2">
-                <span className="text-slate-500">Mobile Phone:</span>
-                <span className="font-mono text-slate-800">{successData.player?.phone}</span>
-              </div>
-              <div className="flex justify-between border-b border-slate-200 pb-2">
-                <span className="text-slate-500">Ward:</span>
-                <span className="font-semibold text-slate-800">{successData.player?.ward}</span>
-              </div>
-              <div className="flex justify-between border-b border-slate-200 pb-2">
-                <span className="text-slate-500">Speciality:</span>
-                <span className="font-semibold text-slate-800">{successData.player?.speciality}</span>
-              </div>
-              <div className="flex justify-between border-b border-slate-200 pb-2">
-                <span className="text-slate-500">Kit Sizes:</span>
-                <span className="font-semibold text-slate-800">
-                  T-Shirt: {successData.player?.tshirtSize} • Track: {successData.player?.trackSize}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-500">Status:</span>
-                <span className="px-2 py-0.5 rounded bg-amber-100 text-amber-800 text-xs font-bold">
-                  Pending Verification
-                </span>
+                  className="w-full sm:w-auto px-6 py-2.5 bg-[#059669] text-white rounded-lg font-bold text-xs hover:bg-[#047857] transition-colors cursor-pointer"
+                >
+                  Register Another Player
+                </button>
               </div>
             </div>
-
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
-              <button
-                type="button"
-                onClick={handleCopyReceipt}
-                className="w-full sm:w-auto px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 transition-colors"
-              >
-                <Copy className="w-4 h-4" />
-                <span>{copiedReceipt ? "Copied Slip!" : "Copy Slip Details"}</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setSuccessData(null);
-                  setFormData({
-                    name: "",
-                    email: "",
-                    phone: "",
-                    dob: "",
-                    tshirtSize: "—Please choose an option—",
-                    trackSize: "—Please choose an option—",
-                    speciality: "Right-hand batsman",
-                    ward: "Ward 51",
-                    utrNumber: ""
-                  });
-                  setFiles({ profilePhoto: null, aadhaarFront: null, aadhaarBack: null, paymentProof: null });
-                  setPhotoPreview("");
-                  setFieldErrors({});
-                }}
-                className="w-full sm:w-auto px-6 py-2.5 bg-[#059669] text-white rounded-lg font-bold text-xs hover:bg-[#047857] transition-colors"
-              >
-                Register Another Player
-              </button>
-            </div>
-          </div>
+          </>
         ) : settings.registrationOpen === false ? (
           <div className="bg-white/95 backdrop-blur-md rounded-2xl sm:rounded-3xl border border-slate-200/90 shadow-xl p-8 sm:p-12 text-center space-y-4">
             <div className="w-16 h-16 mx-auto rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600">

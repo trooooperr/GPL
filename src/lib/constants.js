@@ -1,6 +1,9 @@
 export const INITIAL_SETTINGS = {
   instagramUsername: "mi_sandeep_jadhav",
-  registrationFee: 0,
+  aboutPhotos: [
+    "/images/gpl-card-1.jpg",
+    "/images/gpl-card-2.jpg"
+  ],
   maxCapacity: 140,
   registrationOpen: true,
   tournamentTitle: "Goregaon Premier League - Radhe Radhe Chashak",
@@ -33,7 +36,7 @@ export const INITIAL_FAQS = [
   },
   {
     q: "What documents do I need to submit during registration?",
-    a: "Registration is 100% Free! You will need: (1) Aadhaar Card Front, (2) Aadhaar Card Back with address, (3) A clear, recent passport-style profile photo, and (4) Screenshot confirming you follow the official Instagram page (@mi_sandeep_jadhav)."
+    a: "You will need: (1) Aadhaar Card Front, (2) Aadhaar Card Back with address, (3) A clear, recent passport-style profile photo, and (4) Screenshot confirming you follow the official Instagram page (@mi_sandeep_jadhav)."
   },
   {
     q: "How can I verify if my registration has been approved?",
