@@ -994,7 +994,21 @@ export default function AdminDashboard() {
   const handleBatchAssignTeam = async (teamId) => {
     if (selectedIds.length === 0) return;
     const cleanTeamId = teamId && teamId !== "unassign" && teamId !== "" ? teamId : null;
-    const idsToAssign = [...selectedIds];
+
+    // Filter out rejected players when assigning to a team
+    const rejectedCount = players.filter(
+      (p) => selectedIds.includes(p.id) && p.paymentStatus === "Rejected"
+    ).length;
+    const eligiblePlayers = cleanTeamId
+      ? players.filter((p) => selectedIds.includes(p.id) && p.paymentStatus !== "Rejected")
+      : players.filter((p) => selectedIds.includes(p.id));
+
+    if (cleanTeamId && eligiblePlayers.length === 0) {
+      showToast("Selected players are all rejected and cannot be assigned to any team.", "error");
+      return;
+    }
+
+    const idsToAssign = eligiblePlayers.map((p) => p.id);
     const prevPlayers = players;
     const prevTeams = teams;
 
@@ -1014,7 +1028,7 @@ export default function AdminDashboard() {
     const targetTeam = teams.find((t) => t.id === cleanTeamId);
     showToast(
       cleanTeamId
-        ? `${idsToAssign.length} players assigned to ${targetTeam?.name || "team"}!`
+        ? `${idsToAssign.length} players assigned to ${targetTeam?.name || "team"}!${rejectedCount > 0 ? ` (${rejectedCount} rejected players skipped)` : ""}`
         : `${idsToAssign.length} players unassigned from teams.`,
       "success"
     );

@@ -85,10 +85,17 @@ export async function POST(request) {
       await MongoTeam.updateMany({}, { $pull: { members: { $in: playerIds } } });
 
       if (teamId && teamId !== "unassign" && teamId !== "" && teamId !== "null") {
+        // Exclude any rejected players
+        const eligiblePlayers = await MongoRegistration.find(
+          { id: { $in: playerIds }, paymentStatus: { $ne: "Rejected" } },
+          "id"
+        ).lean();
+        const eligibleIds = eligiblePlayers.map((p) => p.id);
+
         const targetTeam = await MongoTeam.findOne({ id: teamId }).lean();
         const currentMembers = targetTeam?.members || [];
         const availableSlots = Math.max(0, 14 - currentMembers.length);
-        const toAdd = playerIds.slice(0, availableSlots);
+        const toAdd = eligibleIds.slice(0, availableSlots);
 
         if (toAdd.length > 0) {
           await MongoTeam.findOneAndUpdate({ id: teamId }, { $addToSet: { members: { $each: toAdd } } });
