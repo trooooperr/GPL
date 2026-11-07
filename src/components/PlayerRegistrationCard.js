@@ -5,8 +5,10 @@ import { Download, Share2, X, CheckCircle2 } from "lucide-react";
 
 /**
  * PlayerRegistrationCard
- * Ultra-clean, modern, broadcast-grade Auction Pool card.
- * No heavy footer box. High-contrast sports design.
+ * - Background features Shri Sandeep Jadhav blended into the stadium night sky
+ * - Prominent "RADHE RADHE FOUNDATION PRESENTS" header
+ * - "GOREGAON PURV VIDHAN SABHA" under Goregaon Premier League
+ * - Clean, professional, sports broadcast layout (no heavy footer box)
  */
 export default function PlayerRegistrationCard({ player, regNum, photo, onClose }) {
   const canvasRef = useRef(null);
@@ -49,7 +51,7 @@ export default function PlayerRegistrationCard({ player, regNum, photo, onClose 
     };
 
     const draw = async () => {
-      // 1. Deep Obsidian Navy Luxury Gradient
+      // 1. Base Gradient Background (Midnight Navy)
       const bg = ctx.createLinearGradient(0, 0, 0, H);
       bg.addColorStop(0, "#060b18");
       bg.addColorStop(0.35, "#0a1326");
@@ -58,23 +60,20 @@ export default function PlayerRegistrationCard({ player, regNum, photo, onClose 
       ctx.fillStyle = bg;
       ctx.fillRect(0, 0, W, H);
 
-      // 2. Soft Ambient Lighting (Clean & Professional)
+      // 2. Ambient Lighting
       ctx.save();
-      // Center gold glow
       const radialCenter = ctx.createRadialGradient(W / 2, 600, 30, W / 2, 600, 420);
       radialCenter.addColorStop(0, "rgba(245, 158, 11, 0.14)");
       radialCenter.addColorStop(1, "rgba(245, 158, 11, 0)");
       ctx.fillStyle = radialCenter;
       ctx.fillRect(0, 200, W, 800);
 
-      // Top corner blue floodlight
       const radialLeft = ctx.createRadialGradient(0, 0, 10, 0, 0, 360);
       radialLeft.addColorStop(0, "rgba(14, 165, 233, 0.16)");
       radialLeft.addColorStop(1, "rgba(14, 165, 233, 0)");
       ctx.fillStyle = radialLeft;
       ctx.fillRect(0, 0, 400, 400);
 
-      // Top corner gold ambient
       const radialRight = ctx.createRadialGradient(W, 0, 10, W, 0, 360);
       radialRight.addColorStop(0, "rgba(245, 158, 11, 0.18)");
       radialRight.addColorStop(1, "rgba(245, 158, 11, 0)");
@@ -82,44 +81,79 @@ export default function PlayerRegistrationCard({ player, regNum, photo, onClose 
       ctx.fillRect(W - 400, 0, 400, 400);
       ctx.restore();
 
-      // 3. Crisp Card Borders
-      const margin = 28;
-      roundRect(margin, margin, W - 2 * margin, H - 2 * margin, 28);
+      // 3. BACKGROUND: Sandeep Jadhav portrait blended into upper-right
+      try {
+        const bgSandeep = await loadImg("/images/card-bg-sandeep.png");
+        ctx.drawImage(bgSandeep, 0, 0, W, H);
+      } catch (_) {
+        // Fallback: load directly from sandeep-jadhav.png with opacity
+        try {
+          const sjImg = await loadImg("/images/sandeep-jadhav.png");
+          ctx.save();
+          ctx.globalAlpha = 0.45;
+          const sjW = 540;
+          const sjH = (sjW * sjImg.height) / sjImg.width;
+          ctx.drawImage(sjImg, W - sjW + 30, 100, sjW, sjH);
+          ctx.restore();
+        } catch (e) {}
+      }
+
+      // 4. Crisp Outer Card Borders
+      const margin = 26;
+      roundRect(margin, margin, W - 2 * margin, H - 2 * margin, 26);
       ctx.strokeStyle = "rgba(245, 158, 11, 0.55)";
       ctx.lineWidth = 2;
       ctx.stroke();
 
-      roundRect(margin + 6, margin + 6, W - 2 * (margin + 6), H - 2 * (margin + 6), 24);
+      roundRect(margin + 6, margin + 6, W - 2 * (margin + 6), H - 2 * (margin + 6), 22);
       ctx.strokeStyle = "rgba(245, 158, 11, 0.15)";
       ctx.lineWidth = 1;
       ctx.stroke();
 
-      // 4. Logo & Top Header
+      // 5. PROMINENT: RADHE RADHE FOUNDATION (REG. NO. E-0040526 GBR)
+      const rrW = 720;
+      const rrH = 44;
+      const rrY = 48;
+      roundRect(W / 2 - rrW / 2, rrY, rrW, rrH, 22);
+      ctx.fillStyle = "rgba(180, 83, 9, 0.95)";
+      ctx.fill();
+      ctx.strokeStyle = "rgba(253, 224, 71, 0.9)";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      ctx.textAlign = "center";
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 15px Arial, sans-serif";
+      ctx.letterSpacing = "1.5px";
+      ctx.fillText("★ RADHE RADHE FOUNDATION  |  REG. NO. E-0040526 (GBR) ★", W / 2, rrY + 28);
+
+      // 6. Logo & Top Header
       try {
         const logo = await loadImg("/images/gpl-logo.png");
         const logoSize = 110;
         ctx.save();
         ctx.shadowColor = "rgba(255, 255, 255, 0.25)";
         ctx.shadowBlur = 18;
-        ctx.drawImage(logo, W / 2 - logoSize / 2, 48, logoSize, logoSize);
+        ctx.drawImage(logo, W / 2 - logoSize / 2, 105, logoSize, logoSize);
         ctx.restore();
       } catch (_) {}
 
-      ctx.textAlign = "center";
-      ctx.fillStyle = "rgba(255, 255, 255, 0.95)";
-      ctx.font = "bold 20px Arial, sans-serif";
-      ctx.letterSpacing = "3px";
-      ctx.fillText("GOREGAON PREMIER LEAGUE", W / 2, 185);
-
-      ctx.fillStyle = "#f59e0b";
-      ctx.font = "bold 15px Arial, sans-serif";
+      // Title: GOREGAON PREMIER LEAGUE
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 24px Arial, sans-serif";
       ctx.letterSpacing = "2px";
-      ctx.fillText("RADHE RADHE CHASHAK • WARD 51-54", W / 2, 214);
+      ctx.fillText("GOREGAON PREMIER LEAGUE", W / 2, 230);
 
-      // 5. Red "SEASON 4" Stamp
-      const s4W = 210;
-      const s4H = 42;
-      const s4Y = 246;
+      // Subtitle: GOREGAON PURV VIDHAN SABHA
+      ctx.fillStyle = "#f59e0b";
+      ctx.font = "bold 18px Arial, sans-serif";
+      ctx.letterSpacing = "2px";
+      ctx.fillText("GOREGAON PURV VIDHAN SABHA", W / 2, 260);
+
+      // 7. Red "SEASON 4" Stamp
+      const s4W = 200;
+      const s4H = 38;
+      const s4Y = 290;
       roundRect(W / 2 - s4W / 2, s4Y, s4W, s4H, 10);
       ctx.fillStyle = "#dc2626";
       ctx.fill();
@@ -128,20 +162,18 @@ export default function PlayerRegistrationCard({ player, regNum, photo, onClose 
       ctx.stroke();
 
       ctx.fillStyle = "#ffffff";
-      ctx.font = "bold 22px Impact, Arial Black, sans-serif";
-      ctx.letterSpacing = "3px";
-      ctx.fillText("★ SEASON 4 ★", W / 2, s4Y + 28);
+      ctx.font = "bold 20px Impact, Arial Black, sans-serif";
+      ctx.letterSpacing = "2px";
+      ctx.fillText("SEASON 4", W / 2, s4Y + 26);
 
-      // 6. Bold "AUCTION POOL" Title
-      const apY = 345;
-      ctx.font = "900 88px Impact, Arial Black, sans-serif";
+      // 8. AUCTION POOL Title
+      const apY = 372;
+      ctx.font = "900 86px Impact, Arial Black, sans-serif";
       ctx.letterSpacing = "4px";
 
-      // subtle drop shadow
       ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
-      ctx.fillText("AUCTION POOL", W / 2 + 3, apY + 3);
+      ctx.fillText("AUCTION POOL", W / 2 + 2, apY + 2);
 
-      // Metallic gold fill
       const goldGrad = ctx.createLinearGradient(0, apY - 60, 0, apY + 10);
       goldGrad.addColorStop(0, "#fef08a");
       goldGrad.addColorStop(0.5, "#f59e0b");
@@ -149,11 +181,11 @@ export default function PlayerRegistrationCard({ player, regNum, photo, onClose 
       ctx.fillStyle = goldGrad;
       ctx.fillText("AUCTION POOL", W / 2, apY);
 
-      // 7. Clean "✔ QUALIFIED" Ribbon
-      const qW = 300;
-      const qH = 42;
-      const qY = 395;
-      roundRect(W / 2 - qW / 2, qY, qW, qH, 21);
+      // 9. Clean "✔ QUALIFIED" Ribbon
+      const qW = 290;
+      const qH = 40;
+      const qY = 422;
+      roundRect(W / 2 - qW / 2, qY, qW, qH, 20);
       ctx.fillStyle = "rgba(185, 28, 28, 0.95)";
       ctx.fill();
       ctx.strokeStyle = "rgba(252, 165, 165, 0.7)";
@@ -161,17 +193,16 @@ export default function PlayerRegistrationCard({ player, regNum, photo, onClose 
       ctx.stroke();
 
       ctx.fillStyle = "#ffffff";
-      ctx.font = "bold 20px Impact, Arial, sans-serif";
+      ctx.font = "bold 19px Impact, Arial, sans-serif";
       ctx.letterSpacing = "2px";
-      ctx.fillText("✔  QUALIFIED", W / 2, qY + 28);
+      ctx.fillText("✔  QUALIFIED", W / 2, qY + 27);
 
-      // 8. Hero Player Portrait
+      // 10. Hero Player Portrait
       const pSize = 360;
       const pX = W / 2 - pSize / 2;
-      const pY = 470;
+      const pY = 488;
       const pRad = 32;
 
-      // Glow behind portrait
       ctx.save();
       ctx.shadowColor = "#f59e0b";
       ctx.shadowBlur = 32;
@@ -181,7 +212,6 @@ export default function PlayerRegistrationCard({ player, regNum, photo, onClose 
       ctx.stroke();
       ctx.restore();
 
-      // Mask and draw image or avatar
       ctx.save();
       roundRect(pX, pY, pSize, pSize, pRad);
       ctx.clip();
@@ -214,28 +244,27 @@ export default function PlayerRegistrationCard({ player, regNum, photo, onClose 
       }
       ctx.restore();
 
-      // Outer gold accent ring
       roundRect(pX - 10, pY - 10, pSize + 20, pSize + 20, pRad + 10);
       ctx.strokeStyle = "rgba(251, 191, 36, 0.4)";
       ctx.lineWidth = 1;
       ctx.stroke();
 
-      // 9. Player Full Name
+      // 11. Player Full Name
       const playerName = (player?.name || "PLAYER NAME").toUpperCase();
       ctx.save();
-      ctx.font = `900 ${playerName.length > 18 ? 44 : 50}px Arial Black, Impact, sans-serif`;
+      ctx.font = `900 ${playerName.length > 18 ? 42 : 48}px Arial Black, Impact, sans-serif`;
       ctx.letterSpacing = "2px";
       ctx.fillStyle = "rgba(0, 0, 0, 0.8)";
-      ctx.fillText(playerName, W / 2 + 2, 892 + 2);
+      ctx.fillText(playerName, W / 2 + 2, 898 + 2);
       ctx.fillStyle = "#ffffff";
-      ctx.fillText(playerName, W / 2, 892);
+      ctx.fillText(playerName, W / 2, 898);
       ctx.restore();
 
-      // 10. Clean ID Chip: GPL ID : GPL2026-XXXX
+      // 12. Clean ID Chip: GPL ID : GPL2026-XXXX
       const idStr = `GPL ID : GPL2026-${String(regNum || "0001").padStart(4, "0")}`;
       const chipW = 380;
       const chipH = 48;
-      const chipY = 930;
+      const chipY = 936;
       roundRect(W / 2 - chipW / 2, chipY, chipW, chipH, 24);
       ctx.fillStyle = "rgba(10, 20, 38, 0.85)";
       ctx.fill();
@@ -248,7 +277,7 @@ export default function PlayerRegistrationCard({ player, regNum, photo, onClose 
       ctx.letterSpacing = "2px";
       ctx.fillText(idStr, W / 2, chipY + 32);
 
-      // 11. 3 Clean Minimalist Badges (Ward, Role, Zone)
+      // 13. 3 Clean Badges: WARD, ROLE, ZONE
       const badges = [
         { label: "📍 WARD", val: (player?.ward || "Ward 51").toUpperCase() },
         { label: "🏏 ROLE", val: (player?.speciality || "Batsman").toUpperCase() },
@@ -256,11 +285,11 @@ export default function PlayerRegistrationCard({ player, regNum, photo, onClose 
       ];
 
       const bW = 280;
-      const bH = 88;
+      const bH = 86;
       const bGap = 24;
       const totalBW = 3 * bW + 2 * bGap;
       const startBX = (W - totalBW) / 2;
-      const bY = 1010;
+      const bY = 1014;
 
       badges.forEach((b, i) => {
         const bx = startBX + i * (bW + bGap);
@@ -274,16 +303,16 @@ export default function PlayerRegistrationCard({ player, regNum, photo, onClose 
         ctx.fillStyle = "rgba(148, 163, 184, 0.9)";
         ctx.font = "bold 15px Arial, sans-serif";
         ctx.letterSpacing = "2px";
-        ctx.fillText(b.label, bx + bW / 2, bY + 30);
+        ctx.fillText(b.label, bx + bW / 2, bY + 28);
 
         ctx.fillStyle = "#ffffff";
-        ctx.font = `bold ${b.val.length > 14 ? 18 : 22}px Impact, Arial, sans-serif`;
+        ctx.font = `bold ${b.val.length > 14 ? 17 : 21}px Impact, Arial, sans-serif`;
         ctx.letterSpacing = "1px";
-        ctx.fillText(b.val, bx + bW / 2, bY + 64);
+        ctx.fillText(b.val, bx + bW / 2, bY + 62);
       });
 
-      // 12. Clean Kit & Verified Status Pill (NO heavy footer block)
-      const kitW = 560;
+      // 14. Kit Size Strip
+      const kitW = 580;
       const kitH = 46;
       const kitY = 1130;
       roundRect(W / 2 - kitW / 2, kitY, kitW, kitH, 23);
@@ -298,11 +327,11 @@ export default function PlayerRegistrationCard({ player, regNum, photo, onClose 
       ctx.letterSpacing = "1.5px";
       ctx.fillText(`OFFICIAL KIT: T-SHIRT ${player?.tshirtSize || "M"} • TRACK ${player?.trackSize || "M"}  |  VERIFIED ENTRY`, W / 2, kitY + 28);
 
-      // 13. Minimalist Clean Baseline (NO footer box)
-      ctx.fillStyle = "rgba(148, 163, 184, 0.75)";
+      // 15. Minimalist Baseline
+      ctx.fillStyle = "rgba(148, 163, 184, 0.8)";
       ctx.font = "bold 14px Arial, sans-serif";
       ctx.letterSpacing = "2px";
-      ctx.fillText("GOREGAON PREMIER LEAGUE • SEASON 4", W / 2, 1235);
+      ctx.fillText("RADHE RADHE FOUNDATION (REG. NO. E-0040526 GBR)  •  GOREGAON PREMIER LEAGUE", W / 2, 1225);
 
       setRendered(true);
     };

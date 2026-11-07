@@ -105,11 +105,19 @@ export async function POST(request) {
     // 1. ASSIGN / UNASSIGN PLAYER
     if (action === "assign") {
       if (playerId) {
-        // First always remove from all teams
-        await MongoTeam.updateMany({}, { $pull: { members: playerId } });
-        
-        // If a valid teamId is provided, add to that team
+        // If a valid teamId is provided, verify player is not rejected
         if (teamId && teamId !== "unassign" && teamId !== "" && teamId !== "null") {
+          const playerDoc = await MongoRegistration.findOne({ id: playerId }, "paymentStatus").lean();
+          if (playerDoc && playerDoc.paymentStatus === "Rejected") {
+            return NextResponse.json(
+              { success: false, error: "Cannot assign a rejected player to any team." },
+              { status: 400, headers: NO_CACHE_HEADERS }
+            );
+          }
+
+          // First always remove from all teams
+          await MongoTeam.updateMany({}, { $pull: { members: playerId } });
+
           const targetTeam = await MongoTeam.findOne({ id: teamId }).lean();
           if (targetTeam && (targetTeam.members || []).length >= 14) {
             return NextResponse.json(
@@ -131,6 +139,7 @@ export async function POST(request) {
           }
         } else {
           // Unassign from team
+          await MongoTeam.updateMany({}, { $pull: { members: playerId } });
           await MongoRegistration.findOneAndUpdate({ id: playerId }, { teamId: null });
         }
       }

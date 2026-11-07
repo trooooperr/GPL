@@ -472,6 +472,13 @@ export default function AdminDashboard() {
   // --- TEAM ASSIGNMENT (ZERO DELAY OPTIMISTIC FEEDBACK) ---
   const handleAssignTeam = async (playerId, teamId) => {
     const cleanTeamId = teamId && teamId !== "unassign" && teamId !== "" ? teamId : null;
+    const targetPlayer = players.find((p) => p.id === playerId);
+
+    if (cleanTeamId && targetPlayer && targetPlayer.paymentStatus === "Rejected") {
+      showToast("Cannot assign a rejected player to a team. Approve the player first.", "error");
+      return;
+    }
+
     const prevPlayers = players;
     const prevTeams = teams;
 
@@ -1577,18 +1584,25 @@ export default function AdminDashboard() {
 
                     {/* Team Selector */}
                     <div>
-                      <select
-                        value={player.teamId || ""}
-                        onChange={(e) => handleAssignTeam(player.id, e.target.value)}
-                        className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-semibold text-slate-700"
-                      >
-                        <option value="">— Unassigned (Auction Pool) —</option>
-                        {teams.map((t, tIdx) => (
-                          <option key={t.id || tIdx} value={t.id}>
-                            {t.name} ({t.shortCode})
-                          </option>
-                        ))}
-                      </select>
+                      {player.paymentStatus === "Rejected" ? (
+                        <div className="w-full px-2.5 py-1.5 rounded-lg border border-red-200 bg-red-50 text-red-600 text-xs font-semibold flex items-center justify-between">
+                          <span>Cannot Assign</span>
+                          <span className="text-[10px] font-bold uppercase bg-red-200/60 px-1.5 py-0.5 rounded">Rejected</span>
+                        </div>
+                      ) : (
+                        <select
+                          value={player.teamId || ""}
+                          onChange={(e) => handleAssignTeam(player.id, e.target.value)}
+                          className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-semibold text-slate-700"
+                        >
+                          <option value="">— Unassigned (Auction Pool) —</option>
+                          {teams.map((t, tIdx) => (
+                            <option key={t.id || tIdx} value={t.id}>
+                              {t.name} ({t.shortCode})
+                            </option>
+                          ))}
+                        </select>
+                      )}
                     </div>
 
                     {/* Action Buttons */}
@@ -1772,18 +1786,28 @@ export default function AdminDashboard() {
                               </span>
                             </td>
                             <td className="py-4 px-5">
-                              <select
-                                value={player.teamId || ""}
-                                onChange={(e) => handleAssignTeam(player.id, e.target.value)}
-                                className="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50 text-xs font-semibold text-slate-700"
-                              >
-                                <option value="">— Unassigned —</option>
-                                {teams.map((t, tIdx) => (
-                                  <option key={t.id || tIdx} value={t.id}>
-                                    {t.name}
-                                  </option>
-                                ))}
-                              </select>
+                              {player.paymentStatus === "Rejected" ? (
+                                <div
+                                  className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-red-200 bg-red-50 text-red-600 text-xs font-semibold"
+                                  title="Rejected players cannot be assigned to any team"
+                                >
+                                  <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                                  <span>Cannot Assign (Rejected)</span>
+                                </div>
+                              ) : (
+                                <select
+                                  value={player.teamId || ""}
+                                  onChange={(e) => handleAssignTeam(player.id, e.target.value)}
+                                  className="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50 text-xs font-semibold text-slate-700"
+                                >
+                                  <option value="">— Unassigned —</option>
+                                  {teams.map((t, tIdx) => (
+                                    <option key={t.id || tIdx} value={t.id}>
+                                      {t.name}
+                                    </option>
+                                  ))}
+                                </select>
+                              )}
                             </td>
                             <td className="py-4 px-5 text-right">
                               <div className="flex items-center justify-end gap-1">
