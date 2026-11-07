@@ -1258,7 +1258,7 @@ export default function AdminDashboard() {
         
         {/* KPI Tiles Container: Responsive 2-col on Mobile, 6-col on Desktop */}
         {stats && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 sm:gap-4">
             
             <div
               onClick={() => { setActiveTab("players"); setStatusFilter("ALL"); setRoleFilter("ALL"); setTeamFilter("ALL"); }}
@@ -1333,22 +1333,6 @@ export default function AdminDashboard() {
                 {teams.length}
               </span>
               <span className="text-[10px] sm:text-[11px] text-slate-500 block mt-0.5 sm:mt-1 truncate">Teams active 🏆</span>
-            </div>
-
-            <div
-              onClick={() => setActiveTab("settings")}
-              className="bg-white p-3.5 sm:p-5 rounded-xl sm:rounded-2xl border border-pink-200/80 shadow-xs cursor-pointer hover:border-pink-500 hover:shadow-md transition-all active:scale-[0.98]"
-              title="Click to view Instagram & Settings"
-            >
-              <span className="text-[10px] sm:text-[11px] font-bold text-pink-600 uppercase tracking-wider block mb-0.5 sm:mb-1">
-                Registration Mode
-              </span>
-              <span className="text-xl sm:text-2xl font-extrabold text-pink-700">
-                100% FREE
-              </span>
-              <span className="text-[10px] sm:text-[11px] text-slate-500 block mt-0.5 sm:mt-1 truncate">
-                IG: @{(settings.instagramUsername || "mi_sandeep_jadhav").replace(/^@/, '')}
-              </span>
             </div>
 
           </div>
