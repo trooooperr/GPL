@@ -767,17 +767,6 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
               {/* Right Column: Follow Action & Proof Upload */}
               <div className="md:col-span-6 space-y-4">
                 
-                {/* Free Registration Banner */}
-                <div className="bg-emerald-50 border border-emerald-200 p-3.5 rounded-xl flex items-center gap-3">
-                  <span className="w-7 h-7 rounded-full bg-emerald-600 text-white font-black text-xs flex items-center justify-center shrink-0 shadow-xs">✓</span>
-                  <div>
-                    <h4 className="text-xs font-bold text-emerald-950 uppercase tracking-wide">100% Free Registration</h4>
-                    <p className="text-[11px] text-emerald-800 leading-tight mt-0.5">
-                      No entry fees. Follow our official Instagram page below to complete your registration!
-                    </p>
-                  </div>
-                </div>
-
                 {/* Open Instagram Follow Button */}
                 <a
                   href={IG_URL}
@@ -786,28 +775,8 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
                   className="w-full bg-gradient-to-r from-[#833ab4] via-[#fd1d1d] to-[#fcb045] hover:opacity-95 text-white font-bold py-3.5 px-4 rounded-xl text-sm text-center shadow-md transition-all active:scale-98 flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <InstagramIcon className="w-4 h-4" />
-                  <span>Follow @{IG_HANDLE} on Instagram ↗</span>
+                  <span>Follow ↗</span>
                 </a>
-
-                {/* Optional Instagram Handle of Player */}
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Your Instagram Username <span className="text-slate-400 font-normal">(Optional)</span>
-                  </label>
-                  <div className="relative">
-                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">@</span>
-                    <input
-                      type="text"
-                      placeholder="your_insta_username"
-                      value={formData.instagramHandle}
-                      onChange={(e) => handleFieldChange("instagramHandle", e.target.value.replace(/^@/, ""))}
-                      className="w-full pl-8 pr-4 py-2.5 rounded-lg border border-slate-300 bg-white font-mono text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#059669] transition-all"
-                    />
-                  </div>
-                  <p className="text-[11px] text-slate-500 mt-1">
-                    Helps the committee quickly verify your follow.
-                  </p>
-                </div>
 
                 {/* Follow Screenshot Upload */}
                 <div>
@@ -851,7 +820,7 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
                       <span>Submitting Registration...</span>
                     </>
                   ) : (
-                    <span>Complete Free Registration</span>
+                    <span>Complete Registration</span>
                   )}
                 </button>
 
