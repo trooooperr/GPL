@@ -397,7 +397,7 @@ export default function CheckStatusModal({ isOpen, onClose }) {
                       ? "Documents verified. You are enrolled in the Radhe Radhe Chasak GPL4 auction pool!"
                       : player.paymentStatus === "Rejected"
                       ? player.notes || "Aadhaar address must be from Ward 51 or Ward 54. Please contact committee for appeal."
-                      : "Your Aadhaar address and payment UTR are currently being verified by the committee."}
+                      : "Your Aadhaar address and Instagram follow proof are currently being verified by the committee."}
                   </p>
                 </div>
               </div>
@@ -410,7 +410,7 @@ export default function CheckStatusModal({ isOpen, onClose }) {
                   </div>
                   <h4 className="font-bold text-sm text-slate-800">No Official Pass Available</h4>
                   <p className="text-xs text-slate-600 leading-relaxed max-w-sm mx-auto">
-                    Only verified players from Ward 51 &amp; Ward 54 with confirmed payment can receive an official accreditation pass. If this is an error, please reach out directly to the organizers.
+                    Only verified players from Ward 51 &amp; Ward 54 with confirmed Instagram follow screenshot can receive an official accreditation pass. If this is an error, please reach out directly to the organizers.
                   </p>
                   <div className="pt-2 text-xs font-semibold text-slate-700 bg-white p-3 rounded-xl border border-slate-200">
                     <div>Organizers: <strong>Mohsin Patel &amp; Balram Gupta (Ballu)</strong></div>

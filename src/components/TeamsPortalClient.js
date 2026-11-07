@@ -314,7 +314,7 @@ export default function TeamsPortalClient({ teams = [], players = [], settings =
                 Unallocated Verified Players
               </h2>
               <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-                These players have completed Aadhaar verification and registration fee payment. They are ready for the franchise draft auction!
+                These players have completed Aadhaar verification and official Instagram follow confirmation. They are ready for the franchise draft auction!
               </p>
             </div>
           </div>

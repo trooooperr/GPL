@@ -24,7 +24,7 @@ export async function GET(request) {
     const [players, teams] = await Promise.all([
       MongoRegistration.find(
         query,
-        "regNumber id name phone email ward age dob speciality tshirtSize trackSize paymentStatus utrNumber teamId"
+        "regNumber id name phone email ward age dob speciality tshirtSize trackSize paymentStatus utrNumber instagramHandle teamId"
       ).lean(),
       MongoTeam.find().lean()
     ]);
@@ -76,7 +76,7 @@ export async function GET(request) {
         "T-Shirt Size",
         "Track Pant Size",
         "Payment Status",
-        "UTR / Transaction ID",
+        "Instagram / Follow Ref",
         "Assigned Team"
       ];
       rows = (players || []).map((p) => [
@@ -91,7 +91,7 @@ export async function GET(request) {
         escapeCsv(p.tshirtSize),
         escapeCsv(p.trackSize),
         escapeCsv(p.paymentStatus),
-        escapeCsv(p.utrNumber || ""),
+        escapeCsv(p.instagramHandle ? `@${p.instagramHandle.replace(/^@/, '')}` : (p.utrNumber || "FREE-REG")),
         escapeCsv(p.teamId ? (teamMap.get(p.teamId) || p.teamId) : "Unassigned")
       ]);
     }

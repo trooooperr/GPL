@@ -46,6 +46,16 @@ import {
 import QRCode from "qrcode";
 import { INITIAL_RULES, INITIAL_FAQS } from "@/lib/constants";
 
+function InstagramIcon({ className = "w-4 h-4" }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect width="20" height="20" x="2" y="2" rx="5" ry="5"/>
+      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+      <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/>
+    </svg>
+  );
+}
+
 export default function AdminDashboard() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("players"); // players | teams | sizing | settings | rules | faqs
@@ -59,11 +69,12 @@ export default function AdminDashboard() {
   const [rules, setRules] = useState(INITIAL_RULES);
   const [faqs, setFaqs] = useState(INITIAL_FAQS);
   const [settings, setSettings] = useState({
-    upiId: "shahbazkhandm@okhdfcbank",
-    registrationFee: 100,
+    instagramUsername: "goregaonpremierleague",
+    registrationFee: 0,
     maxCapacity: 140,
     adminEmail: "goregaonpremierleague11@gmail.com",
-    registrationDeadline: "2026-11-28T09:00"
+    registrationDeadline: "2026-11-28T09:00",
+    registrationOpen: true
   });
   const [sizing, setSizing] = useState(null);
 
@@ -238,12 +249,13 @@ export default function AdminDashboard() {
     };
   }, [router]);
 
-  // Update Dynamic QR Preview when UPI ID or fee changes
+  // Update Dynamic QR Preview when Instagram handle changes
   useEffect(() => {
     async function genPreview() {
       try {
-        const uri = `upi://pay?pa=${encodeURIComponent(settings.upiId || "shahbazkhandm@okhdfcbank")}&pn=${encodeURIComponent("Goregaon Premier League")}&am=${encodeURIComponent(settings.registrationFee || 100)}&cu=INR&tn=${encodeURIComponent("GPL Player Registration")}`;
-        const dataUrl = await QRCode.toDataURL(uri, {
+        const cleanHandle = (settings.instagramUsername || "goregaonpremierleague").replace(/^@/, "").trim();
+        const profileUrl = `https://instagram.com/${cleanHandle || "goregaonpremierleague"}`;
+        const dataUrl = await QRCode.toDataURL(profileUrl, {
           width: 260,
           margin: 1.5,
           color: { dark: "#081a36", light: "#ffffff" }
@@ -252,7 +264,7 @@ export default function AdminDashboard() {
       } catch (e) {}
     }
     genPreview();
-  }, [settings.upiId, settings.registrationFee]);
+  }, [settings.instagramUsername]);
 
   const showToast = (message, type = "success") => {
     setToast({ message, type });
@@ -521,7 +533,7 @@ export default function AdminDashboard() {
       const data = await res.json();
       if (data.success) {
         setSettings(data.settings);
-        setSettingsMsg("Settings & Dynamic UPI details updated successfully!");
+        setSettingsMsg("Settings & Official Instagram configuration updated successfully!");
         setTimeout(() => setSettingsMsg(""), 3000);
       }
     } catch (err) {
@@ -1039,7 +1051,7 @@ export default function AdminDashboard() {
     { id: "players", label: `Players (${players.length})`, icon: Users },
     { id: "teams", label: `Teams (${teams.length})`, icon: Trophy },
     { id: "sizing", label: "Kit Sizing", icon: Shirt },
-    { id: "settings", label: "Payment & Settings", icon: QrCode },
+    { id: "settings", label: "Instagram & Settings", icon: InstagramIcon },
     { id: "rules", label: "Rules", icon: FileText },
     { id: "faqs", label: "FAQs", icon: HelpCircle },
   ];
@@ -1281,17 +1293,19 @@ export default function AdminDashboard() {
             </div>
 
             <div
-              onClick={() => setActiveTab("sizing")}
-              className="bg-white p-3.5 sm:p-5 rounded-xl sm:rounded-2xl border border-purple-200/80 shadow-xs cursor-pointer hover:border-purple-500 hover:shadow-md transition-all active:scale-[0.98]"
-              title="Click to view Kit Sizing Matrix"
+              onClick={() => setActiveTab("settings")}
+              className="bg-white p-3.5 sm:p-5 rounded-xl sm:rounded-2xl border border-pink-200/80 shadow-xs cursor-pointer hover:border-pink-500 hover:shadow-md transition-all active:scale-[0.98]"
+              title="Click to view Instagram & Settings"
             >
-              <span className="text-[10px] sm:text-[11px] font-bold text-purple-600 uppercase tracking-wider block mb-0.5 sm:mb-1">
-                Collected Fees
+              <span className="text-[10px] sm:text-[11px] font-bold text-pink-600 uppercase tracking-wider block mb-0.5 sm:mb-1">
+                Registration Mode
               </span>
-              <span className="text-xl sm:text-3xl font-extrabold text-purple-700">
-                ₹{stats.totalRegistered * (settings.registrationFee || 100)}
+              <span className="text-xl sm:text-2xl font-extrabold text-pink-700">
+                100% FREE
               </span>
-              <span className="text-[10px] sm:text-[11px] text-slate-500 block mt-0.5 sm:mt-1 truncate">₹{settings.registrationFee || 100} / player</span>
+              <span className="text-[10px] sm:text-[11px] text-slate-500 block mt-0.5 sm:mt-1 truncate">
+                IG: @{(settings.instagramUsername || "goregaonpremierleague").replace(/^@/, '')}
+              </span>
             </div>
 
           </div>
@@ -1502,9 +1516,9 @@ export default function AdminDashboard() {
                         </span>
                       </div>
                       <div>
-                        <span className="text-[10px] uppercase font-bold text-slate-400 block">Payment UTR</span>
+                        <span className="text-[10px] uppercase font-bold text-slate-400 block">Instagram / Ref</span>
                         <span className="font-mono font-bold text-slate-800 text-[11px] block break-all leading-tight">
-                          {player.utrNumber || "N/A"}
+                          {player.instagramHandle ? `@${player.instagramHandle.replace(/^@/, '')}` : (player.utrNumber || "FREE-REG")}
                         </span>
                       </div>
                     </div>
@@ -1531,11 +1545,11 @@ export default function AdminDashboard() {
 
                       <button
                         type="button"
-                        onClick={() => setFullScreenImage({ url: player.paymentProofUrl, title: `Payment Receipt - ${player.name}` })}
-                        className="py-1.5 px-1 rounded-lg bg-purple-50 text-purple-700 text-[11px] font-semibold border border-purple-100 hover:bg-purple-100 flex items-center justify-center gap-1 transition-colors min-w-0"
+                        onClick={() => setFullScreenImage({ url: player.paymentProofUrl, title: `Instagram Follow Proof - ${player.name}` })}
+                        className="py-1.5 px-1 rounded-lg bg-pink-50 text-pink-700 text-[11px] font-semibold border border-pink-100 hover:bg-pink-100 flex items-center justify-center gap-1 transition-colors min-w-0"
                       >
-                        <CreditCard className="w-3 h-3 shrink-0" />
-                        <span className="truncate">Receipt</span>
+                        <InstagramIcon className="w-3 h-3 shrink-0" />
+                        <span className="truncate">IG Proof</span>
                       </button>
                     </div>
 
@@ -1627,7 +1641,7 @@ export default function AdminDashboard() {
                       <th className="py-4 px-4">Player</th>
                       <th className="py-4 px-4">Role &amp; Ward</th>
                       <th className="py-4 px-4">Kit Size</th>
-                      <th className="py-4 px-4">Payment UTR</th>
+                      <th className="py-4 px-4">Instagram / Ref</th>
                       <th className="py-4 px-4">Documents</th>
                       <th className="py-4 px-4">Status</th>
                       <th className="py-4 px-4">Assigned Team</th>
@@ -1677,7 +1691,9 @@ export default function AdminDashboard() {
                               </span>
                             </td>
                             <td className="py-4 px-5">
-                              <div className="font-mono text-xs font-semibold text-slate-800">{player.utrNumber || "N/A"}</div>
+                              <div className="font-mono text-xs font-semibold text-slate-800">
+                                {player.instagramHandle ? `@${player.instagramHandle.replace(/^@/, '')}` : (player.utrNumber || "FREE-REG")}
+                              </div>
                             </td>
                             <td className="py-4 px-5">
                               <div className="flex items-center gap-1.5">
@@ -1705,11 +1721,11 @@ export default function AdminDashboard() {
                                   AB
                                 </button>
                                 <button
-                                  onClick={() => setFullScreenImage({ url: player.paymentProofUrl, title: `Payment Proof - ${player.name}` })}
-                                  className="p-1 rounded bg-purple-50 text-purple-700 hover:bg-purple-100 font-mono text-[10px] px-1.5"
-                                  title="Receipt"
+                                  onClick={() => setFullScreenImage({ url: player.paymentProofUrl, title: `Instagram Follow Proof - ${player.name}` })}
+                                  className="p-1 rounded bg-pink-50 text-pink-700 hover:bg-pink-100 font-mono text-[10px] px-1.5"
+                                  title="Instagram Follow Proof"
                                 >
-                                  Pay
+                                  IG
                                 </button>
                               </div>
                             </td>
@@ -1992,14 +2008,21 @@ export default function AdminDashboard() {
         )}
 
         {/* ========================================================================= */}
-        {/* TAB 4: PAYMENT QR & TOURNAMENT SETTINGS */}
+        {/* TAB 4: INSTAGRAM & TOURNAMENT SETTINGS */}
         {/* ========================================================================= */}
         {activeTab === "settings" && (
           <div className="max-w-3xl mx-auto bg-white rounded-2xl border border-slate-200 p-4 sm:p-8 shadow-xs space-y-6">
             
             <div>
-              <h2 className="text-lg sm:text-xl font-bold text-[#081a36]">Payment &amp; Dynamic UPI QR Settings</h2>
-              <p className="text-xs text-slate-500">Update UPI ID, registration fee amount, and tournament capacity. The QR code on the website will dynamically generate and update with the exact amount.</p>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="p-1.5 rounded-lg bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 text-white">
+                  <InstagramIcon className="w-4 h-4" />
+                </span>
+                <h2 className="text-lg sm:text-xl font-bold text-[#081a36]">Instagram Page &amp; Tournament Settings</h2>
+              </div>
+              <p className="text-xs text-slate-500">
+                Registrations are 100% Free. Updating the official Instagram handle below automatically updates the dynamic scan-to-follow QR code across the website and registration flow.
+              </p>
             </div>
 
             {settingsMsg && (
@@ -2034,16 +2057,31 @@ export default function AdminDashboard() {
               
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Payee UPI ID (Google Pay / PhonePe / Paytm)
+                  Official GPL Instagram Page Username / Handle
                 </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="example@okhdfcbank"
-                  value={settings.upiId || ""}
-                  onChange={(e) => setSettings({ ...settings, upiId: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm font-mono focus:ring-2 focus:ring-[#0041b9]"
-                />
+                <div className="relative flex items-center">
+                  <span className="absolute left-3 text-slate-400 font-bold text-sm">@</span>
+                  <input
+                    type="text"
+                    required
+                    placeholder="goregaonpremierleague"
+                    value={(settings.instagramUsername || "").replace(/^@/, '')}
+                    onChange={(e) => setSettings({ ...settings, instagramUsername: e.target.value.replace(/^@/, '').trim() })}
+                    className="w-full pl-8 pr-28 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm font-semibold focus:ring-2 focus:ring-[#0041b9] outline-none"
+                  />
+                  <a
+                    href={`https://instagram.com/${(settings.instagramUsername || "goregaonpremierleague").replace(/^@/, '')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="absolute right-2 px-2.5 py-1 rounded-lg bg-pink-100 hover:bg-pink-200 text-pink-700 text-xs font-bold transition-colors flex items-center gap-1"
+                  >
+                    <span>Test Link</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
+                <p className="text-[11px] text-slate-500 mt-1">
+                  Players are required to follow this handle and submit a screenshot proving they follow the page.
+                </p>
               </div>
 
               <div>
@@ -2052,12 +2090,13 @@ export default function AdminDashboard() {
                 </label>
                 <input
                   type="number"
-                  required
-                  min={1}
-                  value={settings.registrationFee || 100}
+                  value={settings.registrationFee || 0}
                   onChange={(e) => setSettings({ ...settings, registrationFee: Number(e.target.value) })}
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm font-mono focus:ring-2 focus:ring-[#0041b9]"
                 />
+                <p className="text-[11px] text-slate-500 mt-1">
+                  Currently set to <strong>₹0</strong> (100% Free Registration for all players).
+                </p>
               </div>
 
               <div>
@@ -2091,17 +2130,21 @@ export default function AdminDashboard() {
 
               {/* Dynamic QR Live Preview */}
               <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 flex flex-col sm:flex-row items-center gap-4">
-                <div className="w-32 h-32 bg-white rounded-lg p-2 border border-slate-200 flex items-center justify-center shrink-0">
+                <div className="w-32 h-32 bg-white rounded-lg p-2 border border-slate-200 flex items-center justify-center shrink-0 shadow-xs">
                   {adminQrPreview ? (
-                    <img src={adminQrPreview} alt="Live QR Preview" className="w-full h-full object-contain" />
+                    <img src={adminQrPreview} alt="Live Instagram QR Preview" className="w-full h-full object-contain" />
                   ) : (
                     <span className="text-[10px] text-slate-400">Generating...</span>
                   )}
                 </div>
                 <div className="space-y-1 text-center sm:text-left">
-                  <h4 className="text-xs font-bold text-slate-900">Live Dynamic UPI QR Code Preview</h4>
+                  <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-pink-100 text-pink-700 text-[10px] font-bold uppercase tracking-wider mb-1">
+                    <InstagramIcon className="w-3 h-3" />
+                    <span>Dynamic Live Preview</span>
+                  </div>
+                  <h4 className="text-xs font-bold text-slate-900">Official Instagram Follow QR Code</h4>
                   <p className="text-[11px] text-slate-500">
-                    This QR code automatically encodes UPI ID <strong>{settings.upiId}</strong> with the pre-filled payment fee of <strong>₹{settings.registrationFee}</strong>.
+                    This QR code automatically encodes <code className="bg-slate-200 px-1 py-0.5 rounded font-mono text-[10px] text-slate-800">https://instagram.com/{(settings.instagramUsername || "goregaonpremierleague").replace(/^@/, '')}</code>. Players scan it to follow your profile before uploading screenshot proof.
                   </p>
                 </div>
               </div>
@@ -2513,14 +2556,14 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
-              {/* Payment Proof */}
+              {/* Instagram Follow Proof */}
               <div className="space-y-1">
-                <span className="text-[10px] font-bold text-slate-500 uppercase block">Payment Proof</span>
+                <span className="text-[10px] font-bold text-slate-500 uppercase block">Instagram Follow Proof</span>
                 <div
-                  onClick={() => setFullScreenImage({ url: inspectPlayer.paymentProofUrl, title: `Payment Receipt - ${inspectPlayer.name}` })}
+                  onClick={() => setFullScreenImage({ url: inspectPlayer.paymentProofUrl, title: `Instagram Follow Proof - ${inspectPlayer.name}` })}
                   className="h-32 sm:h-36 rounded-xl bg-slate-100 border border-slate-200 overflow-hidden flex items-center justify-center cursor-pointer group relative hover:border-[#0041b9]"
                 >
-                  <img src={inspectPlayer.paymentProofUrl} alt="Payment Proof" className="max-h-full max-w-full object-contain" />
+                  <img src={inspectPlayer.paymentProofUrl} alt="Instagram Follow Proof" className="max-h-full max-w-full object-contain" />
                   <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-white">
                     <Maximize2 className="w-5 h-5" />
                   </div>
@@ -2532,8 +2575,10 @@ export default function AdminDashboard() {
             {/* Info Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 text-xs bg-slate-50 p-3.5 rounded-xl border border-slate-200">
               <div>
-                <span className="text-slate-400 block text-[10px] uppercase font-bold">UTR Number</span>
-                <span className="font-mono font-bold text-slate-900 truncate block">{inspectPlayer.utrNumber}</span>
+                <span className="text-slate-400 block text-[10px] uppercase font-bold">Instagram / Ref</span>
+                <span className="font-mono font-bold text-slate-900 truncate block">
+                  {inspectPlayer.instagramHandle ? `@${inspectPlayer.instagramHandle.replace(/^@/, '')}` : (inspectPlayer.utrNumber || "FREE-REG")}
+                </span>
               </div>
               <div>
                 <span className="text-slate-400 block text-[10px] uppercase font-bold">Speciality</span>
@@ -2734,11 +2779,11 @@ export default function AdminDashboard() {
               </div>
 
               <div>
-                <label className="font-bold text-slate-700 block mb-1">Payment UTR Number</label>
+                <label className="font-bold text-slate-700 block mb-1">Instagram Username / Follow Ref</label>
                 <input
                   type="text"
-                  value={editPlayer.utrNumber}
-                  onChange={(e) => setEditPlayer({ ...editPlayer, utrNumber: e.target.value })}
+                  value={editPlayer.instagramHandle || editPlayer.utrNumber || ""}
+                  onChange={(e) => setEditPlayer({ ...editPlayer, instagramHandle: e.target.value, utrNumber: e.target.value })}
                   className="w-full px-3 py-2 rounded-lg border border-slate-200 font-mono"
                 />
               </div>

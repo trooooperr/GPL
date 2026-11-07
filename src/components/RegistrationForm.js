@@ -4,6 +4,16 @@ import { useState, useEffect } from "react";
 import { Check, AlertCircle, UploadCloud, Loader2, CheckCircle2, Copy } from "lucide-react";
 import QRCode from "qrcode";
 
+function InstagramIcon({ className = "w-4 h-4" }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect width="20" height="20" x="2" y="2" rx="5" ry="5"/>
+      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+      <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/>
+    </svg>
+  );
+}
+
 export default function RegistrationForm({ stats, settings = {}, onRegistrationSuccess }) {
   const [formData, setFormData] = useState({
     name: "",
@@ -14,6 +24,7 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
     trackSize: "—Please choose an option—",
     speciality: "Right-hand batsman",
     ward: "Ward 51",
+    instagramHandle: "",
     utrNumber: ""
   });
 
@@ -42,16 +53,15 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
   const [remainingSlots, setRemainingSlots] = useState(calcRemaining);
   const [maxCapacity, setMaxCapacity] = useState(calcMaxCap);
 
-  // Dynamic UPI ID & Fee from database settings
-  const UPI_ID = settings.upiId || stats?.upiId || "shahbazkhandm@okhdfcbank";
-  const REG_FEE = settings.registrationFee || stats?.registrationFee || 100;
+  // Dynamic Instagram Handle from database settings
+  const IG_HANDLE = (settings.instagramUsername || stats?.instagramUsername || "goregaonpremierleague").replace(/^@/, "");
+  const IG_URL = `https://instagram.com/${IG_HANDLE}`;
 
-  // Generate Dynamic UPI QR Code with pre-filled amount
+  // Generate Dynamic Instagram Profile QR Code
   useEffect(() => {
-    async function generateUPIQR() {
+    async function generateInstagramQR() {
       try {
-        const upiPaymentUri = `upi://pay?pa=${encodeURIComponent(UPI_ID)}&pn=${encodeURIComponent("Goregaon Premier League")}&am=${encodeURIComponent(REG_FEE)}&cu=INR&tn=${encodeURIComponent("GPL Player Registration")}`;
-        const dataUrl = await QRCode.toDataURL(upiPaymentUri, {
+        const dataUrl = await QRCode.toDataURL(IG_URL, {
           width: 320,
           margin: 1.5,
           color: {
@@ -61,11 +71,11 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
         });
         setDynamicQrDataUrl(dataUrl);
       } catch (err) {
-        console.error("Failed to generate dynamic UPI QR code:", err);
+        console.error("Failed to generate dynamic Instagram QR code:", err);
       }
     }
 
-    generateUPIQR();
+    generateInstagramQR();
 
     async function fetchFreshStats() {
       try {
@@ -222,16 +232,9 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
       errors.aadhaarBack = "Aadhaar Card Back photo is required.";
     }
 
-    // 9. UTR Number (minimum 4 chars)
-    if (!formData.utrNumber.trim()) {
-      errors.utrNumber = "Transaction UTR / Reference number is required.";
-    } else if (formData.utrNumber.trim().length < 4) {
-      errors.utrNumber = "Please enter a valid UPI transaction UTR / Reference number.";
-    }
-
-    // 10. Payment Proof
+    // 9. Instagram Follow Proof Screenshot
     if (!files.paymentProof) {
-      errors.paymentProof = "Payment screenshot proof is required.";
+      errors.paymentProof = "Instagram follow screenshot proof is required.";
     }
 
     setFieldErrors(errors);
@@ -259,7 +262,8 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
         speciality: formData.speciality,
         tshirtSize: formData.tshirtSize,
         trackSize: formData.trackSize,
-        utrNumber: formData.utrNumber.trim(),
+        utrNumber: formData.instagramHandle ? `@${formData.instagramHandle.trim().replace(/^@/, "")}` : "FREE-FOLLOW",
+        instagramHandle: formData.instagramHandle ? formData.instagramHandle.trim().replace(/^@/, "") : "",
         photo: files.profilePhoto?.dataUrl || "",
         aadhaarFront: files.aadhaarFront?.dataUrl || files.aadhaarFront || "",
         aadhaarBack: files.aadhaarBack?.dataUrl || files.aadhaarBack || "",
@@ -727,88 +731,101 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
               </div>
             </div>
 
-            {/* Line 6: Dynamic Payment QR Code Box */}
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center pt-6">
+            {/* Line 6: Dynamic Instagram Follow QR Code Box (Free Registration) */}
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center pt-6 border-t border-slate-200/80">
               
-              {/* Left Column: Dynamic QR Code Container */}
+              {/* Left Column: Dynamic Instagram QR Code Container */}
               <div className="md:col-span-6 flex justify-center">
-                <div className="bg-white rounded-2xl p-6 sm:p-7 shadow-md border border-slate-200/90 text-center max-w-xs w-full space-y-3">
-                  <div className="w-52 h-52 sm:w-56 sm:h-56 mx-auto bg-slate-50 rounded-xl overflow-hidden p-2 flex items-center justify-center border border-slate-100">
+                <div className="bg-gradient-to-b from-white via-pink-50/20 to-purple-50/30 rounded-2xl p-6 sm:p-7 shadow-md border border-slate-200/90 text-center max-w-xs w-full space-y-3.5">
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 text-white text-[11px] font-bold shadow-xs">
+                    <InstagramIcon className="w-3.5 h-3.5" />
+                    <span>Follow Official Page</span>
+                  </div>
+
+                  <div className="w-52 h-52 sm:w-56 sm:h-56 mx-auto bg-white rounded-xl overflow-hidden p-2.5 flex items-center justify-center border-2 border-pink-200/60 shadow-inner">
                     {dynamicQrDataUrl ? (
                       <img
                         src={dynamicQrDataUrl}
-                        alt={`Scan & Pay ₹${REG_FEE} UPI QR Code`}
+                        alt={`Scan to Follow @${IG_HANDLE} on Instagram`}
                         className="w-full h-full object-contain"
                       />
                     ) : (
-                      <div className="text-xs text-slate-400">Generating UPI QR...</div>
+                      <div className="text-xs text-slate-400">Generating Instagram QR...</div>
                     )}
                   </div>
-                  <div>
-                    <p className="text-xs sm:text-[13px] font-mono font-bold text-slate-900 break-all">
-                      UPI ID: {UPI_ID}
+
+                  <div className="space-y-0.5">
+                    <p className="text-xs sm:text-sm font-bold text-slate-900 font-mono">
+                      @{IG_HANDLE}
                     </p>
+                    <a
+                      href={IG_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[11px] font-bold text-pink-600 hover:text-pink-700 underline block"
+                    >
+                      instagram.com/{IG_HANDLE} ↗
+                    </a>
                   </div>
                 </div>
               </div>
 
-              {/* Right Column: Dynamic Payment Actions & Proof Upload */}
+              {/* Right Column: Follow Action & Proof Upload */}
               <div className="md:col-span-6 space-y-4">
                 
-                <p className="text-sm font-semibold text-slate-800">
-                  Scan and Pay <strong>₹{REG_FEE}</strong> Or Pay <strong>₹{REG_FEE}</strong> using UPI ID
-                </p>
-
-                {/* Yellow UPI ID Button */}
-                <button
-                  type="button"
-                  onClick={handleCopyUpi}
-                  className="w-full bg-[#ffb703] hover:bg-[#fca311] text-slate-950 font-bold py-3 px-4 rounded-lg text-sm text-center shadow-sm transition-all active:scale-98 block cursor-pointer"
-                >
-                  {UPI_ID}
-                </button>
-
-                {/* Cyan Copy UPI Button */}
-                <button
-                  type="button"
-                  onClick={handleCopyUpi}
-                  className="w-full bg-[#00b4d8] hover:bg-[#0096c7] text-white font-bold py-3 px-4 rounded-lg text-sm text-center shadow-sm transition-all active:scale-98 block cursor-pointer"
-                >
-                  {copiedUpi ? "✓ UPI ID Copied to Clipboard!" : "Copy UPI"}
-                </button>
-
-                {/* UTR Number Input */}
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Transaction UTR / Reference No. <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="UPI Reference / UTR number"
-                    value={formData.utrNumber}
-                    onChange={(e) => handleFieldChange("utrNumber", e.target.value)}
-                    className={`w-full px-4 py-2.5 rounded-lg border bg-white font-mono text-slate-900 text-sm focus:outline-none transition-all ${
-                      fieldErrors.utrNumber
-                        ? "border-red-500 ring-2 ring-red-200"
-                        : "border-slate-300 focus:ring-2 focus:ring-[#059669]"
-                    }`}
-                  />
-                  {fieldErrors.utrNumber && (
-                    <p className="text-[11px] text-red-600 font-medium mt-1">{fieldErrors.utrNumber}</p>
-                  )}
+                {/* Free Registration Banner */}
+                <div className="bg-emerald-50 border border-emerald-200 p-3.5 rounded-xl flex items-center gap-3">
+                  <span className="w-7 h-7 rounded-full bg-emerald-600 text-white font-black text-xs flex items-center justify-center shrink-0 shadow-xs">✓</span>
+                  <div>
+                    <h4 className="text-xs font-bold text-emerald-950 uppercase tracking-wide">100% Free Registration</h4>
+                    <p className="text-[11px] text-emerald-800 leading-tight mt-0.5">
+                      No entry fees. Follow our official Instagram page below to complete your registration!
+                    </p>
+                  </div>
                 </div>
 
-                {/* Payment Screenshot Upload */}
+                {/* Open Instagram Follow Button */}
+                <a
+                  href={IG_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full bg-gradient-to-r from-[#833ab4] via-[#fd1d1d] to-[#fcb045] hover:opacity-95 text-white font-bold py-3.5 px-4 rounded-xl text-sm text-center shadow-md transition-all active:scale-98 flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <InstagramIcon className="w-4 h-4" />
+                  <span>Follow @{IG_HANDLE} on Instagram ↗</span>
+                </a>
+
+                {/* Optional Instagram Handle of Player */}
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Upload Screenshot here after successful payment <span className="text-red-500">*</span>
+                    Your Instagram Username <span className="text-slate-400 font-normal">(Optional)</span>
                   </label>
-                  <label className={`flex items-center gap-2.5 px-3 py-2 rounded-lg border bg-white hover:bg-slate-50/70 cursor-pointer transition-all ${
+                  <div className="relative">
+                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">@</span>
+                    <input
+                      type="text"
+                      placeholder="your_insta_username"
+                      value={formData.instagramHandle}
+                      onChange={(e) => handleFieldChange("instagramHandle", e.target.value.replace(/^@/, ""))}
+                      className="w-full pl-8 pr-4 py-2.5 rounded-lg border border-slate-300 bg-white font-mono text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#059669] transition-all"
+                    />
+                  </div>
+                  <p className="text-[11px] text-slate-500 mt-1">
+                    Helps the committee quickly verify your follow.
+                  </p>
+                </div>
+
+                {/* Follow Screenshot Upload */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Upload Screenshot Proving You Follow Us <span className="text-red-500">*</span>
+                  </label>
+                  <label className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg border bg-white hover:bg-slate-50/70 cursor-pointer transition-all ${
                     fieldErrors.paymentProof ? "border-red-500 ring-2 ring-red-200" : "border-slate-300 hover:border-[#059669]"
                   }`}>
                     <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 text-slate-700 text-xs font-semibold border border-slate-200">
                       <UploadCloud className="w-3.5 h-3.5 text-[#059669]" />
-                      <span>Choose file</span>
+                      <span>Choose screenshot</span>
                     </div>
                     <span className="text-xs text-slate-500 truncate flex-1">
                       {files.paymentProof ? files.paymentProof.name : "No file chosen"}
@@ -823,13 +840,16 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
                   {fieldErrors.paymentProof && (
                     <p className="text-[11px] text-red-600 font-medium mt-1">{fieldErrors.paymentProof}</p>
                   )}
+                  <p className="text-[11px] text-slate-500 mt-1">
+                    Upload a screenshot showing the &quot;Following&quot; button on @{IG_HANDLE}.
+                  </p>
                 </div>
 
-                {/* Direct Submit Register Button */}
+                {/* Submit Register Button */}
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="w-full mt-4 bg-[#059669] hover:bg-[#047857] disabled:bg-slate-400 text-white font-bold py-3.5 px-6 rounded-lg text-base shadow-md transition-all active:scale-98 cursor-pointer disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="w-full mt-4 bg-[#059669] hover:bg-[#047857] disabled:bg-slate-400 text-white font-bold py-3.5 px-6 rounded-xl text-base shadow-md transition-all active:scale-98 cursor-pointer disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {submitting ? (
                     <>
@@ -837,7 +857,7 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
                       <span>Submitting Registration...</span>
                     </>
                   ) : (
-                    <span>Register</span>
+                    <span>Complete Free Registration</span>
                   )}
                 </button>
 

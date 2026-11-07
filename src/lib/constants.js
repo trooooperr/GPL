@@ -1,8 +1,6 @@
 export const INITIAL_SETTINGS = {
-  upiId: "shahbazkhandm@okhdfcbank",
-  upiPhone: "9820000000",
-  qrCodeImage: "/images/qr-code.jpg",
-  registrationFee: 100,
+  instagramUsername: "goregaonpremierleague",
+  registrationFee: 0,
   maxCapacity: 140,
   registrationOpen: true,
   tournamentTitle: "Goregaon Premier League - Radhe Radhe Chashak",
@@ -35,7 +33,7 @@ export const INITIAL_FAQS = [
   },
   {
     q: "What documents do I need to submit during registration?",
-    a: "You will need: (1) Aadhaar Card Front, (2) Aadhaar Card Back with address, (3) A clear, recent passport-style profile photo, and (4) Screenshot of your ₹100 registration fee payment showing the 12-digit UPI UTR number."
+    a: "Registration is 100% Free! You will need: (1) Aadhaar Card Front, (2) Aadhaar Card Back with address, (3) A clear, recent passport-style profile photo, and (4) Screenshot confirming you follow the official GPL Instagram page (@goregaonpremierleague)."
   },
   {
     q: "How can I verify if my registration has been approved?",
