@@ -159,34 +159,34 @@ export default function PlayerRegistrationCard({ player, regNum, photo, onClose 
       ctx.shadowColor = "rgba(0,0,0,0.9)";
       ctx.shadowBlur = 10;
       ctx.fillStyle = "#ffffff";
-      ctx.font = "bold 52px 'Arial Black', Impact, sans-serif";
+      ctx.font = "bold 44px 'Arial Black', Impact, sans-serif";
       ctx.letterSpacing = "1px";
-      ctx.fillText("GOREGAON PREMIER LEAGUE", W / 2, 348);
+      ctx.fillText("GOREGAON PREMIER LEAGUE", W / 2, 306);
       ctx.restore();
 
       // Decorative gold line + subtitle
-      const lineY = 362;
-      ctx.strokeStyle = "#f59e0b";
+      const lineY = 336;
+      ctx.strokeStyle = "rgba(245, 158, 11, 0.85)";
       ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.moveTo(80, lineY);
-      ctx.lineTo(W / 2 - 230, lineY);
+      ctx.moveTo(100, lineY);
+      ctx.lineTo(W / 2 - 195, lineY);
       ctx.stroke();
       ctx.beginPath();
-      ctx.moveTo(W / 2 + 230, lineY);
-      ctx.lineTo(W - 80, lineY);
+      ctx.moveTo(W / 2 + 195, lineY);
+      ctx.lineTo(W - 100, lineY);
       ctx.stroke();
 
       ctx.fillStyle = "#f59e0b";
-      ctx.font = "bold 22px Arial, sans-serif";
+      ctx.font = "bold 20px Arial, sans-serif";
       ctx.letterSpacing = "3px";
-      ctx.fillText("GOREGAON PURV VIDHAN SABHA", W / 2, 384);
+      ctx.fillText("GOREGAON PURV VIDHAN SABHA", W / 2, 336);
 
-      // ─── 6. SEASON 4 BADGE ───────────────────────────────────────────────
-      const s4W = 220;
-      const s4H = 42;
-      const s4Y = 406;
-      roundRect(W / 2 - s4W / 2, s4Y, s4W, s4H, 11);
+      // ─── 6. SEASON 4 BADGE (clean breathing room) ───────────────────────
+      const s4W = 210;
+      const s4H = 38;
+      const s4Y = 366;
+      roundRect(W / 2 - s4W / 2, s4Y, s4W, s4H, 10);
       ctx.fillStyle = "#b91c1c";
       ctx.fill();
       ctx.strokeStyle = "rgba(248, 113, 113, 0.8)";
@@ -194,14 +194,14 @@ export default function PlayerRegistrationCard({ player, regNum, photo, onClose 
       ctx.stroke();
 
       ctx.fillStyle = "#ffffff";
-      ctx.font = "bold 24px Impact, 'Arial Black', sans-serif";
-      ctx.letterSpacing = "3px";
-      ctx.fillText("SEASON 4", W / 2, s4Y + 30);
+      ctx.font = "bold 20px 'Arial Black', Impact, sans-serif";
+      ctx.letterSpacing = "2px";
+      ctx.fillText("SEASON 4", W / 2, s4Y + 26);
 
-      // ─── 7. "PLAYER" GIANT GOLD METALLIC ────────────────────────────────
-      const playerTitleY = 500;
-      ctx.font = "900 108px Impact, 'Arial Black', sans-serif";
-      ctx.letterSpacing = "6px";
+      // ─── 7. "PLAYER" GIANT GOLD METALLIC (cleanly below Season 4) ────────
+      const playerTitleY = 472;
+      ctx.font = "900 94px Impact, 'Arial Black', sans-serif";
+      ctx.letterSpacing = "5px";
       ctx.textAlign = "center";
 
       // Shadow
@@ -209,7 +209,7 @@ export default function PlayerRegistrationCard({ player, regNum, photo, onClose 
       ctx.fillText("PLAYER", W / 2 + 3, playerTitleY + 3);
 
       // Gold gradient
-      const goldG = ctx.createLinearGradient(0, playerTitleY - 90, 0, playerTitleY + 10);
+      const goldG = ctx.createLinearGradient(0, playerTitleY - 80, 0, playerTitleY + 8);
       goldG.addColorStop(0, "#fff176");
       goldG.addColorStop(0.3, "#fbbf24");
       goldG.addColorStop(0.65, "#f59e0b");
@@ -219,9 +219,9 @@ export default function PlayerRegistrationCard({ player, regNum, photo, onClose 
 
       // ─── 8. "REGISTRATION CARD" spaced text ──────────────────────────────
       ctx.fillStyle = "#ffffff";
-      ctx.font = "bold 28px Arial, sans-serif";
-      ctx.letterSpacing = "10px";
-      ctx.fillText("REGISTRATION CARD", W / 2, 540);
+      ctx.font = "bold 22px Arial, sans-serif";
+      ctx.letterSpacing = "8px";
+      ctx.fillText("REGISTRATION CARD", W / 2, 518);
 
       // ─── 9. INFO SECTION ─────────────────────────────────────────────────
       // Player photo box — left side, starts x=60
@@ -358,16 +358,15 @@ export default function PlayerRegistrationCard({ player, regNum, photo, onClose 
       ctx.fillText(idVal, infoX + ovalW / 2, ovalY + 38);
 
       // ─── 11. SANDEEP JADHAV — RIGHT SIDE FOREGROUND CUTOUT ───────────────
-      // Stands prominently on the right half with clean transparent cutout
       try {
         const sanImg = await loadImg("/images/sandeep-jadhav-transparent.png");
-        const targetH = 780;
+        const targetH = 800;
         const targetW = sanImg.naturalWidth * (targetH / sanImg.naturalHeight);
-        const sandeepDestX = W - targetW + 30;
-        const sandeepDestY = 515;
+        const sandeepDestX = W - targetW + 35;
+        const sandeepDestY = 510;
 
         ctx.save();
-        ctx.shadowColor = "rgba(0, 0, 0, 0.75)";
+        ctx.shadowColor = "rgba(0, 0, 0, 0.85)";
         ctx.shadowBlur = 24;
         ctx.shadowOffsetX = -8;
         ctx.shadowOffsetY = 8;
@@ -377,126 +376,79 @@ export default function PlayerRegistrationCard({ player, regNum, photo, onClose 
         console.error("Sandeep cutout load error:", e);
       }
 
-      // ─── 12. BOTTOM BADGES: WARD + ROLE only ──────────────────────────────
+      // ─── 12. BOTTOM BADGES: WARD + ROLE only (clean gold pill badges) ─────
       const badgeData = [
-        { icon: "📍", label: "WARD", val: (player?.ward || "Ward 51").toUpperCase() },
-        { icon: "🏏", label: "ROLE", val: (player?.speciality || "Batsman").toUpperCase() },
+        { tag: "WARD", val: (player?.ward || "Ward 51").toUpperCase() },
+        { tag: "ROLE", val: (player?.speciality || "Batsman").toUpperCase() },
       ];
 
       const bW = 430;
       const bH = 72;
-      const bGap = 16;
-      const bStartX = 70;
-      const bY1 = 865;
+      const bGap = 18;
+      const bStartX = 75;
+      const bY1 = 880;
 
       badgeData.forEach((b, i) => {
         const bY = bY1 + i * (bH + bGap);
 
-        // Badge background
-        roundRect(bStartX, bY, bW, bH, 14);
-        ctx.fillStyle = "rgba(10, 14, 28, 0.9)";
+        // Badge main background
+        roundRect(bStartX, bY, bW, bH, 16);
+        ctx.fillStyle = "rgba(10, 14, 28, 0.94)";
         ctx.fill();
-        ctx.strokeStyle = "rgba(245, 158, 11, 0.75)";
+        ctx.strokeStyle = "rgba(245, 158, 11, 0.8)";
         ctx.lineWidth = 2;
         ctx.stroke();
 
-        // Icon circle
-        const iconCX = bStartX + 42;
-        const iconCY = bY + bH / 2;
-        ctx.beginPath();
-        ctx.arc(iconCX, iconCY, 22, 0, Math.PI * 2);
-        ctx.fillStyle = "rgba(245, 158, 11, 0.18)";
+        // Left Tag Pill (Gold background, dark bold text)
+        const tagW = 95;
+        const tagH = 42;
+        const tagX = bStartX + 16;
+        const tagY = bY + (bH - tagH) / 2;
+        roundRect(tagX, tagY, tagW, tagH, 10);
+        ctx.fillStyle = "#f59e0b";
         ctx.fill();
-        ctx.strokeStyle = "rgba(245, 158, 11, 0.55)";
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
 
         ctx.textAlign = "center";
-        ctx.font = "20px Arial, sans-serif";
-        ctx.fillText(b.icon, iconCX, iconCY + 7);
+        ctx.fillStyle = "#0a0602";
+        ctx.font = "bold 15px Arial, sans-serif";
+        ctx.letterSpacing = "1.5px";
+        ctx.fillText(b.tag, tagX + tagW / 2, tagY + 26);
 
-        // Label (small, gold)
+        // Right Value (clean, bold white text)
         ctx.textAlign = "left";
-        ctx.fillStyle = "rgba(253, 224, 71, 0.95)";
-        ctx.font = "bold 14px Arial, sans-serif";
-        ctx.letterSpacing = "2px";
-        ctx.fillText(b.label, bStartX + 82, bY + 24);
-
-        // Value (white, bold)
         ctx.fillStyle = "#ffffff";
         ctx.font = `bold ${b.val.length > 16 ? 20 : 25}px 'Arial Black', Impact, sans-serif`;
         ctx.letterSpacing = "1px";
-        ctx.fillText(b.val, bStartX + 82, bY + 54);
+        ctx.fillText(b.val, bStartX + 130, bY + 45);
       });
 
-      // ─── 13. SANDEEP ATTRIBUTION (Hindi text with background badge) ───────
-      const attrPlateW = 420;
-      const attrPlateH = 100;
-      const attrX = 590;
-      const attrY = 1150;
-
-      roundRect(attrX, attrY, attrPlateW, attrPlateH, 14);
-      ctx.fillStyle = "rgba(8, 4, 18, 0.85)";
-      ctx.fill();
-      ctx.strokeStyle = "rgba(245, 158, 11, 0.6)";
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
+      // ─── 13. SANDEEP ATTRIBUTION (Hindi text, elegant & crisp) ────────────
+      const attrCX = 780;
+      const attrY = 1200;
 
       ctx.textAlign = "center";
-      const attrCX = attrX + attrPlateW / 2;
-
       ctx.fillStyle = "#fde047";
-      ctx.font = "bold 18px 'Arial Unicode MS', Arial, sans-serif";
+      ctx.font = "bold 20px 'Arial Unicode MS', Arial, sans-serif";
       ctx.letterSpacing = "1px";
-      ctx.fillText("शुभेच्छुक", attrCX, attrY + 25);
+      ctx.fillText("शुभेच्छुक", attrCX, attrY);
 
       // Name in red with white stroke
       ctx.save();
       const nameText = "श्री. संदीप जाधव";
-      ctx.font = "bold 32px 'Arial Unicode MS', Arial, sans-serif";
+      ctx.font = "bold 38px 'Arial Unicode MS', Arial, sans-serif";
       ctx.strokeStyle = "#ffffff";
-      ctx.lineWidth = 4;
-      ctx.strokeText(nameText, attrCX, attrY + 58);
+      ctx.lineWidth = 5;
+      ctx.strokeText(nameText, attrCX, attrY + 40);
       ctx.fillStyle = "#dc2626";
-      ctx.fillText(nameText, attrCX, attrY + 58);
+      ctx.fillText(nameText, attrCX, attrY + 40);
       ctx.restore();
 
       ctx.fillStyle = "#ffffff";
-      ctx.font = "bold 16px 'Arial Unicode MS', Arial, sans-serif";
+      ctx.font = "bold 17px 'Arial Unicode MS', Arial, sans-serif";
       ctx.letterSpacing = "0.5px";
-      ctx.fillText("संस्थापक-राधे राधे फाऊंडेशन", attrCX, attrY + 85);
+      ctx.fillText("संस्थापक-राधे राधे फाऊंडेशन", attrCX, attrY + 76);
 
-      // ─── 14. BOTTOM GOLD DECORATIVE STRIP ────────────────────────────────
-      const stripH = 42;
-      const stripY = H - stripH - 18;
-
-      const stripGrad = ctx.createLinearGradient(0, stripY, 0, stripY + stripH);
-      stripGrad.addColorStop(0, "#f59e0b");
-      stripGrad.addColorStop(0.5, "#fbbf24");
-      stripGrad.addColorStop(1, "#d97706");
-      ctx.fillStyle = stripGrad;
-      roundRect(bm + 4, stripY, W - 2 * (bm + 4), stripH, 10);
-      ctx.fill();
-
-      // Strip text
-      ctx.textAlign = "center";
-      ctx.fillStyle = "rgba(10, 6, 2, 0.95)";
-      ctx.font = "bold 14px Arial, sans-serif";
-      ctx.letterSpacing = "2px";
-      ctx.fillText(
-        "RADHE RADHE FOUNDATION   •   REG. NO. E-0040526 (GBR)   •   GOREGAON PREMIER LEAGUE",
-        W / 2,
-        stripY + 26
-      );
-      ctx.textAlign = "center";
-      ctx.fillStyle = "rgba(10, 6, 2, 0.9)";
-      ctx.font = "bold 14px Arial, sans-serif";
-      ctx.letterSpacing = "2px";
-      ctx.fillText(
-        "RADHE RADHE FOUNDATION  •  REG. NO. E-0040526 (GBR)  •  GOREGAON PREMIER LEAGUE",
-        W / 2,
-        stripY + 30
-      );
+      // ─── FOOTER COMPLETELY REMOVED! ──────────────────────────────────────
 
       setRendered(true);
     };
