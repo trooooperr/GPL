@@ -103,7 +103,7 @@ export default function PlayerRegistrationCard({ player, regNum, photo, status, 
     const draw = async () => {
       try {
         // ─── 1. BASE TEMPLATE ──────────────────────────────────────────────
-        const baseImg = await loadImg("/images/gpl-card-base.png?v=4");
+        const baseImg = await loadImg("/images/gpl-card-base.png?v=5");
         ctx.drawImage(baseImg, 0, 0, W, H);
       } catch (err) {
         console.error("Base image load error:", err);

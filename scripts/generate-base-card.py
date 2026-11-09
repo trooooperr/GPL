@@ -112,9 +112,36 @@ def generate_base_card(
         if lx < rx:
             s_mask[y, lx:rx+1] = True
 
+    # Remove white checkerboard area below and around the banner (y >= 800)
+    is_cb_bottom = (diff <= 12) & (mean_lum >= 190)
+    visited_bottom = np.zeros((SH, SW), dtype=bool)
+    q_b = deque()
+    for x in range(SW):
+        if is_cb_bottom[SH - 1, x]:
+            visited_bottom[SH - 1, x] = True
+            q_b.append((SH - 1, x))
+    for y in range(800, SH):
+        if is_cb_bottom[y, 0]:
+            visited_bottom[y, 0] = True
+            q_b.append((y, 0))
+        if is_cb_bottom[y, SW - 1]:
+            visited_bottom[y, SW - 1] = True
+            q_b.append((y, SW - 1))
+    while q_b:
+        y, x = q_b.popleft()
+        for dy, dx in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+            ny, nx = y + dy, x + dx
+            if 800 <= ny < SH and 0 <= nx < SW and not visited_bottom[ny, nx]:
+                if is_cb_bottom[ny, nx]:
+                    visited_bottom[ny, nx] = True
+                    q_b.append((ny, nx))
+
+    s_mask[visited_bottom] = False
+
     s_alpha = gaussian_filter(s_mask.astype(np.float32), sigma=0.8)
     s_alpha = np.clip(s_alpha * 255, 0, 255).astype(np.uint8)
     s_alpha[:12, :] = 0
+    s_alpha[visited_bottom] = 0
 
     san_clean = Image.fromarray(np.dstack([s_arr.astype(np.uint8), s_alpha]))
     san_h = int(H * 0.49)
