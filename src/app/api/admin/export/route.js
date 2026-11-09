@@ -75,8 +75,7 @@ export async function GET(request) {
         "Cricket Speciality",
         "T-Shirt Size",
         "Track Pant Size",
-        "Payment Status",
-        "Instagram Handle",
+        "Status",
         "Assigned Team"
       ];
       rows = (players || []).map((p) => [
@@ -91,11 +90,6 @@ export async function GET(request) {
         escapeCsv(p.tshirtSize),
         escapeCsv(p.trackSize),
         escapeCsv(p.paymentStatus),
-        escapeCsv(
-          p.instagramHandle && !p.instagramHandle.toUpperCase().includes("FREE")
-            ? `@${p.instagramHandle.replace(/^@/, '')}`
-            : (p.utrNumber && !p.utrNumber.toUpperCase().includes("FREE") ? p.utrNumber : "-")
-        ),
         escapeCsv(p.teamId ? (teamMap.get(p.teamId) || p.teamId) : "Unassigned")
       ]);
     }

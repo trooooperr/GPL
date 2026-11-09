@@ -117,6 +117,12 @@ export async function GET(request) {
   try {
     await connectToDatabase();
 
+    // Auto-sanitize legacy free-follow strings in MongoDB in the background
+    MongoRegistration.updateMany(
+      { $or: [{ utrNumber: /FREE/i }, { instagramHandle: /FREE/i }] },
+      { $set: { utrNumber: "", instagramHandle: "" } }
+    ).catch(() => {});
+
     // Query players and teams count concurrently
     const [players, teamsCount] = await Promise.all([
       MongoRegistration.find()

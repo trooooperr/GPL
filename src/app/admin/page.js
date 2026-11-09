@@ -1629,43 +1629,26 @@ export default function AdminDashboard() {
                           T: {player.tshirtSize} | P: {player.trackSize}
                         </span>
                       </div>
-                      <div>
-                        <span className="text-[10px] uppercase font-bold text-slate-400 block">Instagram</span>
-                        <span className="font-mono font-bold text-slate-800 text-[11px] block break-all leading-tight">
-                          {player.instagramHandle && !player.instagramHandle.toUpperCase().includes("FREE")
-                            ? `@${player.instagramHandle.replace(/^@/, '')}`
-                            : (player.utrNumber && !player.utrNumber.toUpperCase().includes("FREE") ? player.utrNumber : "-")}
-                        </span>
-                      </div>
                     </div>
 
-                    {/* Documents Lightbox Row (3 columns, guaranteed 0 horizontal overflow) */}
-                    <div className="grid grid-cols-3 gap-1.5 pt-1">
+                    {/* Documents Lightbox Row (2 columns: Aadhaar Front & Back) */}
+                    <div className="grid grid-cols-2 gap-2 pt-1">
                       <button
                         type="button"
                         onClick={() => setFullScreenImage({ url: player.aadhaarFrontUrl, title: `Aadhaar Front - ${player.name}` })}
-                        className="py-1.5 px-1 rounded-lg bg-blue-50 text-[#0041b9] text-[11px] font-semibold border border-blue-100 hover:bg-blue-100 flex items-center justify-center gap-1 transition-colors min-w-0 cursor-pointer"
+                        className="py-1.5 px-2 rounded-lg bg-blue-50 text-[#0041b9] text-[11px] font-semibold border border-blue-100 hover:bg-blue-100 flex items-center justify-center gap-1 transition-colors min-w-0 cursor-pointer"
                       >
-                        <FileCheck className="w-3 h-3 shrink-0" />
-                        <span className="truncate">Aadhaar F</span>
+                        <FileCheck className="w-3.5 h-3.5 shrink-0" />
+                        <span className="truncate">Aadhaar Front</span>
                       </button>
 
                       <button
                         type="button"
                         onClick={() => setFullScreenImage({ url: player.aadhaarBackUrl, title: `Aadhaar Back - ${player.name}` })}
-                        className="py-1.5 px-1 rounded-lg bg-blue-50 text-[#0041b9] text-[11px] font-semibold border border-blue-100 hover:bg-blue-100 flex items-center justify-center gap-1 transition-colors min-w-0 cursor-pointer"
+                        className="py-1.5 px-2 rounded-lg bg-blue-50 text-[#0041b9] text-[11px] font-semibold border border-blue-100 hover:bg-blue-100 flex items-center justify-center gap-1 transition-colors min-w-0 cursor-pointer"
                       >
-                        <FileCheck className="w-3 h-3 shrink-0" />
-                        <span className="truncate">Aadhaar B</span>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => setFullScreenImage({ url: player.paymentProofUrl, title: `Instagram Follow Proof - ${player.name}` })}
-                        className="py-1.5 px-1 rounded-lg bg-pink-50 text-pink-700 text-[11px] font-semibold border border-pink-100 hover:bg-pink-100 flex items-center justify-center gap-1 transition-colors min-w-0"
-                      >
-                        <InstagramIcon className="w-3 h-3 shrink-0" />
-                        <span className="truncate">IG Proof</span>
+                        <FileCheck className="w-3.5 h-3.5 shrink-0" />
+                        <span className="truncate">Aadhaar Back</span>
                       </button>
                     </div>
 
@@ -1779,7 +1762,6 @@ export default function AdminDashboard() {
                       <th className="py-4 px-4">Player</th>
                       <th className="py-4 px-4">Role &amp; Ward</th>
                       <th className="py-4 px-4">Kit Size</th>
-                      <th className="py-4 px-4">Instagram</th>
                       <th className="py-4 px-4">Documents</th>
                       <th className="py-4 px-4">Status</th>
                       <th className="py-4 px-4">Assigned Team</th>
@@ -1829,13 +1811,6 @@ export default function AdminDashboard() {
                               </span>
                             </td>
                             <td className="py-4 px-5">
-                              <div className="font-mono text-xs font-semibold text-slate-800">
-                                {player.instagramHandle && !player.instagramHandle.toUpperCase().includes("FREE")
-                                  ? `@${player.instagramHandle.replace(/^@/, '')}`
-                                  : (player.utrNumber && !player.utrNumber.toUpperCase().includes("FREE") ? player.utrNumber : "-")}
-                              </div>
-                            </td>
-                            <td className="py-4 px-5">
                               <div className="flex items-center gap-1.5">
                                 {player.photoUrl && !player.photoUrl.includes('placeholder') && (
                                   <button
@@ -1859,13 +1834,6 @@ export default function AdminDashboard() {
                                   title="Aadhaar Back"
                                 >
                                   AB
-                                </button>
-                                <button
-                                  onClick={() => setFullScreenImage({ url: player.paymentProofUrl, title: `Instagram Follow Proof - ${player.name}` })}
-                                  className="p-1 rounded bg-pink-50 text-pink-700 hover:bg-pink-100 font-mono text-[10px] px-1.5"
-                                  title="Instagram Follow Proof"
-                                >
-                                  IG
                                 </button>
                               </div>
                             </td>
@@ -1979,7 +1947,7 @@ export default function AdminDashboard() {
                       })
                     ) : (
                       <tr>
-                        <td colSpan={9} className="py-12 text-center text-slate-400">
+                        <td colSpan={8} className="py-12 text-center text-slate-400">
                           No player registrations found matching your query.
                         </td>
                       </tr>
@@ -2851,7 +2819,7 @@ export default function AdminDashboard() {
             </div>
 
             {/* Document Previews */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
 
               {/* Profile Photo (only if provided) */}
               {inspectPlayer.photoUrl && !inspectPlayer.photoUrl.includes('placeholder') && (
@@ -2897,35 +2865,17 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
-              {/* Instagram Follow Proof */}
-              <div className="space-y-1">
-                <span className="text-[10px] font-bold text-slate-500 uppercase block">Instagram Follow Proof</span>
-                <div
-                  onClick={() => setFullScreenImage({ url: inspectPlayer.paymentProofUrl, title: `Instagram Follow Proof - ${inspectPlayer.name}` })}
-                  className="h-32 sm:h-36 rounded-xl bg-slate-100 border border-slate-200 overflow-hidden flex items-center justify-center cursor-pointer group relative hover:border-[#0041b9]"
-                >
-                  <img src={inspectPlayer.paymentProofUrl} alt="Instagram Follow Proof" className="max-h-full max-w-full object-contain" />
-                  <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-white">
-                    <Maximize2 className="w-5 h-5" />
-                  </div>
-                </div>
-              </div>
-
             </div>
 
             {/* Info Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 text-xs bg-slate-50 p-3.5 rounded-xl border border-slate-200">
               <div>
-                <span className="text-slate-400 block text-[10px] uppercase font-bold">Instagram</span>
-                <span className="font-mono font-bold text-slate-900 truncate block">
-                  {inspectPlayer.instagramHandle && !inspectPlayer.instagramHandle.toUpperCase().includes("FREE")
-                    ? `@${inspectPlayer.instagramHandle.replace(/^@/, '')}`
-                    : (inspectPlayer.utrNumber && !inspectPlayer.utrNumber.toUpperCase().includes("FREE") ? inspectPlayer.utrNumber : "-")}
-                </span>
-              </div>
-              <div>
                 <span className="text-slate-400 block text-[10px] uppercase font-bold">Speciality</span>
                 <span className="font-bold text-slate-900 truncate block">{inspectPlayer.speciality}</span>
+              </div>
+              <div>
+                <span className="text-slate-400 block text-[10px] uppercase font-bold">Ward</span>
+                <span className="font-bold text-slate-900 truncate block">{inspectPlayer.ward || "Ward 51"}</span>
               </div>
               <div>
                 <span className="text-slate-400 block text-[10px] uppercase font-bold">Uniform Kit</span>
@@ -3144,21 +3094,6 @@ export default function AdminDashboard() {
                     <option value="38">38</option>
                   </select>
                 </div>
-              </div>
-
-              <div>
-                <label className="font-bold text-slate-700 block mb-1">Instagram Username</label>
-                <input
-                  type="text"
-                  placeholder="@username (optional)"
-                  value={
-                    editPlayer.instagramHandle && !editPlayer.instagramHandle.toUpperCase().includes("FREE")
-                      ? editPlayer.instagramHandle
-                      : (editPlayer.utrNumber && !editPlayer.utrNumber.toUpperCase().includes("FREE") ? editPlayer.utrNumber : "")
-                  }
-                  onChange={(e) => setEditPlayer({ ...editPlayer, instagramHandle: e.target.value.replace(/^@/, ""), utrNumber: e.target.value })}
-                  className="w-full px-3 py-2 rounded-lg border border-slate-200 font-mono"
-                />
               </div>
 
               <div className="pt-2 flex gap-2">

@@ -161,10 +161,6 @@ export async function sendRegistrationNotificationEmail(player, customAdminEmail
                 <td class="label">Track Pant Size:</td>
                 <td class="value">${player.trackSize}</td>
               </tr>
-              ${player.instagramHandle ? `<tr>
-                <td class="label">Instagram:</td>
-                <td class="value">@${player.instagramHandle.replace(/^@/, '')}</td>
-              </tr>` : ''}
               <tr>
                 <td class="label">Registration Time:</td>
                 <td class="value">${new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}</td>
@@ -369,7 +365,8 @@ export async function sendPlayerStatusEmail(player, status, notes = "") {
     `;
 
     const attachments = [];
-    if (isApproved) {
+    const isPlayerApproved = String(player?.paymentStatus || "").toLowerCase() === "approved";
+    if (isPlayerApproved) {
       const cardPath = path.join(process.cwd(), "public", "images", "template-player-card-approved.png");
       if (fs.existsSync(cardPath)) {
         attachments.push({
@@ -506,7 +503,8 @@ export async function sendTeamAssignmentEmail(player, team) {
     `;
 
     const attachments = [];
-    if (isApproved) {
+    const isPlayerApproved = String(player?.paymentStatus || "").toLowerCase() === "approved";
+    if (isPlayerApproved) {
       const cardPath = path.join(process.cwd(), "public", "images", "template-player-card-approved.png");
       if (fs.existsSync(cardPath)) {
         attachments.push({
