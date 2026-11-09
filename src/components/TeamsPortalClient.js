@@ -9,11 +9,8 @@ import {
   Shield,
   ArrowLeft,
   Sparkles,
-  MapPin,
-  Calendar,
   Shirt,
-  CheckCircle2,
-  ExternalLink
+  CheckCircle2
 } from "lucide-react";
 import CheckStatusModal from "@/components/CheckStatusModal";
 
@@ -72,37 +69,33 @@ export default function TeamsPortalClient({ teams = [], players = [], settings =
   }, [selectedTeamId, selectedRole, searchQuery, players]);
 
   return (
-    <div
-      className="min-h-screen text-white font-sans selection:bg-amber-400 selection:text-slate-900 transition-colors duration-500"
-      style={{
-        background: `radial-gradient(circle at 50% 0%, ${activeThemeColor}30 0%, #0a0f1d 45%, #050811 100%)`
-      }}
-    >
-      {/* Top Floating Glow */}
+    <div className="min-h-screen bg-[#f8fafc] text-slate-900 font-sans selection:bg-[#059669] selection:text-white transition-colors duration-500">
+      
+      {/* Top Ambient Franchise Glow (Subtle Light Tint) */}
       <div
-        className="fixed top-0 left-1/2 -translate-x-1/2 w-[700px] h-[350px] blur-[140px] pointer-events-none opacity-40 transition-all duration-700 -z-10"
+        className="fixed top-0 left-1/2 -translate-x-1/2 w-[900px] h-[320px] blur-[150px] pointer-events-none opacity-15 transition-all duration-700 -z-10"
         style={{ backgroundColor: activeThemeColor }}
       />
 
-      {/* Navigation Header */}
-      <header className="sticky top-0 z-40 bg-[#081022]/85 backdrop-blur-md border-b border-white/10">
+      {/* Navigation Header (Clean White Theme matching Main Site) */}
+      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Link
               href="/"
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-300 hover:text-white px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 hover:text-slate-950 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 transition-colors"
             >
-              <ArrowLeft className="w-4 h-4" />
+              <ArrowLeft className="w-4 h-4 text-slate-600" />
               <span>Back to Home</span>
             </Link>
 
-            <div className="hidden sm:block h-5 w-[1px] bg-white/10" />
+            <div className="hidden sm:block h-5 w-[1px] bg-slate-200" />
 
             <div className="flex items-center gap-2">
               <img src="/images/gpl-logo.png" alt="GPL Logo" className="w-7 h-7 object-contain" />
-              <div className="text-xs font-black tracking-wide">
-                <span className="text-white">GPL4</span>{" "}
-                <span className="text-amber-400 font-bold hidden md:inline">• Radhe Radhe Chasak</span>
+              <div className="text-xs font-black tracking-wide text-slate-900">
+                <span>GPL4</span>{" "}
+                <span className="text-[#059669] font-bold hidden md:inline">• Radhe Radhe Chasak</span>
               </div>
             </div>
           </div>
@@ -110,15 +103,15 @@ export default function TeamsPortalClient({ teams = [], players = [], settings =
           <div className="flex items-center gap-2">
             <button
               onClick={() => setStatusModalOpen(true)}
-              className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-all border border-white/15 flex items-center gap-1.5 cursor-pointer"
+              className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition-all border border-slate-200 flex items-center gap-1.5 cursor-pointer shadow-xs"
             >
-              <Search className="w-3.5 h-3.5 text-amber-400" />
+              <Search className="w-3.5 h-3.5 text-[#059669]" />
               <span>Check Status / Pass</span>
             </button>
 
             <Link
               href="/#register"
-              className="px-3 py-1.5 rounded-lg bg-[#059669] hover:bg-[#047857] text-white text-xs font-bold transition-all shadow-sm hidden sm:inline-flex"
+              className="px-3.5 py-1.5 rounded-lg bg-[#059669] hover:bg-[#047857] text-white text-xs font-bold transition-all shadow-sm hidden sm:inline-flex"
             >
               Register Now
             </Link>
@@ -131,19 +124,19 @@ export default function TeamsPortalClient({ teams = [], players = [], settings =
         
         {/* Page Title & Context */}
         <div className="text-center space-y-2 max-w-2xl mx-auto">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-amber-300 text-xs font-bold uppercase tracking-wider">
-            <Sparkles className="w-3.5 h-3.5" />
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-[#059669] text-xs font-bold uppercase tracking-wider">
+            <Sparkles className="w-3.5 h-3.5 text-[#059669]" />
             <span>Radhe Radhe Chasak GPL4 Franchises &amp; Squads</span>
           </div>
-          <h1 className="text-2xl sm:text-4xl font-black text-white tracking-tight">
+          <h1 className="text-2xl sm:text-4xl font-black text-slate-900 tracking-tight">
             Select Franchise Team
           </h1>
-          <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-            Click on any team below to customize the page theme, view official team owners, captain, and verified squad roster.
+          <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
+            Click on any team below to view official team owners, captain, and verified squad roster.
           </p>
         </div>
 
-        {/* TEAM SELECTOR CAROUSEL / GRID */}
+        {/* TEAM SELECTOR CAROUSEL / GRID (White Cards) */}
         <div className="relative">
           <div className="flex items-center gap-2.5 overflow-x-auto pb-2 scrollbar-none snap-x">
             {teams.map((team) => {
@@ -156,19 +149,19 @@ export default function TeamsPortalClient({ teams = [], players = [], settings =
                     setSelectedTeamId(team.id);
                     setSelectedRole("all");
                   }}
-                  className={`snap-start shrink-0 px-3.5 py-2.5 rounded-xl border transition-all duration-300 flex items-center gap-2.5 text-left cursor-pointer ${
+                  className={`snap-start shrink-0 px-3.5 py-2.5 rounded-2xl border transition-all duration-300 flex items-center gap-2.5 text-left cursor-pointer ${
                     isSelected
-                      ? "bg-white/15 border-white shadow-lg scale-102"
-                      : "bg-[#0b1426]/70 hover:bg-white/10 border-white/10 opacity-75 hover:opacity-100"
+                      ? "bg-white border-2 shadow-md scale-102"
+                      : "bg-white hover:bg-slate-50 border-slate-200 text-slate-700 shadow-xs hover:border-slate-300"
                   }`}
                   style={{
-                    borderColor: isSelected ? (team.themeColor || "#f59e0b") : undefined,
-                    boxShadow: isSelected ? `0 0 20px ${team.themeColor || "#f59e0b"}40` : undefined
+                    borderColor: isSelected ? (team.themeColor || "#0041b9") : undefined,
+                    boxShadow: isSelected ? `0 4px 16px ${team.themeColor || "#0041b9"}25` : undefined
                   }}
                 >
                   <div
-                    className="w-9 h-9 rounded-lg bg-black/30 border border-white/10 p-1 flex items-center justify-center shrink-0"
-                    style={{ borderColor: isSelected ? (team.themeColor || "#f59e0b") : "rgba(255,255,255,0.1)" }}
+                    className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200 p-1 flex items-center justify-center shrink-0 shadow-xs"
+                    style={{ borderColor: isSelected ? (team.themeColor || "#0041b9") : undefined }}
                   >
                     {team.logo ? (
                       <img src={team.logo} alt={team.name} className="max-h-full max-w-full object-contain" />
@@ -177,11 +170,11 @@ export default function TeamsPortalClient({ teams = [], players = [], settings =
                     )}
                   </div>
                   <div>
-                    <div className="text-xs font-black text-white leading-tight whitespace-nowrap">
+                    <div className="text-xs font-black text-slate-900 leading-tight whitespace-nowrap">
                       {team.name}
                     </div>
-                    <div className="text-[10px] text-slate-400 font-semibold flex items-center gap-1.5 mt-0.5">
-                      <span className="font-mono text-amber-300">{team.shortCode}</span>
+                    <div className="text-[10px] text-slate-500 font-semibold flex items-center gap-1.5 mt-0.5">
+                      <span className="font-mono font-bold text-amber-600">{team.shortCode}</span>
                       <span>•</span>
                       <span>{squadCount}/14</span>
                     </div>
@@ -196,20 +189,20 @@ export default function TeamsPortalClient({ teams = [], players = [], settings =
                 setSelectedTeamId("all");
                 setSelectedRole("all");
               }}
-              className={`snap-start shrink-0 px-3.5 py-2.5 rounded-xl border transition-all duration-300 flex items-center gap-2.5 text-left cursor-pointer ${
+              className={`snap-start shrink-0 px-3.5 py-2.5 rounded-2xl border transition-all duration-300 flex items-center gap-2.5 text-left cursor-pointer ${
                 selectedTeamId === "all"
-                  ? "bg-emerald-500/20 border-emerald-400 shadow-lg scale-102"
-                  : "bg-[#0b1426]/70 hover:bg-white/10 border-white/10 opacity-75 hover:opacity-100"
+                  ? "bg-emerald-50 border-2 border-emerald-600 shadow-md scale-102"
+                  : "bg-white hover:bg-emerald-50/50 border-slate-200 text-slate-700 shadow-xs"
               }`}
             >
-              <div className="w-9 h-9 rounded-lg bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center shrink-0 text-emerald-400 font-bold">
+              <div className="w-10 h-10 rounded-xl bg-emerald-100/80 border border-emerald-300 flex items-center justify-center shrink-0 text-[#059669] font-bold">
                 <Users className="w-4 h-4" />
               </div>
               <div>
-                <div className="text-xs font-black text-white leading-tight whitespace-nowrap">
+                <div className="text-xs font-black text-slate-900 leading-tight whitespace-nowrap">
                   Auction Draft Pool
                 </div>
-                <div className="text-[10px] text-emerald-400 font-semibold mt-0.5">
+                <div className="text-[10px] text-[#059669] font-bold mt-0.5">
                   {players.filter((p) => p.paymentStatus === "Approved" && (!p.teamId || p.teamId === "")).length} Available
                 </div>
               </div>
@@ -217,31 +210,23 @@ export default function TeamsPortalClient({ teams = [], players = [], settings =
           </div>
         </div>
 
-        {/* ACTIVE TEAM HERO BANNER */}
+        {/* ACTIVE TEAM HERO BANNER (White / Clean Card Theme) */}
         {currentTeam ? (
           <div
-            className="rounded-3xl border border-white/20 p-6 sm:p-8 relative overflow-hidden transition-all duration-500 shadow-2xl"
+            className="rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 relative overflow-hidden transition-all duration-500 shadow-md"
             style={{
-              background: `linear-gradient(135deg, ${activeThemeColor}25 0%, rgba(13, 24, 46, 0.95) 60%, rgba(8, 16, 32, 0.98) 100%)`,
-              borderColor: `${activeThemeColor}66`,
-              boxShadow: `0 10px 40px ${activeThemeColor}20`
+              borderLeftWidth: "6px",
+              borderLeftColor: activeThemeColor
             }}
           >
-            {/* Background Brand Watermark */}
-            <div
-              className="absolute -right-10 -bottom-10 w-72 h-72 rounded-full blur-3xl pointer-events-none opacity-20"
-              style={{ backgroundColor: activeThemeColor }}
-            />
-
             <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center relative z-10">
               
               {/* Franchise Logo & Brand Badge */}
               <div className="md:col-span-4 flex items-center gap-4 sm:gap-6">
                 <div
-                  className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-black/40 border-2 p-2.5 flex items-center justify-center shrink-0 shadow-xl"
+                  className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-slate-50 border-2 p-2.5 flex items-center justify-center shrink-0 shadow-sm"
                   style={{
-                    borderColor: activeThemeColor,
-                    boxShadow: `0 0 30px ${activeThemeColor}40`
+                    borderColor: activeThemeColor
                   }}
                 >
                   {currentTeam.logo ? (
@@ -259,42 +244,42 @@ export default function TeamsPortalClient({ teams = [], players = [], settings =
                   <div
                     className="inline-block px-2.5 py-0.5 rounded-md text-[10px] font-mono font-black tracking-wider uppercase border"
                     style={{
-                      backgroundColor: `${activeThemeColor}25`,
-                      borderColor: `${activeThemeColor}88`,
-                      color: "#ffffff"
+                      backgroundColor: `${activeThemeColor}15`,
+                      borderColor: `${activeThemeColor}40`,
+                      color: activeThemeColor
                     }}
                   >
                     CODE: {currentTeam.shortCode}
                   </div>
-                  <h2 className="text-xl sm:text-2xl md:text-3xl font-black text-white leading-tight">
+                  <h2 className="text-xl sm:text-2xl md:text-3xl font-black text-slate-900 leading-tight">
                     {currentTeam.name}
                   </h2>
-                  <div className="text-xs text-slate-300 font-semibold">
+                  <div className="text-xs text-slate-500 font-semibold">
                     Radhe Radhe Chasak GPL4 Franchise
                   </div>
                 </div>
               </div>
 
               {/* Franchise Intel Grid */}
-              <div className="md:col-span-8 grid grid-cols-2 sm:grid-cols-4 gap-3 bg-black/30 backdrop-blur-md rounded-2xl p-4 border border-white/10 text-xs">
+              <div className="md:col-span-8 grid grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-50 rounded-2xl p-4 border border-slate-200 text-xs shadow-xs">
                 <div className="space-y-0.5">
                   <span className="text-[10px] uppercase font-bold text-slate-400">Owner</span>
-                  <div className="font-bold text-white truncate">{currentTeam.owner || "Mohsin & Ballu"}</div>
+                  <div className="font-bold text-slate-900 truncate">{currentTeam.owner || "Mohsin & Ballu"}</div>
                 </div>
                 <div className="space-y-0.5">
                   <span className="text-[10px] uppercase font-bold text-slate-400">Team Captain</span>
-                  <div className="font-bold text-amber-300 truncate">{currentTeam.captain || "Franchise Captain"}</div>
+                  <div className="font-bold text-amber-700 truncate">{currentTeam.captain || "Franchise Captain"}</div>
                 </div>
                 <div className="space-y-0.5">
                   <span className="text-[10px] uppercase font-bold text-slate-400">Championships</span>
-                  <div className="font-bold text-white flex items-center gap-1">
-                    <Trophy className="w-3.5 h-3.5 text-amber-400" />
+                  <div className="font-bold text-slate-900 flex items-center gap-1">
+                    <Trophy className="w-3.5 h-3.5 text-amber-500" />
                     <span>{currentTeam.championships || 0} Titles</span>
                   </div>
                 </div>
                 <div className="space-y-0.5">
                   <span className="text-[10px] uppercase font-bold text-slate-400">Squad Allocated</span>
-                  <div className="font-mono font-bold text-emerald-400">
+                  <div className="font-mono font-bold text-[#059669]">
                     {displayPlayers.length} / 14 Players
                   </div>
                 </div>
@@ -304,23 +289,23 @@ export default function TeamsPortalClient({ teams = [], players = [], settings =
           </div>
         ) : (
           /* Auction Pool Header Banner */
-          <div className="rounded-3xl border border-emerald-500/40 bg-gradient-to-r from-emerald-950/40 via-[#0d2347] to-emerald-950/40 p-6 sm:p-8 relative overflow-hidden shadow-xl">
+          <div className="rounded-3xl border border-emerald-200 bg-gradient-to-r from-emerald-50 via-white to-emerald-50 p-6 sm:p-8 relative overflow-hidden shadow-md">
             <div className="max-w-xl space-y-2">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-bold uppercase">
-                <Sparkles className="w-3 h-3" />
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-100 border border-emerald-300 text-emerald-800 text-xs font-bold uppercase">
+                <Sparkles className="w-3 h-3 text-[#059669]" />
                 Live Auction Draft Pool
               </span>
-              <h2 className="text-2xl sm:text-3xl font-black text-white">
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900">
                 Unallocated Verified Players
               </h2>
-              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-                These players have completed Aadhaar verification and official Instagram follow confirmation. They are ready for the franchise draft auction!
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
+                These players have completed registration verification and are ready for the franchise draft auction!
               </p>
             </div>
           </div>
         )}
 
-        {/* FILTER & SEARCH TOOLBAR */}
+        {/* FILTER & SEARCH TOOLBAR (Clean Light Theme) */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-2">
           
           {/* Role Filter Pills */}
@@ -337,8 +322,8 @@ export default function TeamsPortalClient({ teams = [], players = [], settings =
                 onClick={() => setSelectedRole(role.id)}
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
                   selectedRole === role.id
-                    ? "bg-white text-slate-900 shadow-md"
-                    : "bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10"
+                    ? "bg-[#081a36] text-white shadow-sm"
+                    : "bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 shadow-2xs"
                 }`}
               >
                 {role.label}
@@ -353,22 +338,23 @@ export default function TeamsPortalClient({ teams = [], players = [], settings =
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search player name or ward..."
-              className="w-full px-3.5 py-2 pl-9 rounded-xl bg-white/5 border border-white/10 focus:border-amber-400 focus:bg-white/10 text-xs font-semibold text-white placeholder-slate-400 outline-none transition-all"
+              className="w-full px-3.5 py-2 pl-9 rounded-xl bg-white border border-slate-300 focus:border-[#059669] focus:ring-2 focus:ring-[#059669]/20 text-xs font-semibold text-slate-900 placeholder:text-slate-400 outline-none transition-all shadow-xs"
             />
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
           </div>
 
         </div>
 
-        {/* PLAYER SQUAD GRID */}
+        {/* PLAYER SQUAD GRID (Crisp White Player Cards) */}
         {displayPlayers.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {displayPlayers.map((player) => (
               <div
                 key={player.id || player.regNumber}
-                className="bg-[#0b1426]/80 hover:bg-[#0f1b33] rounded-2xl border p-4 transition-all duration-300 space-y-3 relative group shadow-sm hover:shadow-lg hover:-translate-y-0.5"
+                className="bg-white hover:bg-slate-50/80 rounded-2xl border border-slate-200 hover:border-slate-300 p-4 transition-all duration-300 space-y-3 relative group shadow-xs hover:shadow-md hover:-translate-y-0.5"
                 style={{
-                  borderColor: `${activeThemeColor}40`
+                  borderTopWidth: "3px",
+                  borderTopColor: activeThemeColor
                 }}
               >
                 {/* Top Badge: Reg Number & Ward */}
@@ -376,14 +362,14 @@ export default function TeamsPortalClient({ teams = [], players = [], settings =
                   <span
                     className="font-black px-2 py-0.5 rounded-md border"
                     style={{
-                      backgroundColor: `${activeThemeColor}20`,
-                      borderColor: `${activeThemeColor}50`,
-                      color: "#fcd34d"
+                      backgroundColor: `${activeThemeColor}12`,
+                      borderColor: `${activeThemeColor}30`,
+                      color: activeThemeColor
                     }}
                   >
                     #{player.regNumber}
                   </span>
-                  <span className="text-[11px] font-bold text-slate-400 px-2 py-0.5 rounded bg-white/5 border border-white/10">
+                  <span className="text-[11px] font-bold text-slate-600 px-2 py-0.5 rounded bg-slate-100 border border-slate-200">
                     {player.ward || "Ward 51/54"}
                   </span>
                 </div>
@@ -391,7 +377,7 @@ export default function TeamsPortalClient({ teams = [], players = [], settings =
                 {/* Player Photo + Info */}
                 <div className="flex items-center gap-3">
                   <div
-                    className="w-14 h-14 rounded-xl bg-slate-800 border-2 overflow-hidden flex items-center justify-center shrink-0 shadow-md relative"
+                    className="w-14 h-14 rounded-xl bg-slate-100 border-2 overflow-hidden flex items-center justify-center shrink-0 shadow-xs relative"
                     style={{ borderColor: activeThemeColor }}
                   >
                     {player.photoUrl ? (
@@ -401,25 +387,25 @@ export default function TeamsPortalClient({ teams = [], players = [], settings =
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full bg-blue-900/60 text-white font-black text-xl flex items-center justify-center">
+                      <div className="w-full h-full bg-slate-200 text-slate-700 font-black text-xl flex items-center justify-center">
                         {player.name?.[0] || "P"}
                       </div>
                     )}
                     {player.paymentStatus === "Approved" && (
-                      <div className="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow">
-                        <CheckCircle2 className="w-2.5 h-2.5" />
+                      <div className="absolute bottom-0 right-0 w-4 h-4 rounded-full bg-[#059669] text-white flex items-center justify-center shadow-xs">
+                        <CheckCircle2 className="w-3 h-3" />
                       </div>
                     )}
                   </div>
 
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-black text-sm text-white truncate leading-tight group-hover:text-amber-300 transition-colors">
+                    <h3 className="font-black text-sm text-slate-900 truncate leading-tight group-hover:text-[#059669] transition-colors">
                       {player.name}
                     </h3>
-                    <div className="text-xs text-amber-200/90 font-semibold truncate mt-0.5">
+                    <div className="text-xs text-amber-700 font-semibold truncate mt-0.5">
                       {player.speciality || "Cricket Player"}
                     </div>
-                    <div className="text-[10px] text-slate-400 font-mono mt-1 flex items-center gap-1.5">
+                    <div className="text-[10px] text-slate-500 font-mono mt-1 flex items-center gap-1.5">
                       <Shirt className="w-3 h-3 text-slate-400" />
                       <span>Kit: {player.tshirtSize || "M"} / {player.trackSize || "M"}</span>
                     </div>
@@ -427,10 +413,10 @@ export default function TeamsPortalClient({ teams = [], players = [], settings =
                 </div>
 
                 {/* Team Tag Strip */}
-                <div className="pt-2 border-t border-white/10 flex items-center justify-between text-[11px]">
-                  <span className="text-slate-400">Status:</span>
-                  <span className="font-bold text-emerald-400 flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
+                  <span className="text-slate-400 font-medium">Status:</span>
+                  <span className="font-bold text-[#059669] flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#059669] animate-pulse" />
                     <span>{currentTeam ? currentTeam.name : "Verified in Pool"}</span>
                   </span>
                 </div>
@@ -439,10 +425,10 @@ export default function TeamsPortalClient({ teams = [], players = [], settings =
             ))}
           </div>
         ) : (
-          <div className="text-center py-12 px-4 rounded-3xl bg-white/5 border border-white/10 space-y-3">
-            <Users className="w-10 h-10 text-slate-500 mx-auto" />
-            <h4 className="font-bold text-base text-white">No players found</h4>
-            <p className="text-xs text-slate-400 max-w-sm mx-auto">
+          <div className="text-center py-12 px-4 rounded-3xl bg-white border border-dashed border-slate-300 space-y-3 shadow-xs">
+            <Users className="w-10 h-10 text-slate-400 mx-auto" />
+            <h4 className="font-bold text-base text-slate-900">No players found</h4>
+            <p className="text-xs text-slate-500 max-w-sm mx-auto font-medium">
               {searchQuery
                 ? `No players matched "${searchQuery}". Try a different search term or reset the role filter.`
                 : currentTeam

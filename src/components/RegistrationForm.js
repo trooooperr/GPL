@@ -262,7 +262,7 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
         speciality: formData.speciality,
         tshirtSize: formData.tshirtSize,
         trackSize: formData.trackSize,
-        utrNumber: formData.instagramHandle ? `@${formData.instagramHandle.trim().replace(/^@/, "")}` : "FREE-FOLLOW",
+        utrNumber: formData.instagramHandle ? `@${formData.instagramHandle.trim().replace(/^@/, "")}` : "",
         instagramHandle: formData.instagramHandle ? formData.instagramHandle.trim().replace(/^@/, "") : "",
         photo: files.profilePhoto?.dataUrl || "",
         aadhaarFront: files.aadhaarFront?.dataUrl || files.aadhaarFront || "",

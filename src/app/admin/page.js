@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -41,10 +41,12 @@ import {
   Printer,
   CheckSquare,
   Square,
-  HelpCircle
+  HelpCircle,
+  Share2
 } from "lucide-react";
 import QRCode from "qrcode";
 import { INITIAL_RULES, INITIAL_FAQS } from "@/lib/constants";
+import PlayerRegistrationCard from "@/components/PlayerRegistrationCard";
 
 function InstagramIcon({ className = "w-4 h-4" }) {
   return (
@@ -159,13 +161,10 @@ export default function AdminDashboard() {
   // Fast parallel dashboard data loader
   const loadAllData = async () => {
     try {
-      const [resPlayers, resTeams, resSettings, resRules, resFaqs, resSizing] = await Promise.all([
+      const [resPlayers, resTeams, resSettings] = await Promise.all([
         fetch("/api/admin/players", { cache: "no-store" }),
         fetch("/api/admin/teams", { cache: "no-store" }),
-        fetch("/api/admin/settings", { cache: "no-store" }),
-        fetch("/api/admin/rules", { cache: "no-store" }),
-        fetch("/api/admin/faqs", { cache: "no-store" }),
-        fetch("/api/admin/sizing", { cache: "no-store" })
+        fetch("/api/admin/settings", { cache: "no-store" })
       ]);
 
       if (resPlayers.status === 401) {
@@ -173,24 +172,33 @@ export default function AdminDashboard() {
         return;
       }
 
-      const [dataPlayers, dataTeams, dataSettings, dataRules, dataFaqs, dataSizing] = await Promise.all([
+      const [dataPlayers, dataTeams, dataSettings] = await Promise.all([
         resPlayers.json().catch(() => ({})),
         resTeams.json().catch(() => ({})),
-        resSettings.json().catch(() => ({})),
-        resRules.json().catch(() => ({})),
-        resFaqs.json().catch(() => ({})),
-        resSizing.json().catch(() => ({}))
+        resSettings.json().catch(() => ({}))
       ]);
 
       if (dataPlayers.success) {
-        setPlayers(dataPlayers.players || []);
+        const playersList = dataPlayers.players || [];
+        setPlayers(playersList);
         if (dataPlayers.stats) setStats(dataPlayers.stats);
+
+        const tshirts = {};
+        const tracks = {};
+        playersList.forEach((p) => {
+          const ts = p.tshirtSize || "Not specified";
+          const trk = p.trackSize || "Not specified";
+          tshirts[ts] = (tshirts[ts] || 0) + 1;
+          tracks[trk] = (tracks[trk] || 0) + 1;
+        });
+        setSizing({
+          tshirts,
+          tracks,
+          total: playersList.length
+        });
       }
       if (dataTeams.success) setTeams(dataTeams.teams || []);
       if (dataSettings.success) setSettings(dataSettings.settings || {});
-      if (dataRules.success && Array.isArray(dataRules.rules) && dataRules.rules.length > 0) setRules(dataRules.rules);
-      if (dataFaqs.success && Array.isArray(dataFaqs.faqs) && dataFaqs.faqs.length > 0) setFaqs(dataFaqs.faqs);
-      if (dataSizing.success) setSizing(dataSizing.matrix);
 
     } catch (err) {
       console.error("Dashboard data load error:", err);
@@ -501,8 +509,8 @@ export default function AdminDashboard() {
     const cleanTeamId = teamId && teamId !== "unassign" && teamId !== "" ? teamId : null;
     const targetPlayer = players.find((p) => p.id === playerId);
 
-    if (cleanTeamId && targetPlayer && targetPlayer.paymentStatus === "Rejected") {
-      showToast("Cannot assign a rejected player to a team. Approve the player first.", "error");
+    if (cleanTeamId && targetPlayer && targetPlayer.paymentStatus !== "Approved") {
+      showToast("Only approved players can be assigned to a team. Please approve the player first.", "error");
       return;
     }
 
@@ -1117,8 +1125,57 @@ export default function AdminDashboard() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [inspectPlayer, currentInspectIdx, filteredPlayers]);
 
+  // Official Cards Tab State & Filtering
+  const [cardSearchQuery, setCardSearchQuery] = useState("");
+  const [selectedCardPlayer, setSelectedCardPlayer] = useState(null);
+
+  const approvedPlayers = useMemo(() => {
+    return players.filter((p) => (p.paymentStatus || "").toLowerCase() === "approved");
+  }, [players]);
+
+  const filteredCardPlayers = useMemo(() => {
+    const q = cardSearchQuery.trim().toLowerCase();
+    if (!q) return approvedPlayers;
+    return approvedPlayers.filter((p) => {
+      const name = (p.name || "").toLowerCase();
+      const id = String(p.displayId || p.id || "").toLowerCase();
+      const reg = String(p.regNumber || "").toLowerCase();
+      const phone = (p.phone || "").toLowerCase();
+      const ward = (p.ward || "").toLowerCase();
+      const spec = (p.speciality || "").toLowerCase();
+      return (
+        name.includes(q) ||
+        id.includes(q) ||
+        reg.includes(q) ||
+        phone.includes(q) ||
+        ward.includes(q) ||
+        spec.includes(q)
+      );
+    });
+  }, [approvedPlayers, cardSearchQuery]);
+
+  const handleShareCard = async (player) => {
+    const pId = player.displayId || player.id;
+    const shareText = `🏏 Official GPL Season 4 Player Registration Card\nName: ${player.name}\nPlayer ID: #${pId}\nRole: ${player.speciality || 'Cricket Player'}\nWard: ${player.ward || 'Ward 51'}\nStatus: VERIFIED & REGISTERED\nRadhe Radhe Chashak • Goregaon Premier League`;
+    if (typeof navigator !== "undefined" && navigator.share) {
+      try {
+        await navigator.share({
+          title: `GPL4 Card - ${player.name} (#${pId})`,
+          text: shareText,
+          url: window.location.origin
+        });
+        return;
+      } catch (err) {
+        if (err.name === "AbortError") return;
+      }
+    }
+    const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
+    window.open(waUrl, "_blank");
+  };
+
   const tabItems = [
     { id: "players", label: `Players (${players.length})`, icon: Users },
+    { id: "cards", label: `Official Cards (${approvedPlayers.length})`, icon: CreditCard },
     { id: "teams", label: `Teams (${teams.length})`, icon: Trophy },
     { id: "sizing", label: "Kit Sizing", icon: Shirt },
     { id: "settings", label: "Instagram & Settings", icon: InstagramIcon },
@@ -1570,9 +1627,11 @@ export default function AdminDashboard() {
                         </span>
                       </div>
                       <div>
-                        <span className="text-[10px] uppercase font-bold text-slate-400 block">Instagram / Ref</span>
+                        <span className="text-[10px] uppercase font-bold text-slate-400 block">Instagram</span>
                         <span className="font-mono font-bold text-slate-800 text-[11px] block break-all leading-tight">
-                          {player.instagramHandle ? `@${player.instagramHandle.replace(/^@/, '')}` : (player.utrNumber || "FREE-REG")}
+                          {player.instagramHandle && !player.instagramHandle.toUpperCase().includes("FREE")
+                            ? `@${player.instagramHandle.replace(/^@/, '')}`
+                            : (player.utrNumber && !player.utrNumber.toUpperCase().includes("FREE") ? player.utrNumber : "-")}
                         </span>
                       </div>
                     </div>
@@ -1614,6 +1673,11 @@ export default function AdminDashboard() {
                           <span>Cannot Assign</span>
                           <span className="text-[10px] font-bold uppercase bg-red-200/60 px-1.5 py-0.5 rounded">Rejected</span>
                         </div>
+                      ) : player.paymentStatus !== "Approved" ? (
+                        <div className="w-full px-2.5 py-1.5 rounded-lg border border-amber-200 bg-amber-50 text-amber-700 text-xs font-semibold flex items-center justify-between">
+                          <span>Approve to Assign</span>
+                          <span className="text-[10px] font-bold uppercase bg-amber-200/60 px-1.5 py-0.5 rounded">Pending</span>
+                        </div>
                       ) : (
                         <select
                           value={player.teamId || ""}
@@ -1647,6 +1711,16 @@ export default function AdminDashboard() {
                           className="flex-1 py-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
                         >
                           Reject
+                        </button>
+                      )}
+
+                      {player.paymentStatus === "Approved" && (
+                        <button
+                          onClick={() => setSelectedCardPlayer(player)}
+                          className="p-1.5 rounded-lg bg-amber-50 text-amber-800 hover:bg-amber-100 transition-colors cursor-pointer"
+                          title="View Official Tournament Card"
+                        >
+                          <CreditCard className="w-4 h-4 text-amber-600" />
                         </button>
                       )}
 
@@ -1702,7 +1776,7 @@ export default function AdminDashboard() {
                       <th className="py-4 px-4">Player</th>
                       <th className="py-4 px-4">Role &amp; Ward</th>
                       <th className="py-4 px-4">Kit Size</th>
-                      <th className="py-4 px-4">Instagram / Ref</th>
+                      <th className="py-4 px-4">Instagram</th>
                       <th className="py-4 px-4">Documents</th>
                       <th className="py-4 px-4">Status</th>
                       <th className="py-4 px-4">Assigned Team</th>
@@ -1753,7 +1827,9 @@ export default function AdminDashboard() {
                             </td>
                             <td className="py-4 px-5">
                               <div className="font-mono text-xs font-semibold text-slate-800">
-                                {player.instagramHandle ? `@${player.instagramHandle.replace(/^@/, '')}` : (player.utrNumber || "FREE-REG")}
+                                {player.instagramHandle && !player.instagramHandle.toUpperCase().includes("FREE")
+                                  ? `@${player.instagramHandle.replace(/^@/, '')}`
+                                  : (player.utrNumber && !player.utrNumber.toUpperCase().includes("FREE") ? player.utrNumber : "-")}
                               </div>
                             </td>
                             <td className="py-4 px-5">
@@ -1819,13 +1895,21 @@ export default function AdminDashboard() {
                                   <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
                                   <span>Cannot Assign (Rejected)</span>
                                 </div>
+                              ) : player.paymentStatus !== "Approved" ? (
+                                <div
+                                  className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-amber-200 bg-amber-50 text-amber-700 text-xs font-semibold"
+                                  title="Only approved players can be assigned to a team"
+                                >
+                                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                                  <span>Approve to Assign</span>
+                                </div>
                               ) : (
                                 <select
                                   value={player.teamId || ""}
                                   onChange={(e) => handleAssignTeam(player.id, e.target.value)}
-                                  className="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50 text-xs font-semibold text-slate-700"
+                                  className="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-[#0041b9] shadow-xs"
                                 >
-                                  <option value="">— Unassigned —</option>
+                                  <option value="">— Unassigned (Auction Pool) —</option>
                                   {teams.map((t, tIdx) => (
                                     <option key={t.id || tIdx} value={t.id}>
                                       {t.name}
@@ -1836,6 +1920,15 @@ export default function AdminDashboard() {
                             </td>
                             <td className="py-4 px-5 text-right">
                               <div className="flex items-center justify-end gap-1">
+                                {player.paymentStatus === "Approved" && (
+                                  <button
+                                    onClick={() => setSelectedCardPlayer(player)}
+                                    className="p-1.5 rounded-lg bg-amber-50 text-amber-700 hover:bg-amber-100 transition-colors cursor-pointer"
+                                    title="View Official Tournament Card"
+                                  >
+                                    <CreditCard className="w-4 h-4 text-amber-600" />
+                                  </button>
+                                )}
                                 {player.paymentStatus !== "Approved" && (
                                   <button
                                     onClick={() => handleUpdateStatus(player.id, "Approved")}
@@ -1891,6 +1984,170 @@ export default function AdminDashboard() {
                 </table>
               </div>
             </div>
+
+          </div>
+        )}
+
+        {/* ========================================================================= */}
+        {/* TAB: OFFICIAL APPROVED PLAYER CARDS & PASS TEMPLATES */}
+        {/* ========================================================================= */}
+        {activeTab === "cards" && (
+          <div className="space-y-4 sm:space-y-6">
+            
+            {/* Cards Header & Search Bar */}
+            <div className="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-lg sm:text-xl font-bold text-[#081a36]">
+                      Official Player Cards &amp; Templates
+                    </h2>
+                    <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                      {approvedPlayers.length} Approved
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    All approved player cards stored for official verification, high-res pass generation, and direct sharing.
+                  </p>
+                </div>
+
+                <div className="text-xs font-semibold text-slate-600 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200">
+                  Showing <strong className="text-slate-900">{filteredCardPlayers.length}</strong> of {approvedPlayers.length} cards
+                </div>
+              </div>
+
+              {/* Search Filter by Player ID, Name, Phone, Ward */}
+              <div className="relative">
+                <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  placeholder="Search player by name, Player ID (e.g. 1006), mobile phone, or ward..."
+                  value={cardSearchQuery}
+                  onChange={(e) => setCardSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-slate-200 text-xs sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#0041b9] bg-slate-50/50"
+                />
+                {cardSearchQuery && (
+                  <button
+                    onClick={() => setCardSearchQuery("")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1 cursor-pointer"
+                    title="Clear search"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Cards Grid */}
+            {filteredCardPlayers.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {filteredCardPlayers.map((player) => {
+                  const pId = player.displayId || player.id;
+                  const assignedTeam = teams.find((t) => t.id === player.teamId);
+
+                  return (
+                    <div
+                      key={player.id}
+                      className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs hover:shadow-md transition-all flex flex-col justify-between group relative overflow-hidden"
+                    >
+                      {/* Top Badges */}
+                      <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                        <span className="font-mono font-black text-xs px-2.5 py-1 rounded-full bg-amber-50 text-amber-900 border border-amber-300">
+                          #{pId}
+                        </span>
+                        <span className="inline-flex items-center gap-1 text-[11px] font-black px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                          <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                          <span>REGISTERED</span>
+                        </span>
+                      </div>
+
+                      {/* Player Profile Details */}
+                      <div className="py-3 flex items-start gap-3">
+                        <div className="w-14 h-14 rounded-xl bg-slate-100 border-2 border-amber-400 overflow-hidden shrink-0 shadow-xs flex items-center justify-center">
+                          {player.photoUrl && !player.photoUrl.includes("placeholder") ? (
+                            <img
+                              src={player.photoUrl}
+                              alt={player.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-slate-200 text-slate-700 font-black text-xl flex items-center justify-center">
+                              {player.name?.[0] || "P"}
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-black text-sm text-slate-900 truncate leading-tight group-hover:text-[#0041b9] transition-colors">
+                            {player.name}
+                          </h4>
+                          <div className="text-xs text-amber-800 font-bold truncate mt-0.5">
+                            {player.speciality || "Cricket Player"}
+                          </div>
+                          <div className="text-[11px] text-slate-500 font-medium truncate mt-0.5">
+                            {player.ward || "Ward 51"} • Kit: {player.tshirtSize}/{player.trackSize}
+                          </div>
+                          {assignedTeam ? (
+                            <div className="text-[10px] font-bold text-blue-700 mt-1 flex items-center gap-1">
+                              <Trophy className="w-3 h-3 text-amber-500" />
+                              <span className="truncate">{assignedTeam.name}</span>
+                            </div>
+                          ) : (
+                            <div className="text-[10px] font-semibold text-slate-400 mt-1">
+                              Auction Pool (Unassigned)
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Action Buttons: View/Download & Share */}
+                      <div className="pt-3 border-t border-slate-100 grid grid-cols-2 gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedCardPlayer(player)}
+                          className="w-full py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-xs cursor-pointer"
+                          title="View & Download Official Card"
+                        >
+                          <CreditCard className="w-3.5 h-3.5 text-amber-400" />
+                          <span>View Card</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleShareCard(player)}
+                          className="w-full py-2 px-3 rounded-xl bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 text-slate-700 font-bold text-xs flex items-center justify-center gap-1.5 transition-all border border-slate-200 active:scale-95 cursor-pointer"
+                          title="Share Player Card"
+                        >
+                          <Share2 className="w-3.5 h-3.5 text-emerald-600" />
+                          <span>Share</span>
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="text-center py-16 px-4 rounded-3xl bg-white border border-dashed border-slate-300 space-y-3 shadow-xs">
+                <CreditCard className="w-12 h-12 text-slate-300 mx-auto" />
+                <h4 className="font-bold text-base text-slate-900">
+                  {cardSearchQuery ? "No matching approved player cards" : "No approved players yet"}
+                </h4>
+                <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                  {cardSearchQuery
+                    ? `No cards matched "${cardSearchQuery}". Try searching by player name, ID (e.g. 1006), or clear the search.`
+                    : "Once you approve players in the Players tab, their official registration card templates will appear here ready to view, download, and share."}
+                </p>
+                {cardSearchQuery && (
+                  <button
+                    onClick={() => setCardSearchQuery("")}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 transition-colors cursor-pointer"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                    <span>Clear Search Filter</span>
+                  </button>
+                )}
+              </div>
+            )}
 
           </div>
         )}
@@ -2655,9 +2912,11 @@ export default function AdminDashboard() {
             {/* Info Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 text-xs bg-slate-50 p-3.5 rounded-xl border border-slate-200">
               <div>
-                <span className="text-slate-400 block text-[10px] uppercase font-bold">Instagram / Ref</span>
+                <span className="text-slate-400 block text-[10px] uppercase font-bold">Instagram</span>
                 <span className="font-mono font-bold text-slate-900 truncate block">
-                  {inspectPlayer.instagramHandle ? `@${inspectPlayer.instagramHandle.replace(/^@/, '')}` : (inspectPlayer.utrNumber || "FREE-REG")}
+                  {inspectPlayer.instagramHandle && !inspectPlayer.instagramHandle.toUpperCase().includes("FREE")
+                    ? `@${inspectPlayer.instagramHandle.replace(/^@/, '')}`
+                    : (inspectPlayer.utrNumber && !inspectPlayer.utrNumber.toUpperCase().includes("FREE") ? inspectPlayer.utrNumber : "-")}
                 </span>
               </div>
               <div>
@@ -2669,6 +2928,18 @@ export default function AdminDashboard() {
                 <span className="font-mono font-bold text-[#0041b9]">T: {inspectPlayer.tshirtSize} | P: {inspectPlayer.trackSize}</span>
               </div>
             </div>
+
+            {/* Official Card View for Approved Players */}
+            {inspectPlayer.paymentStatus === "Approved" && (
+              <button
+                type="button"
+                onClick={() => setSelectedCardPlayer(inspectPlayer)}
+                className="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-xs cursor-pointer transition-all"
+              >
+                <CreditCard className="w-4 h-4 text-amber-400" />
+                <span>View &amp; Share Official Tournament Card</span>
+              </button>
+            )}
 
             {/* Quick Actions */}
             <div className="flex gap-2 pt-2">
@@ -2688,6 +2959,19 @@ export default function AdminDashboard() {
 
           </div>
         </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* MODAL: OFFICIAL PLAYER CARD VIEWER & DOWNLOAD */}
+      {/* ========================================================================= */}
+      {selectedCardPlayer && (
+        <PlayerRegistrationCard
+          player={selectedCardPlayer}
+          regNum={selectedCardPlayer.displayId || selectedCardPlayer.id}
+          photo={selectedCardPlayer.photoUrl}
+          status="Approved"
+          onClose={() => setSelectedCardPlayer(null)}
+        />
       )}
 
       {/* ========================================================================= */}
@@ -2859,11 +3143,16 @@ export default function AdminDashboard() {
               </div>
 
               <div>
-                <label className="font-bold text-slate-700 block mb-1">Instagram Username / Follow Ref</label>
+                <label className="font-bold text-slate-700 block mb-1">Instagram Username</label>
                 <input
                   type="text"
-                  value={editPlayer.instagramHandle || editPlayer.utrNumber || ""}
-                  onChange={(e) => setEditPlayer({ ...editPlayer, instagramHandle: e.target.value, utrNumber: e.target.value })}
+                  placeholder="@username (optional)"
+                  value={
+                    editPlayer.instagramHandle && !editPlayer.instagramHandle.toUpperCase().includes("FREE")
+                      ? editPlayer.instagramHandle
+                      : (editPlayer.utrNumber && !editPlayer.utrNumber.toUpperCase().includes("FREE") ? editPlayer.utrNumber : "")
+                  }
+                  onChange={(e) => setEditPlayer({ ...editPlayer, instagramHandle: e.target.value.replace(/^@/, ""), utrNumber: e.target.value })}
                   className="w-full px-3 py-2 rounded-lg border border-slate-200 font-mono"
                 />
               </div>

@@ -161,7 +161,7 @@ export async function POST(request) {
       speciality: speciality || "Right-hand batsman",
       tshirtSize: (tshirtSize && tshirtSize !== "—Please choose an option—") ? tshirtSize : "Medium",
       trackSize: (trackSize && trackSize !== "—Please choose an option—") ? trackSize : "32",
-      utrNumber: utrNumber || (bodyData.instagramHandle ? `@${bodyData.instagramHandle.replace(/^@/, "")}` : "FREE-REG"),
+      utrNumber: utrNumber || (bodyData.instagramHandle ? `@${bodyData.instagramHandle.replace(/^@/, "")}` : ""),
       instagramHandle: bodyData.instagramHandle ? bodyData.instagramHandle.replace(/^@/, "") : "",
       amount: settings.registrationFee !== undefined ? settings.registrationFee : 0,
       paymentStatus: "Pending",

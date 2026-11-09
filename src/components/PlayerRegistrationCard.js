@@ -21,6 +21,9 @@ export default function PlayerRegistrationCard({ player, regNum, photo, status, 
   const [rendered, setRendered] = useState(false);
   const [downloading, setDownloading] = useState(false);
 
+  const rawStatus = String(status || player?.paymentStatus || player?.status || "").toLowerCase();
+  const isApproved = rawStatus === "approved" || rawStatus === "registered" || player?.isApproved === true;
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -352,13 +355,19 @@ export default function PlayerRegistrationCard({ player, regNum, photo, status, 
           </button>
         )}
 
-        {/* Success header */}
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-950/70 border border-emerald-500/50 text-emerald-300 text-xs sm:text-sm font-semibold">
-          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-          <span>Registration Confirmed • Player Card Ready!</span>
+        {/* Status header */}
+        <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full ${
+          isApproved
+            ? "bg-emerald-950/70 border border-emerald-500/50 text-emerald-300"
+            : "bg-amber-950/70 border border-amber-500/50 text-amber-300"
+        } text-xs sm:text-sm font-semibold`}>
+          <CheckCircle2 className={`w-4 h-4 ${isApproved ? "text-emerald-400" : "text-amber-400"}`} />
+          <span>{isApproved ? "Official Player Card • Approved & Registered!" : "Registration Received • Status: Pending Verification"}</span>
         </div>
         <p className="text-xs text-slate-400">
-          Download or share your official GPL Season 4 player card
+          {isApproved
+            ? "Official tournament card with verified registered status"
+            : "Download or share your official pending registration card"}
         </p>
 
         {/* Card Canvas Container with realistic card aspect ratio */}

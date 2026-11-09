@@ -41,8 +41,10 @@ function mapPlayer(r) {
     speciality: r.speciality,
     tshirtSize: r.tshirtSize,
     trackSize: r.trackSize,
-    utrNumber: r.utrNumber,
-    instagramHandle: r.instagramHandle || (r.utrNumber && r.utrNumber.startsWith("@") ? r.utrNumber.slice(1) : ""),
+    utrNumber: (r.utrNumber && !r.utrNumber.toUpperCase().includes("FREE")) ? r.utrNumber : "",
+    instagramHandle: (r.instagramHandle && !r.instagramHandle.toUpperCase().includes("FREE"))
+      ? r.instagramHandle.replace(/^@/, "")
+      : (r.utrNumber && !r.utrNumber.toUpperCase().includes("FREE") && r.utrNumber.startsWith("@") ? r.utrNumber.slice(1) : ""),
     amount: r.amount !== undefined ? r.amount : 0,
     paymentStatus: r.paymentStatus || "Pending",
     photoUrl: r.photoUrl || "/images/avatar-placeholder.svg",
@@ -56,7 +58,19 @@ function mapPlayer(r) {
   };
 }
 
-async function getCalculatedStats(playersList, teamsCount = 11) {
+async function getCalculatedStats(playersList, teamsCount) {
+  if (!playersList) {
+    const [regs, tCount] = await Promise.all([
+      MongoRegistration.find({}, "paymentStatus").lean(),
+      MongoTeam.countDocuments().catch(() => 11)
+    ]);
+    playersList = regs || [];
+    teamsCount = tCount || 11;
+  }
+  if (!teamsCount) {
+    teamsCount = 11;
+  }
+
   let approved = 0;
   let rejected = 0;
   let pending = 0;
@@ -197,8 +211,19 @@ export async function POST(request) {
 
     // 2. ASSIGN / UNASSIGN TEAM
     if (action === "assignTeam") {
-      await MongoTeam.updateMany({}, { $pull: { members: id } });
+      const regPlayer = await MongoRegistration.findOne({ id }, "id paymentStatus").lean();
+      if (!regPlayer) {
+        return NextResponse.json({ success: false, error: "Player not found" }, { status: 404, headers: NO_CACHE_HEADERS });
+      }
+
       if (teamId && teamId !== "unassign" && teamId !== "") {
+        if (regPlayer.paymentStatus !== "Approved") {
+          return NextResponse.json(
+            { success: false, error: "Only approved players can be assigned to a team. Please approve the player first." },
+            { status: 400, headers: NO_CACHE_HEADERS }
+          );
+        }
+
         const team = await MongoTeam.findOne({ id: teamId });
         if (team && (team.members || []).length >= 14) {
           return NextResponse.json(
@@ -206,12 +231,14 @@ export async function POST(request) {
             { status: 400, headers: NO_CACHE_HEADERS }
           );
         }
+        await MongoTeam.updateMany({}, { $pull: { members: id } });
         await MongoTeam.findOneAndUpdate({ id: teamId }, { $addToSet: { members: id } });
         const updatedDoc = await MongoRegistration.findOneAndUpdate({ id }, { teamId }, { new: true }).lean();
         if (team && updatedDoc) {
           sendTeamAssignmentEmail(updatedDoc, team).catch(() => {});
         }
       } else {
+        await MongoTeam.updateMany({}, { $pull: { members: id } });
         await MongoRegistration.findOneAndUpdate({ id }, { teamId: null });
       }
       const stats = await getCalculatedStats();

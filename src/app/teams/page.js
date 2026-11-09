@@ -7,9 +7,7 @@ import {
 import { INITIAL_TEAMS, INITIAL_SETTINGS } from "@/lib/constants";
 import TeamsPortalClient from "@/components/TeamsPortalClient";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
-export const fetchCache = "force-no-store";
+export const revalidate = 30;
 
 export const metadata = {
   title: "Franchise Teams & Squads - Radhe Radhe Chasak GPL4",
@@ -35,8 +33,8 @@ export default async function TeamsPage() {
     const [mongoTeams, mongoRegs, settingDoc] = await Promise.all([
       MongoTeam.find().lean(),
       MongoRegistration.find(
-        {},
-        "id regNumber name speciality ward tshirtSize trackSize paymentStatus photoUrl teamId phone"
+        { $or: [{ teamId: { $exists: true, $ne: null, $ne: "" } }, { paymentStatus: "Approved" }] },
+        "id regNumber name speciality ward tshirtSize trackSize paymentStatus photoUrl teamId"
       ).lean(),
       MongoSetting.findOne({ key: "global_settings" }).lean(),
     ]);

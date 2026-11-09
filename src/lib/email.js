@@ -104,18 +104,15 @@ export async function sendRegistrationNotificationEmail(player, customAdminEmail
         <style>
           body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #f8fafc; margin: 0; padding: 20px; }
           .card { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-          .header { background: #081a36; padding: 24px; text-align: center; color: #ffffff; }
-          .header h1 { margin: 0 0 4px; font-size: 22px; }
-          .header p { margin: 0; color: #94a3b8; font-size: 13px; }
-          .badge { display: inline-block; background: #0041b9; color: #ffffff; padding: 4px 12px; border-radius: 20px; font-size: 14px; font-weight: bold; margin-top: 12px; letter-spacing: 1px; }
+          .header { background: #f8fafc; padding: 24px; text-align: center; border-bottom: 1px solid #e2e8f0; }
+          .header h1 { margin: 0 0 4px; font-size: 22px; font-weight: 800; color: #0f172a; }
+          .header p { margin: 0; color: #64748b; font-size: 13px; }
+          .badge { display: inline-block; background: #e0e7ff; color: #3730a3; border: 1px solid #c7d2fe; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; margin-top: 12px; letter-spacing: 0.5px; }
           .body { padding: 24px; }
           .table { width: 100%; border-collapse: collapse; margin-top: 16px; }
           .table td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
           .label { font-weight: bold; color: #64748b; width: 38%; }
           .value { color: #0f172a; font-weight: 500; }
-          .utr-box { background: #edf7ee; border: 1px solid #bbf7d0; padding: 14px; border-radius: 8px; margin-top: 20px; text-align: center; }
-          .utr-title { font-size: 12px; color: #166534; font-weight: bold; text-transform: uppercase; }
-          .utr-code { font-size: 18px; font-family: monospace; font-weight: bold; color: #15803d; margin-top: 4px; }
           .footer { background: #f8fafc; padding: 16px; text-align: center; font-size: 12px; color: #94a3b8; border-top: 1px solid #e2e8f0; }
         </style>
       </head>
@@ -164,16 +161,15 @@ export async function sendRegistrationNotificationEmail(player, customAdminEmail
                 <td class="label">Track Pant Size:</td>
                 <td class="value">${player.trackSize}</td>
               </tr>
+              ${player.instagramHandle ? `<tr>
+                <td class="label">Instagram:</td>
+                <td class="value">@${player.instagramHandle.replace(/^@/, '')}</td>
+              </tr>` : ''}
               <tr>
                 <td class="label">Registration Time:</td>
                 <td class="value">${new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}</td>
               </tr>
             </table>
-
-            <div class="utr-box">
-              <div class="utr-title">Payment Transaction / UTR Number</div>
-              <div class="utr-code">${player.utrNumber || "N/A"}</div>
-            </div>
           </div>
           <div class="footer">
             GPL Tournament Admin System • Access dashboard to approve/reject player documents.
@@ -189,7 +185,7 @@ export async function sendRegistrationNotificationEmail(player, customAdminEmail
         from: `"GPL Alert" <${transportInfo.fromEmail}>`,
         to: adminEmail,
         replyTo: adminEmail,
-        subject: `🏏 New Registration: ${player.name} (Player ID: ${displayPlayerId}) - UTR: ${player.utrNumber || "N/A"}`,
+        subject: `🏏 New Registration: ${player.name} (Player ID: ${displayPlayerId})`,
         html: htmlContent
       });
       logEmailDispatch({ type: "ADMIN_NOTIFICATION", recipient: adminEmail, playerId: displayPlayerId, status: "SENT" });
@@ -239,9 +235,9 @@ export async function sendPlayerStatusEmail(player, status, notes = "") {
         <style>
           body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #f1f5f9; margin: 0; padding: 24px; color: #1e293b; }
           .card { max-width: 620px; margin: 0 auto; background: #ffffff; border-radius: 14px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08); }
-          .header { background: #081a36; padding: 28px 24px; text-align: center; color: #ffffff; }
-          .header h1 { margin: 0 0 6px; font-size: 24px; letter-spacing: -0.5px; }
-          .header p { margin: 0; color: #cbd5e1; font-size: 14px; }
+          .header { background: #f8fafc; padding: 28px 24px; text-align: center; border-bottom: 1px solid #e2e8f0; }
+          .header h1 { margin: 0 0 6px; font-size: 24px; font-weight: 800; color: #0f172a; letter-spacing: -0.5px; }
+          .header p { margin: 0; color: #64748b; font-size: 14px; }
           .status-banner { margin: 24px; padding: 18px; border-radius: 10px; background: ${statusBg}; border: 1.5px solid ${statusBorder}; text-align: center; }
           .status-badge { display: inline-block; font-size: 13px; font-weight: 800; letter-spacing: 1px; color: ${statusBadgeColor}; text-transform: uppercase; }
           .status-text { margin: 8px 0 0; font-size: 15px; font-weight: 600; color: #0f172a; }
@@ -270,7 +266,7 @@ export async function sendPlayerStatusEmail(player, status, notes = "") {
             <p class="status-text">
               ${
                 isApproved
-                  ? "Congratulations! Your registration documents & payment have been verified."
+                  ? "Congratulations! Your registration documents have been verified."
                   : "Your registration application could not be verified."
               }
             </p>
@@ -429,14 +425,14 @@ export async function sendTeamAssignmentEmail(player, team) {
       <head>
         <meta charset="utf-8" />
         <style>
-          body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #081225; margin: 0; padding: 24px; color: #1e293b; }
-          .card { max-width: 620px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 15px 35px rgba(0,0,0,0.2); }
-          .header { background: linear-gradient(135deg, #081a36 0%, #0041b9 100%); padding: 32px 24px; text-align: center; color: #ffffff; }
-          .header h1 { margin: 0 0 6px; font-size: 26px; font-weight: 900; letter-spacing: -0.5px; }
-          .header p { margin: 0; color: #93c5fd; font-size: 14px; }
-          .badge { display: inline-block; background: #f59e0b; color: #081a36; padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 800; margin-top: 14px; text-transform: uppercase; letter-spacing: 1px; }
+          body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #f1f5f9; margin: 0; padding: 24px; color: #1e293b; }
+          .card { max-width: 620px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08); }
+          .header { background: #f8fafc; padding: 28px 24px; text-align: center; border-bottom: 1px solid #e2e8f0; }
+          .header h1 { margin: 0 0 6px; font-size: 24px; font-weight: 800; color: #0f172a; letter-spacing: -0.5px; }
+          .header p { margin: 0; color: #64748b; font-size: 14px; }
+          .badge { display: inline-block; background: #ecfdf5; color: #047857; border: 1.5px solid #a7f3d0; padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 800; margin-top: 14px; text-transform: uppercase; letter-spacing: 0.5px; }
           .body { padding: 28px 24px; }
-          .team-card { background: #f8fafc; border: 2px solid #0041b9; border-radius: 14px; padding: 20px; margin: 20px 0; text-align: center; }
+          .team-card { background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 14px; padding: 20px; margin: 20px 0; text-align: center; }
           .team-title { font-size: 12px; font-weight: bold; color: #64748b; text-transform: uppercase; letter-spacing: 1px; }
           .team-name { font-size: 24px; font-weight: 900; color: #081a36; margin: 6px 0; }
           .team-meta { font-size: 13px; color: #475569; }
@@ -554,9 +550,9 @@ export async function sendAdminPasswordResetOtp(otpCode, adminEmail) {
         <style>
           body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #f8fafc; margin: 0; padding: 24px; color: #1e293b; }
           .card { max-width: 520px; margin: 0 auto; background: #ffffff; border-radius: 14px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08); }
-          .header { background: #081a36; padding: 26px 20px; text-align: center; color: #ffffff; }
-          .header h1 { margin: 0 0 4px; font-size: 22px; }
-          .header p { margin: 0; color: #cbd5e1; font-size: 13px; }
+          .header { background: #f8fafc; padding: 26px 20px; text-align: center; border-bottom: 1px solid #e2e8f0; }
+          .header h1 { margin: 0 0 4px; font-size: 22px; font-weight: 800; color: #0f172a; }
+          .header p { margin: 0; color: #64748b; font-size: 13px; }
           .body { padding: 24px; text-align: center; }
           .otp-box { background: #eff6ff; border: 2px dashed #3b82f6; border-radius: 12px; padding: 18px; margin: 20px 0; }
           .otp-title { font-size: 12px; font-weight: 700; color: #1e40af; text-transform: uppercase; letter-spacing: 1px; }
