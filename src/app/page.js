@@ -48,15 +48,29 @@ export default async function Home() {
   try {
     await connectToDatabase();
 
-    const [mongoTeams, mongoRegs, ruleDoc, faqDoc, settingDoc] = await Promise.all([
+    const [
+      mongoTeams,
+      mongoRegs,
+      ruleDoc,
+      faqDoc,
+      settingDoc,
+      totalCount,
+      approvedCount,
+      rejectedCount,
+      pendingCount
+    ] = await Promise.all([
       MongoTeam.find().lean(),
       MongoRegistration.find(
-        {},
+        { paymentStatus: "Approved" },
         "id regNumber name speciality ward tshirtSize trackSize paymentStatus photoUrl teamId"
       ).lean(),
       MongoRule.findOne().lean(),
       MongoFaq.findOne().lean(),
       MongoSetting.findOne({ key: "global_settings" }).lean(),
+      MongoRegistration.countDocuments().catch(() => 0),
+      MongoRegistration.countDocuments({ paymentStatus: "Approved" }).catch(() => 0),
+      MongoRegistration.countDocuments({ paymentStatus: "Rejected" }).catch(() => 0),
+      MongoRegistration.countDocuments({ paymentStatus: "Pending" }).catch(() => 0)
     ]);
 
     if (settingDoc && settingDoc.value) {
@@ -71,18 +85,24 @@ export default async function Home() {
       faqs = faqDoc.faqs;
     }
 
-    const regs = (mongoRegs || []).map((r) => ({
-      id: r.id,
-      regNumber: r.regNumber || (r.id ? r.id.replace(/\D/g, "") : ""),
-      name: r.name,
-      speciality: r.speciality,
-      ward: r.ward,
-      tshirtSize: r.tshirtSize,
-      trackSize: r.trackSize,
-      paymentStatus: r.paymentStatus,
-      photoUrl: r.photoUrl,
-      teamId: r.teamId
-    }));
+    const regs = (mongoRegs || []).map((r) => {
+      let photoUrl = "/images/avatar-placeholder.svg";
+      if (r.photoUrl && !r.photoUrl.includes("placeholder")) {
+        photoUrl = r.photoUrl.startsWith("data:") ? `/api/player-photo?id=${r.id}` : r.photoUrl;
+      }
+      return {
+        id: r.id,
+        regNumber: r.regNumber || (r.id ? r.id.replace(/\D/g, "") : ""),
+        name: r.name,
+        speciality: r.speciality,
+        ward: r.ward,
+        tshirtSize: r.tshirtSize,
+        trackSize: r.trackSize,
+        paymentStatus: r.paymentStatus,
+        photoUrl,
+        teamId: r.teamId
+      };
+    });
     players = regs;
 
     if (mongoTeams && mongoTeams.length > 0) {
@@ -110,10 +130,10 @@ export default async function Home() {
       }));
     }
 
-    const total = regs.length;
-    const approved = regs.filter((p) => p.paymentStatus === "Approved").length;
-    const rejected = regs.filter((p) => p.paymentStatus === "Rejected").length;
-    const pending = regs.filter((p) => p.paymentStatus === "Pending").length;
+    const total = totalCount || regs.length;
+    const approved = approvedCount || regs.length;
+    const rejected = rejectedCount || 0;
+    const pending = pendingCount || 0;
     const totalTeamsCount = teams.length || 10;
     const cap = totalTeamsCount * 14;
 

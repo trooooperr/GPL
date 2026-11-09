@@ -1,5 +1,13 @@
 {
   "framework": "nextjs",
+  "env": {
+    "VERCEL_BYPASS_FALLBACK_OVERSIZED_ERROR": "1"
+  },
+  "build": {
+    "env": {
+      "VERCEL_BYPASS_FALLBACK_OVERSIZED_ERROR": "1"
+    }
+  },
   "functions": {
     "src/app/api/**/*.js": {
       "maxDuration": 30

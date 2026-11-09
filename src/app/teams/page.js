@@ -43,18 +43,24 @@ export default async function TeamsPage() {
       settings = { ...INITIAL_SETTINGS, ...settingDoc.value };
     }
 
-    const regs = (mongoRegs || []).map((r) => ({
-      id: r.id,
-      regNumber: r.regNumber || (r.id ? r.id.replace(/\D/g, "") : ""),
-      name: r.name,
-      speciality: r.speciality,
-      ward: r.ward,
-      tshirtSize: r.tshirtSize,
-      trackSize: r.trackSize,
-      paymentStatus: r.paymentStatus,
-      photoUrl: r.photoUrl,
-      teamId: r.teamId
-    }));
+    const regs = (mongoRegs || []).map((r) => {
+      let photoUrl = "/images/avatar-placeholder.svg";
+      if (r.photoUrl && !r.photoUrl.includes("placeholder")) {
+        photoUrl = r.photoUrl.startsWith("data:") ? `/api/player-photo?id=${r.id}` : r.photoUrl;
+      }
+      return {
+        id: r.id,
+        regNumber: r.regNumber || (r.id ? r.id.replace(/\D/g, "") : ""),
+        name: r.name,
+        speciality: r.speciality,
+        ward: r.ward,
+        tshirtSize: r.tshirtSize,
+        trackSize: r.trackSize,
+        paymentStatus: r.paymentStatus,
+        photoUrl,
+        teamId: r.teamId
+      };
+    });
     players = regs;
 
     if (mongoTeams && mongoTeams.length > 0) {
