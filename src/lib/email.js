@@ -320,6 +320,24 @@ export async function sendPlayerStatusEmail(player, status, notes = "") {
             </div>
 
             ${
+              isApproved
+                ? `<div style="margin: 20px 0; text-align: center; background: #f8fafc; border-radius: 12px; padding: 18px; border: 1.5px solid #bbf7d0;">
+                    <div style="font-size: 13px; font-weight: 800; color: #15803d; text-transform: uppercase; margin-bottom: 10px; letter-spacing: 0.5px;">
+                      🎟️ Your Official Registered Player Card
+                    </div>
+                    <img
+                      src="cid:registeredCardImage"
+                      alt="GPL Official Player Registration Card"
+                      style="max-width: 100%; width: 420px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.18); display: block; margin: 0 auto;"
+                    />
+                    <p style="font-size: 12px; color: #64748b; margin-top: 10px; margin-bottom: 0;">
+                      (Your high-resolution official registered card is also attached to this email)
+                    </p>
+                  </div>`
+                : ""
+            }
+
+            ${
               isRejected
                 ? `<div class="rejection-box">
                     <div class="rejection-title">⚠️ Reason for Rejection:</div>
@@ -354,6 +372,18 @@ export async function sendPlayerStatusEmail(player, status, notes = "") {
       </html>
     `;
 
+    const attachments = [];
+    if (isApproved) {
+      const cardPath = path.join(process.cwd(), "public", "images", "template-player-card-approved.png");
+      if (fs.existsSync(cardPath)) {
+        attachments.push({
+          filename: `GPL4_PlayerCard_${displayPlayerId}_REGISTERED.png`,
+          path: cardPath,
+          cid: "registeredCardImage"
+        });
+      }
+    }
+
     const transportInfo = getTransporter();
     if (transportInfo) {
       await transportInfo.transporter.sendMail({
@@ -361,7 +391,8 @@ export async function sendPlayerStatusEmail(player, status, notes = "") {
         to: playerEmail,
         replyTo: adminEmail,
         subject: subject,
-        html: htmlContent
+        html: htmlContent,
+        attachments
       });
       logEmailDispatch({ type: "PLAYER_STATUS", recipient: playerEmail, playerId: displayPlayerId, status: "SENT", decision: status, from: adminEmail });
       console.log(`[EMAIL] Player status (${status}) email successfully sent to ${playerEmail} for Player ID ${displayPlayerId}`);
@@ -478,6 +509,18 @@ export async function sendTeamAssignmentEmail(player, team) {
       </html>
     `;
 
+    const attachments = [];
+    if (isApproved) {
+      const cardPath = path.join(process.cwd(), "public", "images", "template-player-card-approved.png");
+      if (fs.existsSync(cardPath)) {
+        attachments.push({
+          filename: `GPL4_PlayerCard_${displayPlayerId}_REGISTERED.png`,
+          path: cardPath,
+          cid: "registeredCardImage"
+        });
+      }
+    }
+
     const transportInfo = getTransporter();
     if (transportInfo) {
       await transportInfo.transporter.sendMail({
@@ -485,7 +528,8 @@ export async function sendTeamAssignmentEmail(player, team) {
         to: playerEmail,
         replyTo: adminEmail,
         subject: subject,
-        html: htmlContent
+        html: htmlContent,
+        attachments
       });
       logEmailDispatch({ type: "TEAM_ASSIGNMENT", recipient: playerEmail, playerId: displayPlayerId, team: teamName, status: "SENT" });
       console.log(`[EMAIL] Team assignment email sent to ${playerEmail} for team ${teamName}`);

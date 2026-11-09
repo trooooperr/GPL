@@ -203,13 +203,11 @@ export default function AdminDashboard() {
     let isMounted = true;
     async function initDashboard() {
       try {
-        const [resPlayers, resTeams, resSettings, resRules, resFaqs, resSizing] = await Promise.all([
+        // Fast-path: Fetch core datasets concurrently
+        const [resPlayers, resTeams, resSettings] = await Promise.all([
           fetch("/api/admin/players", { cache: "no-store" }),
           fetch("/api/admin/teams", { cache: "no-store" }),
-          fetch("/api/admin/settings", { cache: "no-store" }),
-          fetch("/api/admin/rules", { cache: "no-store" }),
-          fetch("/api/admin/faqs", { cache: "no-store" }),
-          fetch("/api/admin/sizing", { cache: "no-store" })
+          fetch("/api/admin/settings", { cache: "no-store" })
         ]);
 
         if (resPlayers.status === 401) {
@@ -217,26 +215,55 @@ export default function AdminDashboard() {
           return;
         }
 
-        const [dataPlayers, dataTeams, dataSettings, dataRules, dataFaqs, dataSizing] = await Promise.all([
+        const [dataPlayers, dataTeams, dataSettings] = await Promise.all([
           resPlayers.json().catch(() => ({})),
           resTeams.json().catch(() => ({})),
-          resSettings.json().catch(() => ({})),
-          resRules.json().catch(() => ({})),
-          resFaqs.json().catch(() => ({})),
-          resSizing.json().catch(() => ({}))
+          resSettings.json().catch(() => ({}))
         ]);
 
         if (isMounted) {
+          const playersList = dataPlayers.players || [];
           if (dataPlayers.success) {
-            setPlayers(dataPlayers.players || []);
+            setPlayers(playersList);
             if (dataPlayers.stats) setStats(dataPlayers.stats);
+
+            // Compute sizing matrix instantly in-memory without extra DB query
+            const tshirts = {};
+            const tracks = {};
+            playersList.forEach((p) => {
+              const ts = p.tshirtSize || "Not specified";
+              const trk = p.trackSize || "Not specified";
+              tshirts[ts] = (tshirts[ts] || 0) + 1;
+              tracks[trk] = (tracks[trk] || 0) + 1;
+            });
+            setSizing({
+              tshirts,
+              tracks,
+              total: playersList.length
+            });
           }
+
           if (dataTeams.success) setTeams(dataTeams.teams || []);
           if (dataSettings.success) setSettings(dataSettings.settings || {});
-          if (dataRules.success && Array.isArray(dataRules.rules) && dataRules.rules.length > 0) setRules(dataRules.rules);
-          if (dataFaqs.success && Array.isArray(dataFaqs.faqs) && dataFaqs.faqs.length > 0) setFaqs(dataFaqs.faqs);
-          if (dataSizing.success) setSizing(dataSizing.matrix);
+
+          // Stop loading spinner immediately once primary dashboard is ready
+          setLoading(false);
         }
+
+        // Secondary background load: rules and faqs (non-blocking)
+        Promise.all([
+          fetch("/api/admin/rules", { cache: "no-store" }).then((r) => r.json()).catch(() => ({})),
+          fetch("/api/admin/faqs", { cache: "no-store" }).then((r) => r.json()).catch(() => ({}))
+        ]).then(([dataRules, dataFaqs]) => {
+          if (!isMounted) return;
+          if (dataRules.success && Array.isArray(dataRules.rules) && dataRules.rules.length > 0) {
+            setRules(dataRules.rules);
+          }
+          if (dataFaqs.success && Array.isArray(dataFaqs.faqs) && dataFaqs.faqs.length > 0) {
+            setFaqs(dataFaqs.faqs);
+          }
+        }).catch(() => {});
+
       } catch (err) {
         console.error("Dashboard init error:", err);
       } finally {

@@ -181,8 +181,11 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
       errors.name = "Full name must be at least 3 characters.";
     }
 
-    // 2. Email (optional format check)
-    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
+    // 2. Email (Compulsory)
+    const cleanEmail = formData.email.trim();
+    if (!cleanEmail) {
+      errors.email = "Email address is required.";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
       errors.email = "Please enter a valid email address.";
     }
 
@@ -518,7 +521,7 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                  Email <span className="text-slate-400 font-normal">(Optional)</span>
+                  Email Address <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="email"

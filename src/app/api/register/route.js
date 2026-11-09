@@ -58,8 +58,8 @@ export async function POST(request) {
       return NextResponse.json({ success: false, message: "Please enter a valid 10-digit mobile number." }, { status: 400, headers: NO_CACHE_HEADERS });
     }
     const phone = formatPhone(phoneRaw);
-    if (email && !validateEmail(email)) {
-      return NextResponse.json({ success: false, message: "Please enter a valid email address." }, { status: 400, headers: NO_CACHE_HEADERS });
+    if (!email || !validateEmail(email)) {
+      return NextResponse.json({ success: false, message: "Email address is required. Please enter a valid email address." }, { status: 400, headers: NO_CACHE_HEADERS });
     }
     if (tshirtSize && tshirtSize !== "—Please choose an option—" && !ALLOWED_TSHIRT_SIZES.includes(tshirtSize)) {
       return NextResponse.json({ success: false, message: "Please select a valid T-shirt size." }, { status: 400, headers: NO_CACHE_HEADERS });

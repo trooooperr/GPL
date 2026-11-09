@@ -56,19 +56,23 @@ function mapPlayer(r) {
   };
 }
 
-async function getCalculatedStats() {
-  let teamsCount = 11;
-  try {
-    teamsCount = (await MongoTeam.countDocuments()) || 11;
-  } catch (e) {}
+async function getCalculatedStats(playersList, teamsCount = 11) {
+  let approved = 0;
+  let rejected = 0;
+  let pending = 0;
 
-  const [total, approved, rejected, pending] = await Promise.all([
-    MongoRegistration.countDocuments(),
-    MongoRegistration.countDocuments({ paymentStatus: "Approved" }),
-    MongoRegistration.countDocuments({ paymentStatus: "Rejected" }),
-    MongoRegistration.countDocuments({ paymentStatus: "Pending" }),
-  ]);
+  for (let i = 0; i < playersList.length; i++) {
+    const st = (playersList[i].paymentStatus || "").toLowerCase();
+    if (st === "approved") {
+      approved++;
+    } else if (st === "rejected") {
+      rejected++;
+    } else {
+      pending++;
+    }
+  }
 
+  const total = playersList.length;
   const maxCap = teamsCount * 14;
 
   return {
@@ -92,9 +96,18 @@ export async function GET(request) {
 
   try {
     await connectToDatabase();
-    const players = await MongoRegistration.find().sort({ createdAt: -1, registeredAt: -1 }).lean();
+
+    // Query players and teams count concurrently
+    const [players, teamsCount] = await Promise.all([
+      MongoRegistration.find()
+        .sort({ createdAt: -1, registeredAt: -1 })
+        .lean(),
+      MongoTeam.countDocuments().catch(() => 11)
+    ]);
+
     const mapped = players.map(mapPlayer);
-    const stats = await getCalculatedStats();
+    const stats = await getCalculatedStats(mapped, teamsCount || 11);
+
     return NextResponse.json({ success: true, players: mapped, stats }, { headers: NO_CACHE_HEADERS });
   } catch (e) {
     console.error("[Admin Players GET Error]:", e.message);
