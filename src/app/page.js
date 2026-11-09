@@ -9,7 +9,7 @@ import {
 import { INITIAL_TEAMS, INITIAL_RULES, INITIAL_FAQS, INITIAL_SETTINGS } from "@/lib/constants";
 import HomeClient from "@/components/HomeClient";
 
-export const revalidate = 30;
+export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Goregaon Premier League (GPL) - Radhe Radhe Chashak",
