@@ -103,7 +103,7 @@ export default function PlayerRegistrationCard({ player, regNum, photo, onClose 
     const draw = async () => {
       try {
         // ─── 1. BASE TEMPLATE ──────────────────────────────────────────────
-        const baseImg = await loadImg("/images/gpl-card-base.png");
+        const baseImg = await loadImg("/images/gpl-card-base.png?v=4");
         ctx.drawImage(baseImg, 0, 0, W, H);
       } catch (err) {
         console.error("Base image load error:", err);
@@ -173,7 +173,7 @@ export default function PlayerRegistrationCard({ player, regNum, photo, onClose 
 
       // B) Draw Player Frame overlay
       try {
-        const frameImg = await loadImg("/images/gpl-card-player-frame.png");
+        const frameImg = await loadImg("/images/gpl-card-player-frame.png?v=4");
         ctx.drawImage(frameImg, blkX, blkY, blkW, blkH);
       } catch (err) {
         console.error("Player frame load error:", err);
@@ -219,7 +219,7 @@ export default function PlayerRegistrationCard({ player, regNum, photo, onClose 
 
       // A) Draw Ward & Role Frame overlay
       try {
-        const wrFrameImg = await loadImg("/images/gpl-card-ward-role-frame.png");
+        const wrFrameImg = await loadImg("/images/gpl-card-ward-role-frame.png?v=4");
         ctx.drawImage(wrFrameImg, wrX, wrY, wrW, wrH);
       } catch (err) {
         console.error("Ward/Role frame load error:", err);
