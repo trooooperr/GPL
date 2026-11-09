@@ -333,6 +333,7 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
                 player={successData.player}
                 regNum={successData.registrationNumber}
                 photo={savedPlayerPhoto || successData.player?.photo}
+                status={successData.player?.paymentStatus || "Pending"}
                 onClose={() => setShowPlayerCard(false)}
               />
             )}

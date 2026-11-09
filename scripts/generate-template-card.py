@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import os
 import numpy as np
-from PIL import Image, ImageDraw, ImageFont, ImageFilter
+from PIL import Image, ImageDraw, ImageFont
 
 def generate_official_player_card(
     output_path="/Users/alok/Desktop/goregaon-premier-league/public/images/template-player-card.png",
@@ -9,7 +9,8 @@ def generate_official_player_card(
     player_name="SANDEEP JADHAV",
     reg_id="1095",
     ward="WARD 51",
-    role="ALL-ROUNDER"
+    role="ALL-ROUNDER",
+    status="Pending"
 ):
     base_path = "/Users/alok/Desktop/goregaon-premier-league/public/images/gpl-card-base.png"
     p_frame_path = "/Users/alok/Desktop/goregaon-premier-league/public/images/gpl-card-player-frame.png"
@@ -95,7 +96,6 @@ def generate_official_player_card(
         sx = (p_img.width - sq) // 2
         sy = (p_img.height - sq) // 2
         p_cropped = p_img.crop((sx, sy, sx + sq, sy + sq)).resize((pw, ph), Image.Resampling.LANCZOS)
-        # Rounded mask
         mask = Image.new("L", (pw, ph), 0)
         ImageDraw.Draw(mask).rounded_rectangle([0, 0, pw, ph], radius=pr, fill=255)
         canvas.paste(p_cropped, (px, py), mask)
@@ -145,9 +145,34 @@ def generate_official_player_card(
     ry = wr_y + int(245 * scale_wr)
     canvas.paste(r_scaled, (rx, ry - r_scaled.height // 2), r_scaled)
 
+    # 3. Status Badge (Pending or Registered)
+    bw = 220
+    is_appr = str(status).lower() in ["approved", "registered"]
+    badge_file = "gpl-badge-registered.png" if is_appr else "gpl-badge-pending.png"
+    badge_path = os.path.join(os.path.dirname(base_path), badge_file)
+    if os.path.exists(badge_path):
+        badge = Image.open(badge_path).convert("RGBA")
+        bh = int(bw * (badge.height / badge.width))
+        bx = 822 - bw  # 602
+        by = 104      # Directly below header bar
+        badge_scaled = badge.resize((bw, bh), Image.Resampling.LANCZOS)
+        canvas.paste(badge_scaled, (bx, by), badge_scaled)
+
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     canvas.save(output_path)
-    print(f"Generated official player card at: {output_path}")
+    print(f"Generated official player card at: {output_path} (Status: {status})")
 
 if __name__ == "__main__":
-    generate_official_player_card()
+    generate_official_player_card(
+        output_path="/Users/alok/Desktop/goregaon-premier-league/public/images/template-player-card-pending.png",
+        status="Pending"
+    )
+    generate_official_player_card(
+        output_path="/Users/alok/Desktop/goregaon-premier-league/public/images/template-player-card-approved.png",
+        status="Approved"
+    )
+    # Default template preview
+    generate_official_player_card(
+        output_path="/Users/alok/Desktop/goregaon-premier-league/public/images/template-player-card.png",
+        status="Pending"
+    )

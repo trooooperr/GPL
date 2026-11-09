@@ -16,7 +16,7 @@ import { Download, Share2, X, CheckCircle2 } from "lucide-react";
  * - Completely dynamic Player ID inside golden oval pill
  * - Completely dynamic Ward and Role inside golden badge pills
  */
-export default function PlayerRegistrationCard({ player, regNum, photo, onClose }) {
+export default function PlayerRegistrationCard({ player, regNum, photo, status, onClose }) {
   const canvasRef = useRef(null);
   const [rendered, setRendered] = useState(false);
   const [downloading, setDownloading] = useState(false);
@@ -255,11 +255,33 @@ export default function PlayerRegistrationCard({ player, regNum, photo, onClose 
         strokeWidth: 5,
       });
 
+      // ─── 4. DYNAMIC STATUS BADGE (PENDING vs REGISTERED) ───────────────
+      const rawStatus = String(status || player?.paymentStatus || player?.status || "").toLowerCase();
+      const isApproved =
+        rawStatus === "approved" ||
+        rawStatus === "registered" ||
+        player?.isApproved === true;
+
+      const badgeSrc = isApproved
+        ? "/images/gpl-badge-registered.png?v=4"
+        : "/images/gpl-badge-pending.png?v=4";
+
+      try {
+        const badgeImg = await loadImg(badgeSrc);
+        const bw = 220;
+        const bh = Math.round(bw * (badgeImg.naturalHeight / badgeImg.naturalWidth));
+        const bx = 822 - bw; // 602 (aligned with right edge of header bar)
+        const by = 104;      // Directly below the top header bar
+        ctx.drawImage(badgeImg, bx, by, bw, bh);
+      } catch (err) {
+        console.error("Status badge load error:", err);
+      }
+
       setRendered(true);
     };
 
     draw().catch(console.error);
-  }, [player, regNum, photo]);
+  }, [player, regNum, photo, status]);
 
   const handleDownload = () => {
     setDownloading(true);
