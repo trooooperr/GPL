@@ -381,8 +381,8 @@ export default function AdminDashboard() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: playerId, status: newStatus, notes }),
       });
-      const data = await res.json();
-      if (!data.success) {
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.success) {
         // Rollback state on error
         setPlayers(prevPlayers);
         setStats(prevStats);
@@ -442,8 +442,8 @@ export default function AdminDashboard() {
           playerData: targetPlayer
         }),
       });
-      const data = await res.json();
-      if (!data.success) {
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.success) {
         setPlayers(prevPlayers);
         setInspectPlayer(prevInspect);
         showToast(data.error || "Failed to save player details", "error");
@@ -545,8 +545,8 @@ export default function AdminDashboard() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "assign", playerId, teamId: cleanTeamId }),
       });
-      const data = await res.json();
-      if (!data.success) {
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.success) {
         // Rollback on server rejection (e.g. squad full)
         setPlayers(prevPlayers);
         setTeams(prevTeams);
@@ -957,8 +957,8 @@ export default function AdminDashboard() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "batchStatus", ids: idsToApprove, status: "Approved" }),
       });
-      const data = await res.json();
-      if (!data.success) {
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.success) {
         setPlayers(prevPlayers);
         setStats(prevStats);
         showToast(data.error || "Batch approval failed", "error");
@@ -1009,8 +1009,8 @@ export default function AdminDashboard() {
           notes: reason
         }),
       });
-      const data = await res.json();
-      if (!data.success) {
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.success) {
         setPlayers(prevPlayers);
         setStats(prevStats);
         setTeams(prevTeams);
@@ -1074,8 +1074,8 @@ export default function AdminDashboard() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "batchAssign", playerIds: idsToAssign, teamId: cleanTeamId }),
       });
-      const data = await res.json();
-      if (!data.success) {
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.success) {
         setPlayers(prevPlayers);
         setTeams(prevTeams);
         showToast(data.error || "Batch team assignment failed", "error");
@@ -1175,7 +1175,7 @@ export default function AdminDashboard() {
 
   const tabItems = [
     { id: "players", label: `Players (${players.length})`, icon: Users },
-    { id: "cards", label: `Official Cards (${approvedPlayers.length})`, icon: CreditCard },
+    { id: "cards", label: `Approved Cards / Templates (${approvedPlayers.length})`, icon: CreditCard },
     { id: "teams", label: `Teams (${teams.length})`, icon: Trophy },
     { id: "sizing", label: "Kit Sizing", icon: Shirt },
     { id: "settings", label: "Instagram & Settings", icon: InstagramIcon },
@@ -1364,17 +1364,20 @@ export default function AdminDashboard() {
             </div>
 
             <div
-              onClick={() => { setActiveTab("players"); setStatusFilter("Approved"); }}
+              onClick={() => setActiveTab("cards")}
               className="bg-white p-3.5 sm:p-5 rounded-xl sm:rounded-2xl border border-emerald-200/80 shadow-xs cursor-pointer hover:border-emerald-500 hover:shadow-md transition-all active:scale-[0.98]"
-              title="Click to filter Approved Players"
+              title="Click to view Approved Player Cards & Templates"
             >
-              <span className="text-[10px] sm:text-[11px] font-bold text-emerald-600 uppercase tracking-wider block mb-0.5 sm:mb-1">
-                Approved
-              </span>
+              <div className="flex items-center justify-between mb-0.5 sm:mb-1">
+                <span className="text-[10px] sm:text-[11px] font-bold text-emerald-600 uppercase tracking-wider block">
+                  Approved
+                </span>
+                <CreditCard className="w-4 h-4 text-emerald-600" />
+              </div>
               <span className="text-xl sm:text-3xl font-extrabold text-emerald-700">
                 {stats.approved}
               </span>
-              <span className="text-[10px] sm:text-[11px] text-slate-500 block mt-0.5 sm:mt-1 truncate">Auction eligible ⚡</span>
+              <span className="text-[10px] sm:text-[11px] text-slate-500 block mt-0.5 sm:mt-1 truncate">View Cards &amp; Templates 🪪</span>
             </div>
 
             <div
@@ -1923,10 +1926,11 @@ export default function AdminDashboard() {
                                 {player.paymentStatus === "Approved" && (
                                   <button
                                     onClick={() => setSelectedCardPlayer(player)}
-                                    className="p-1.5 rounded-lg bg-amber-50 text-amber-700 hover:bg-amber-100 transition-colors cursor-pointer"
-                                    title="View Official Tournament Card"
+                                    className="px-2 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 transition-colors cursor-pointer flex items-center gap-1 font-bold text-xs border border-emerald-200 shadow-2xs"
+                                    title="View & Download Official Template / Card"
                                   >
-                                    <CreditCard className="w-4 h-4 text-amber-600" />
+                                    <CreditCard className="w-3.5 h-3.5 text-emerald-700" />
+                                    <span>Template</span>
                                   </button>
                                 )}
                                 {player.paymentStatus !== "Approved" && (

@@ -58,36 +58,42 @@ function mapPlayer(r) {
   };
 }
 
-async function getCalculatedStats(playersList, teamsCount) {
-  if (!playersList) {
-    const [regs, tCount] = await Promise.all([
-      MongoRegistration.find({}, "paymentStatus").lean(),
-      MongoTeam.countDocuments().catch(() => 11)
-    ]);
-    playersList = regs || [];
-    teamsCount = tCount || 11;
-  }
-  if (!teamsCount) {
-    teamsCount = 11;
-  }
-
+async function getCalculatedStats(playersList, teamsCount = 11) {
   let approved = 0;
   let rejected = 0;
   let pending = 0;
+  let total = 0;
 
-  for (let i = 0; i < playersList.length; i++) {
-    const st = (playersList[i].paymentStatus || "").toLowerCase();
-    if (st === "approved") {
-      approved++;
-    } else if (st === "rejected") {
-      rejected++;
-    } else {
-      pending++;
+  try {
+    if (!Array.isArray(playersList)) {
+      const [regs, tCount] = await Promise.all([
+        MongoRegistration.find({}, "paymentStatus").lean().exec().catch(() => []),
+        MongoTeam.countDocuments().exec().catch(() => 11)
+      ]);
+      playersList = Array.isArray(regs) ? regs : [];
+      teamsCount = tCount || 11;
     }
+
+    if (Array.isArray(playersList)) {
+      total = playersList.length;
+      for (let i = 0; i < playersList.length; i++) {
+        const item = playersList[i];
+        if (!item) continue;
+        const st = String(item.paymentStatus || "").toLowerCase();
+        if (st === "approved") {
+          approved++;
+        } else if (st === "rejected") {
+          rejected++;
+        } else {
+          pending++;
+        }
+      }
+    }
+  } catch (err) {
+    console.error("[getCalculatedStats Error]:", err);
   }
 
-  const total = playersList.length;
-  const maxCap = teamsCount * 14;
+  const maxCap = (teamsCount || 11) * 14;
 
   return {
     totalRegistrations: total,
@@ -98,7 +104,7 @@ async function getCalculatedStats(playersList, teamsCount) {
     available: Math.max(0, maxCap - approved),
     remainingSlots: Math.max(0, maxCap - approved),
     maxCapacity: maxCap,
-    totalTeams: teamsCount
+    totalTeams: teamsCount || 11
   };
 }
 

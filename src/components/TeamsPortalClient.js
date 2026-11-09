@@ -7,11 +7,13 @@ import {
   Users,
   Search,
   Shield,
-  ArrowLeft,
-  Sparkles,
   Shirt,
-  CheckCircle2
+  CheckCircle2,
+  Sparkles,
+  ArrowRight
 } from "lucide-react";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import CheckStatusModal from "@/components/CheckStatusModal";
 
 export default function TeamsPortalClient({ teams = [], players = [], settings = {} }) {
@@ -29,6 +31,11 @@ export default function TeamsPortalClient({ teams = [], players = [], settings =
 
   // Current active theme color
   const activeThemeColor = currentTeam?.themeColor || "#0041b9";
+
+  // Unallocated auction pool count
+  const unassignedPoolCount = useMemo(() => {
+    return players.filter((p) => p.paymentStatus === "Approved" && (!p.teamId || p.teamId === "")).length;
+  }, [players]);
 
   // Filtered players for current view
   const displayPlayers = useMemo(() => {
@@ -69,165 +76,144 @@ export default function TeamsPortalClient({ teams = [], players = [], settings =
   }, [selectedTeamId, selectedRole, searchQuery, players]);
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] text-slate-900 font-sans selection:bg-[#059669] selection:text-white transition-colors duration-500">
+    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans antialiased selection:bg-[#059669] selection:text-white flex flex-col justify-between">
       
-      {/* Top Ambient Franchise Glow (Subtle Light Tint) */}
-      <div
-        className="fixed top-0 left-1/2 -translate-x-1/2 w-[900px] h-[320px] blur-[150px] pointer-events-none opacity-15 transition-all duration-700 -z-10"
-        style={{ backgroundColor: activeThemeColor }}
+      {/* Sticky Main Website Navigation Bar */}
+      <Navbar
+        settings={settings}
+        onOpenStatusModal={() => setStatusModalOpen(true)}
       />
 
-      {/* Navigation Header (Clean White Theme matching Main Site) */}
-      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link
-              href="/"
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 hover:text-slate-950 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4 text-slate-600" />
-              <span>Back to Home</span>
-            </Link>
-
-            <div className="hidden sm:block h-5 w-[1px] bg-slate-200" />
-
-            <div className="flex items-center gap-2">
-              <img src="/images/gpl-logo.png" alt="GPL Logo" className="w-7 h-7 object-contain" />
-              <div className="text-xs font-black tracking-wide text-slate-900">
-                <span>GPL4</span>{" "}
-                <span className="text-[#059669] font-bold hidden md:inline">• Radhe Radhe Chasak</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setStatusModalOpen(true)}
-              className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition-all border border-slate-200 flex items-center gap-1.5 cursor-pointer shadow-xs"
-            >
-              <Search className="w-3.5 h-3.5 text-[#059669]" />
-              <span>Check Status / Pass</span>
-            </button>
-
-            <Link
-              href="/#register"
-              className="px-3.5 py-1.5 rounded-lg bg-[#059669] hover:bg-[#047857] text-white text-xs font-bold transition-all shadow-sm hidden sm:inline-flex"
-            >
-              Register Now
-            </Link>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
+      {/* Main Container */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 w-full flex-1 space-y-8 sm:space-y-10">
         
-        {/* Page Title & Context */}
-        <div className="text-center space-y-2 max-w-2xl mx-auto">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-[#059669] text-xs font-bold uppercase tracking-wider">
-            <Sparkles className="w-3.5 h-3.5 text-[#059669]" />
-            <span>Radhe Radhe Chasak GPL4 Franchises &amp; Squads</span>
+        {/* Page Header (Clean White / Light Slate Theme) */}
+        <div className="text-center max-w-3xl mx-auto space-y-3">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-[#059669] text-xs font-bold uppercase tracking-wider">
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Radhe Radhe Chashak • Season 4</span>
           </div>
-          <h1 className="text-2xl sm:text-4xl font-black text-slate-900 tracking-tight">
-            Select Franchise Team
+
+          <h1 className="text-3xl sm:text-5xl font-extrabold text-[#081a36] tracking-tight">
+            Tournament Franchises &amp; Squads
           </h1>
-          <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
-            Click on any team below to view official team owners, captain, and verified squad roster.
+
+          <p className="text-sm sm:text-base text-slate-600 leading-relaxed font-normal">
+            10 verified franchise teams competing at Sambhaji Maidan, Goregaon East. Select a team below to view official franchise owners, team captain, and verified 14-player squad roster.
           </p>
         </div>
 
-        {/* TEAM SELECTOR CAROUSEL / GRID (White Cards) */}
-        <div className="relative">
-          <div className="flex items-center gap-2.5 overflow-x-auto pb-2 scrollbar-none snap-x">
-            {teams.map((team) => {
+        {/* 10 TEAMS + AUCTION POOL SELECTOR GRID */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between text-xs font-bold text-slate-500 uppercase tracking-wider px-1">
+            <span>Select Franchise Team</span>
+            <span>{teams.length} Teams Active</span>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
+            {teams.map((team, idx) => {
               const isSelected = selectedTeamId === team.id;
               const squadCount = players.filter((p) => p.teamId === team.id).length;
+
               return (
                 <button
-                  key={team.id}
+                  key={team.id || idx}
                   onClick={() => {
                     setSelectedTeamId(team.id);
                     setSelectedRole("all");
+                    setSearchQuery("");
                   }}
-                  className={`snap-start shrink-0 px-3.5 py-2.5 rounded-2xl border transition-all duration-300 flex items-center gap-2.5 text-left cursor-pointer ${
+                  className={`relative p-3 sm:p-4 rounded-2xl bg-white transition-all duration-200 flex flex-col items-center text-center cursor-pointer border ${
                     isSelected
-                      ? "bg-white border-2 shadow-md scale-102"
-                      : "bg-white hover:bg-slate-50 border-slate-200 text-slate-700 shadow-xs hover:border-slate-300"
+                      ? "ring-2 ring-offset-2 border-transparent shadow-md scale-102"
+                      : "border-slate-200 hover:border-slate-300 hover:shadow-xs shadow-2xs"
                   }`}
                   style={{
-                    borderColor: isSelected ? (team.themeColor || "#0041b9") : undefined,
-                    boxShadow: isSelected ? `0 4px 16px ${team.themeColor || "#0041b9"}25` : undefined
+                    ringColor: isSelected ? (team.themeColor || "#0041b9") : undefined,
                   }}
                 >
-                  <div
-                    className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200 p-1 flex items-center justify-center shrink-0 shadow-xs"
-                    style={{ borderColor: isSelected ? (team.themeColor || "#0041b9") : undefined }}
-                  >
+                  {/* Selected Indicator Pill */}
+                  {isSelected && (
+                    <span
+                      className="absolute -top-2 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider text-white shadow-xs"
+                      style={{ backgroundColor: team.themeColor || "#0041b9" }}
+                    >
+                      Active
+                    </span>
+                  )}
+
+                  {/* Team Logo */}
+                  <div className="w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center p-1 mb-2">
                     {team.logo ? (
-                      <img src={team.logo} alt={team.name} className="max-h-full max-w-full object-contain" />
+                      <img
+                        src={team.logo}
+                        alt={team.name}
+                        className="max-h-full max-w-full object-contain filter drop-shadow-sm"
+                      />
                     ) : (
-                      <Shield className="w-5 h-5 text-slate-400" />
+                      <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400">
+                        <Shield className="w-6 h-6" />
+                      </div>
                     )}
                   </div>
-                  <div>
-                    <div className="text-xs font-black text-slate-900 leading-tight whitespace-nowrap">
-                      {team.name}
-                    </div>
-                    <div className="text-[10px] text-slate-500 font-semibold flex items-center gap-1.5 mt-0.5">
-                      <span className="font-mono font-bold text-amber-600">{team.shortCode}</span>
-                      <span>•</span>
-                      <span>{squadCount}/14</span>
-                    </div>
+
+                  {/* Team Name */}
+                  <div className="font-bold text-xs sm:text-sm text-slate-900 leading-tight line-clamp-1 mb-1">
+                    {team.name}
+                  </div>
+
+                  {/* Code & Strength Pill */}
+                  <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-500">
+                    <span className="font-mono text-xs font-bold text-slate-700">{team.shortCode || "GPL"}</span>
+                    <span>•</span>
+                    <span className="text-[#059669] font-bold">{squadCount}/14</span>
                   </div>
                 </button>
               );
             })}
 
-            {/* Auction Pool Tab */}
+            {/* Auction Draft Pool Card */}
             <button
               onClick={() => {
                 setSelectedTeamId("all");
                 setSelectedRole("all");
+                setSearchQuery("");
               }}
-              className={`snap-start shrink-0 px-3.5 py-2.5 rounded-2xl border transition-all duration-300 flex items-center gap-2.5 text-left cursor-pointer ${
+              className={`p-3 sm:p-4 rounded-2xl transition-all duration-200 flex flex-col items-center justify-center text-center cursor-pointer border ${
                 selectedTeamId === "all"
-                  ? "bg-emerald-50 border-2 border-emerald-600 shadow-md scale-102"
-                  : "bg-white hover:bg-emerald-50/50 border-slate-200 text-slate-700 shadow-xs"
+                  ? "bg-emerald-50 border-2 border-[#059669] shadow-md scale-102 ring-2 ring-emerald-500/20"
+                  : "bg-white hover:bg-emerald-50/50 border-slate-200 hover:border-emerald-200 text-slate-700 shadow-2xs"
               }`}
             >
-              <div className="w-10 h-10 rounded-xl bg-emerald-100/80 border border-emerald-300 flex items-center justify-center shrink-0 text-[#059669] font-bold">
-                <Users className="w-4 h-4" />
+              <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-emerald-100/70 border border-emerald-300 flex items-center justify-center text-[#059669] mb-2 shadow-2xs">
+                <Users className="w-7 h-7" />
               </div>
-              <div>
-                <div className="text-xs font-black text-slate-900 leading-tight whitespace-nowrap">
-                  Auction Draft Pool
-                </div>
-                <div className="text-[10px] text-[#059669] font-bold mt-0.5">
-                  {players.filter((p) => p.paymentStatus === "Approved" && (!p.teamId || p.teamId === "")).length} Available
-                </div>
+              <div className="font-bold text-xs sm:text-sm text-slate-900 leading-tight mb-1">
+                Auction Draft Pool
+              </div>
+              <div className="text-[11px] font-bold text-[#059669]">
+                {unassignedPoolCount} Available
               </div>
             </button>
           </div>
         </div>
 
-        {/* ACTIVE TEAM HERO BANNER (White / Clean Card Theme) */}
+        {/* SELECTED TEAM SHOWCASE BANNER */}
         {currentTeam ? (
           <div
-            className="rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 relative overflow-hidden transition-all duration-500 shadow-md"
+            className="rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm transition-all"
             style={{
               borderLeftWidth: "6px",
               borderLeftColor: activeThemeColor
             }}
           >
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center relative z-10">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
               
-              {/* Franchise Logo & Brand Badge */}
-              <div className="md:col-span-4 flex items-center gap-4 sm:gap-6">
+              {/* Franchise Logo + Identity */}
+              <div className="flex items-center gap-4 sm:gap-6">
                 <div
-                  className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-slate-50 border-2 p-2.5 flex items-center justify-center shrink-0 shadow-sm"
-                  style={{
-                    borderColor: activeThemeColor
-                  }}
+                  className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-slate-50 border-2 p-2 flex items-center justify-center shrink-0 shadow-xs"
+                  style={{ borderColor: activeThemeColor }}
                 >
                   {currentTeam.logo ? (
                     <img
@@ -236,7 +222,7 @@ export default function TeamsPortalClient({ teams = [], players = [], settings =
                       className="max-h-full max-w-full object-contain"
                     />
                   ) : (
-                    <Shield className="w-12 h-12 text-slate-400" />
+                    <Shield className="w-10 h-10 text-slate-400" />
                   )}
                 </div>
 
@@ -244,42 +230,49 @@ export default function TeamsPortalClient({ teams = [], players = [], settings =
                   <div
                     className="inline-block px-2.5 py-0.5 rounded-md text-[10px] font-mono font-black tracking-wider uppercase border"
                     style={{
-                      backgroundColor: `${activeThemeColor}15`,
-                      borderColor: `${activeThemeColor}40`,
+                      backgroundColor: `${activeThemeColor}12`,
+                      borderColor: `${activeThemeColor}30`,
                       color: activeThemeColor
                     }}
                   >
                     CODE: {currentTeam.shortCode}
                   </div>
-                  <h2 className="text-xl sm:text-2xl md:text-3xl font-black text-slate-900 leading-tight">
+                  <h2 className="text-2xl sm:text-3xl font-extrabold text-[#081a36] leading-tight">
                     {currentTeam.name}
                   </h2>
-                  <div className="text-xs text-slate-500 font-semibold">
-                    Radhe Radhe Chasak GPL4 Franchise
-                  </div>
+                  <p className="text-xs sm:text-sm text-slate-500 font-medium">
+                    Radhe Radhe Chashak GPL Season 4 Official Franchise
+                  </p>
                 </div>
               </div>
 
-              {/* Franchise Intel Grid */}
-              <div className="md:col-span-8 grid grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-50 rounded-2xl p-4 border border-slate-200 text-xs shadow-xs">
+              {/* Franchise Details (4 Clean Boxes) */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-50 rounded-2xl p-4 border border-slate-200">
                 <div className="space-y-0.5">
-                  <span className="text-[10px] uppercase font-bold text-slate-400">Owner</span>
-                  <div className="font-bold text-slate-900 truncate">{currentTeam.owner || "Mohsin & Ballu"}</div>
+                  <span className="text-[10px] uppercase font-bold text-slate-400 block">Owner</span>
+                  <div className="font-bold text-slate-900 text-xs sm:text-sm truncate">
+                    {currentTeam.owner || "Mohsin & Ballu"}
+                  </div>
                 </div>
+
                 <div className="space-y-0.5">
-                  <span className="text-[10px] uppercase font-bold text-slate-400">Team Captain</span>
-                  <div className="font-bold text-amber-700 truncate">{currentTeam.captain || "Franchise Captain"}</div>
+                  <span className="text-[10px] uppercase font-bold text-slate-400 block">Team Captain</span>
+                  <div className="font-bold text-amber-700 text-xs sm:text-sm truncate">
+                    {currentTeam.captain || "To be drafted"}
+                  </div>
                 </div>
+
                 <div className="space-y-0.5">
-                  <span className="text-[10px] uppercase font-bold text-slate-400">Championships</span>
-                  <div className="font-bold text-slate-900 flex items-center gap-1">
+                  <span className="text-[10px] uppercase font-bold text-slate-400 block">Titles</span>
+                  <div className="font-bold text-slate-900 text-xs sm:text-sm flex items-center gap-1">
                     <Trophy className="w-3.5 h-3.5 text-amber-500" />
                     <span>{currentTeam.championships || 0} Titles</span>
                   </div>
                 </div>
+
                 <div className="space-y-0.5">
-                  <span className="text-[10px] uppercase font-bold text-slate-400">Squad Allocated</span>
-                  <div className="font-mono font-bold text-[#059669]">
+                  <span className="text-[10px] uppercase font-bold text-slate-400 block">Squad Capacity</span>
+                  <div className="font-mono font-bold text-[#059669] text-xs sm:text-sm">
                     {displayPlayers.length} / 14 Players
                   </div>
                 </div>
@@ -288,30 +281,41 @@ export default function TeamsPortalClient({ teams = [], players = [], settings =
             </div>
           </div>
         ) : (
-          /* Auction Pool Header Banner */
-          <div className="rounded-3xl border border-emerald-200 bg-gradient-to-r from-emerald-50 via-white to-emerald-50 p-6 sm:p-8 relative overflow-hidden shadow-md">
-            <div className="max-w-xl space-y-2">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-100 border border-emerald-300 text-emerald-800 text-xs font-bold uppercase">
-                <Sparkles className="w-3 h-3 text-[#059669]" />
-                Live Auction Draft Pool
-              </span>
-              <h2 className="text-2xl sm:text-3xl font-black text-slate-900">
-                Unallocated Verified Players
-              </h2>
-              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
-                These players have completed registration verification and are ready for the franchise draft auction!
-              </p>
+          /* Live Auction Pool Showcase Banner */
+          <div className="rounded-3xl border border-emerald-200 bg-emerald-50/60 p-6 sm:p-8 shadow-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="space-y-1.5 max-w-xl">
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-100 border border-emerald-300 text-emerald-800 text-[11px] font-bold uppercase">
+                  <Sparkles className="w-3 h-3 text-[#059669]" />
+                  <span>Grand Auction Draft Pool</span>
+                </div>
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-[#081a36]">
+                  Verified Available Players
+                </h2>
+                <p className="text-xs sm:text-sm text-slate-600 font-medium">
+                  Approved registered players from Ward 51 &amp; 54 available for franchise selection in the upcoming GPL Season 4 Auction.
+                </p>
+              </div>
+
+              <div className="bg-white rounded-2xl p-4 border border-emerald-200 text-center shrink-0 shadow-xs">
+                <div className="text-2xl sm:text-3xl font-extrabold text-[#059669]">
+                  {unassignedPoolCount}
+                </div>
+                <div className="text-xs font-bold text-slate-600">
+                  Players in Pool
+                </div>
+              </div>
             </div>
           </div>
         )}
 
-        {/* FILTER & SEARCH TOOLBAR (Clean Light Theme) */}
+        {/* SQUAD FILTER BAR & SEARCH */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-2">
           
-          {/* Role Filter Pills */}
+          {/* Role Filter Tabs */}
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
             {[
-              { id: "all", label: "All Roles" },
+              { id: "all", label: "All Squad" },
               { id: "batsman", label: "Batsmen" },
               { id: "bowler", label: "Bowlers" },
               { id: "allrounder", label: "All-Rounders" },
@@ -322,8 +326,8 @@ export default function TeamsPortalClient({ teams = [], players = [], settings =
                 onClick={() => setSelectedRole(role.id)}
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
                   selectedRole === role.id
-                    ? "bg-[#081a36] text-white shadow-sm"
-                    : "bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 shadow-2xs"
+                    ? "bg-[#081a36] text-white shadow-xs"
+                    : "bg-white hover:bg-slate-100 text-slate-700 border border-slate-200"
                 }`}
               >
                 {role.label}
@@ -332,12 +336,12 @@ export default function TeamsPortalClient({ teams = [], players = [], settings =
           </div>
 
           {/* Search Box */}
-          <div className="relative w-full sm:w-64">
+          <div className="relative w-full sm:w-72">
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search player name or ward..."
+              placeholder="Search player name, ID, or ward..."
               className="w-full px-3.5 py-2 pl-9 rounded-xl bg-white border border-slate-300 focus:border-[#059669] focus:ring-2 focus:ring-[#059669]/20 text-xs font-semibold text-slate-900 placeholder:text-slate-400 outline-none transition-all shadow-xs"
             />
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -345,22 +349,22 @@ export default function TeamsPortalClient({ teams = [], players = [], settings =
 
         </div>
 
-        {/* PLAYER SQUAD GRID (Crisp White Player Cards) */}
+        {/* SQUAD ROSTER CARDS GRID */}
         {displayPlayers.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {displayPlayers.map((player) => (
               <div
                 key={player.id || player.regNumber}
-                className="bg-white hover:bg-slate-50/80 rounded-2xl border border-slate-200 hover:border-slate-300 p-4 transition-all duration-300 space-y-3 relative group shadow-xs hover:shadow-md hover:-translate-y-0.5"
+                className="bg-white rounded-2xl border border-slate-200 p-4 transition-all duration-200 space-y-3 shadow-xs hover:shadow-md hover:border-slate-300 relative group"
                 style={{
                   borderTopWidth: "3px",
                   borderTopColor: activeThemeColor
                 }}
               >
-                {/* Top Badge: Reg Number & Ward */}
+                {/* Header: Reg Number & Ward */}
                 <div className="flex items-center justify-between text-xs font-mono">
                   <span
-                    className="font-black px-2 py-0.5 rounded-md border"
+                    className="font-bold px-2 py-0.5 rounded-md border"
                     style={{
                       backgroundColor: `${activeThemeColor}12`,
                       borderColor: `${activeThemeColor}30`,
@@ -370,7 +374,7 @@ export default function TeamsPortalClient({ teams = [], players = [], settings =
                     #{player.regNumber}
                   </span>
                   <span className="text-[11px] font-bold text-slate-600 px-2 py-0.5 rounded bg-slate-100 border border-slate-200">
-                    {player.ward || "Ward 51/54"}
+                    {player.ward || "Ward 51"}
                   </span>
                 </div>
 
@@ -380,7 +384,7 @@ export default function TeamsPortalClient({ teams = [], players = [], settings =
                     className="w-14 h-14 rounded-xl bg-slate-100 border-2 overflow-hidden flex items-center justify-center shrink-0 shadow-xs relative"
                     style={{ borderColor: activeThemeColor }}
                   >
-                    {player.photoUrl ? (
+                    {player.photoUrl && !player.photoUrl.includes("placeholder") ? (
                       <img
                         src={player.photoUrl}
                         alt={player.name}
@@ -399,10 +403,10 @@ export default function TeamsPortalClient({ teams = [], players = [], settings =
                   </div>
 
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-black text-sm text-slate-900 truncate leading-tight group-hover:text-[#059669] transition-colors">
+                    <h3 className="font-extrabold text-sm text-slate-900 truncate leading-tight group-hover:text-[#0041b9] transition-colors">
                       {player.name}
                     </h3>
-                    <div className="text-xs text-amber-700 font-semibold truncate mt-0.5">
+                    <div className="text-xs text-amber-800 font-semibold truncate mt-0.5">
                       {player.speciality || "Cricket Player"}
                     </div>
                     <div className="text-[10px] text-slate-500 font-mono mt-1 flex items-center gap-1.5">
@@ -412,33 +416,61 @@ export default function TeamsPortalClient({ teams = [], players = [], settings =
                   </div>
                 </div>
 
-                {/* Team Tag Strip */}
+                {/* Status Bar */}
                 <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
-                  <span className="text-slate-400 font-medium">Status:</span>
+                  <span className="text-slate-400 font-medium">Squad Status:</span>
                   <span className="font-bold text-[#059669] flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#059669] animate-pulse" />
-                    <span>{currentTeam ? currentTeam.name : "Verified in Pool"}</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#059669]" />
+                    <span>{currentTeam ? "Verified Squad Member" : "In Auction Pool"}</span>
                   </span>
                 </div>
-
               </div>
             ))}
           </div>
         ) : (
-          <div className="text-center py-12 px-4 rounded-3xl bg-white border border-dashed border-slate-300 space-y-3 shadow-xs">
-            <Users className="w-10 h-10 text-slate-400 mx-auto" />
-            <h4 className="font-bold text-base text-slate-900">No players found</h4>
-            <p className="text-xs text-slate-500 max-w-sm mx-auto font-medium">
-              {searchQuery
-                ? `No players matched "${searchQuery}". Try a different search term or reset the role filter.`
-                : currentTeam
-                ? `No players are currently allocated to ${currentTeam.name}. Check the Auction Draft Pool tab to see available players!`
-                : "No unallocated players in the auction pool right now."}
-            </p>
+          /* Professional Empty Squad Notice */
+          <div className="text-center py-16 px-4 rounded-3xl bg-white border border-slate-200 shadow-xs space-y-4 max-w-xl mx-auto">
+            <div className="w-14 h-14 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center text-[#059669] mx-auto">
+              <Users className="w-7 h-7" />
+            </div>
+
+            <div className="space-y-1">
+              <h3 className="font-extrabold text-lg text-slate-900">
+                {searchQuery
+                  ? "No matching players found"
+                  : currentTeam
+                  ? `${currentTeam.name} Squad Allocation In Progress`
+                  : "Auction Draft Pool Empty"}
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-500 leading-relaxed max-w-md mx-auto">
+                {searchQuery
+                  ? `No squad players matched "${searchQuery}". Please check your search term or select another category.`
+                  : currentTeam
+                  ? `Official squad allocations for ${currentTeam.name} are currently underway. Verified players will be drafted during the GPL Grand Auction.`
+                  : "All registered players have been allocated to tournament franchise teams."}
+              </p>
+            </div>
+
+            {selectedTeamId !== "all" && unassignedPoolCount > 0 && !searchQuery && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedTeamId("all");
+                  setSelectedRole("all");
+                }}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#081a36] hover:bg-[#0041b9] text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
+              >
+                <span>View Auction Draft Pool ({unassignedPoolCount} Players)</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            )}
           </div>
         )}
 
       </main>
+
+      {/* Main Website Footer */}
+      <Footer settings={settings} />
 
       {/* Check Status Modal */}
       <CheckStatusModal
