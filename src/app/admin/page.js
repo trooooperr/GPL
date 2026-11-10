@@ -1663,24 +1663,33 @@ export default function AdminDashboard() {
                       </div>
                     </div>
 
-                    {/* Documents Lightbox Row (2 columns: Aadhaar Front & Back) */}
-                    <div className="grid grid-cols-2 gap-2 pt-1">
+                    {/* Documents Lightbox Row (Aadhaar Front, Back & Instagram Follow Proof) */}
+                    <div className="grid grid-cols-3 gap-1.5 pt-1">
                       <button
                         type="button"
                         onClick={() => setFullScreenImage({ url: player.aadhaarFrontUrl, title: `Aadhaar Front - ${player.name}` })}
-                        className="py-1.5 px-2 rounded-lg bg-blue-50 text-[#0041b9] text-[11px] font-semibold border border-blue-100 hover:bg-blue-100 flex items-center justify-center gap-1 transition-colors min-w-0 cursor-pointer"
+                        className="py-1.5 px-1.5 rounded-lg bg-blue-50 text-[#0041b9] text-[11px] font-semibold border border-blue-100 hover:bg-blue-100 flex items-center justify-center gap-1 transition-colors min-w-0 cursor-pointer"
                       >
                         <FileCheck className="w-3.5 h-3.5 shrink-0" />
-                        <span className="truncate">Aadhaar Front</span>
+                        <span className="truncate">Aadhaar F</span>
                       </button>
 
                       <button
                         type="button"
                         onClick={() => setFullScreenImage({ url: player.aadhaarBackUrl, title: `Aadhaar Back - ${player.name}` })}
-                        className="py-1.5 px-2 rounded-lg bg-blue-50 text-[#0041b9] text-[11px] font-semibold border border-blue-100 hover:bg-blue-100 flex items-center justify-center gap-1 transition-colors min-w-0 cursor-pointer"
+                        className="py-1.5 px-1.5 rounded-lg bg-blue-50 text-[#0041b9] text-[11px] font-semibold border border-blue-100 hover:bg-blue-100 flex items-center justify-center gap-1 transition-colors min-w-0 cursor-pointer"
                       >
                         <FileCheck className="w-3.5 h-3.5 shrink-0" />
-                        <span className="truncate">Aadhaar Back</span>
+                        <span className="truncate">Aadhaar B</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setFullScreenImage({ url: player.paymentProofUrl, title: `Instagram Follow Proof - ${player.name}` })}
+                        className="py-1.5 px-1.5 rounded-lg bg-pink-50 text-pink-700 text-[11px] font-semibold border border-pink-100 hover:bg-pink-100 flex items-center justify-center gap-1 transition-colors min-w-0 cursor-pointer"
+                      >
+                        <InstagramIcon className="w-3.5 h-3.5 shrink-0 text-pink-500" />
+                        <span className="truncate">IG Proof</span>
                       </button>
                     </div>
 
@@ -1866,6 +1875,13 @@ export default function AdminDashboard() {
                                   title="Aadhaar Back"
                                 >
                                   AB
+                                </button>
+                                <button
+                                  onClick={() => setFullScreenImage({ url: player.paymentProofUrl, title: `Instagram Follow Proof - ${player.name}` })}
+                                  className="p-1 rounded bg-pink-50 text-pink-700 hover:bg-pink-100 font-mono text-[10px] px-1.5 cursor-pointer"
+                                  title="Instagram Follow Proof"
+                                >
+                                  IG
                                 </button>
                               </div>
                             </td>
@@ -2850,8 +2866,8 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            {/* Document Previews */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {/* Document Previews (4 Columns: Photo, Aadhaar Front, Aadhaar Back, Instagram Proof) */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
 
               {/* Profile Photo (only if provided) */}
               {inspectPlayer.photoUrl && !inspectPlayer.photoUrl.includes('placeholder') && (
@@ -2891,6 +2907,27 @@ export default function AdminDashboard() {
                   className="h-32 sm:h-36 rounded-xl bg-slate-100 border border-slate-200 overflow-hidden flex items-center justify-center cursor-pointer group relative hover:border-[#0041b9]"
                 >
                   <img src={inspectPlayer.aadhaarBackUrl} alt="Aadhaar Back" className="max-h-full max-w-full object-contain" />
+                  <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-white">
+                    <Maximize2 className="w-5 h-5" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Instagram Follow Proof Screenshot */}
+              <div className="space-y-1">
+                <span className="text-[10px] font-bold text-pink-600 uppercase block flex items-center gap-1">
+                  <InstagramIcon className="w-3 h-3 text-pink-500" />
+                  <span>Instagram Proof</span>
+                </span>
+                <div
+                  onClick={() => setFullScreenImage({ url: inspectPlayer.paymentProofUrl, title: `Instagram Follow Proof - ${inspectPlayer.name}` })}
+                  className="h-32 sm:h-36 rounded-xl bg-pink-50/50 border border-pink-200 overflow-hidden flex items-center justify-center cursor-pointer group relative hover:border-pink-500"
+                >
+                  {inspectPlayer.paymentProofUrl && !inspectPlayer.paymentProofUrl.includes('placeholder') ? (
+                    <img src={inspectPlayer.paymentProofUrl} alt="Instagram Proof" className="max-h-full max-w-full object-contain" />
+                  ) : (
+                    <div className="text-center p-2 text-slate-400 text-xs">No screenshot uploaded</div>
+                  )}
                   <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-white">
                     <Maximize2 className="w-5 h-5" />
                   </div>

@@ -178,15 +178,23 @@ export async function getNextPlayerId() {
   await connectToDatabase();
   const counterId = "player_registration_seq";
 
-  // 1. Sync counter with the maximum active registration number currently in the database
-  await syncRegistrationCounter();
-
-  // 2. Atomic increment operation
+  // Fast atomic increment operation (5ms)
   const result = await MongoCounter.findByIdAndUpdate(
     counterId,
     { $inc: { seq: 1 } },
     { returnDocument: "after", upsert: true }
   );
+
+  // If counter is uninitialized or below 1001, sync once
+  if (!result || !result.seq || result.seq < 1001) {
+    await syncRegistrationCounter();
+    const finalResult = await MongoCounter.findByIdAndUpdate(
+      counterId,
+      { $inc: { seq: 1 } },
+      { returnDocument: "after", upsert: true }
+    );
+    return String(finalResult.seq);
+  }
 
   return String(result.seq);
 }

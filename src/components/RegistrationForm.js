@@ -38,6 +38,7 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
   const [photoPreview, setPhotoPreview] = useState("");
 
   const [fieldErrors, setFieldErrors] = useState({});
+  const [hasClickedFollow, setHasClickedFollow] = useState(false);
   const [copiedUpi, setCopiedUpi] = useState(false);
   const [copiedReceipt, setCopiedReceipt] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -114,8 +115,8 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
     }
   };
 
-  // Robust client-side canvas compression: converts any phone/desktop image to lightweight ~40KB JPEG
-  const compressImageToDataUrl = (file, maxWidth = 800, quality = 0.65) => {
+  // Optimized client-side canvas compression: converts phone/desktop image to lightweight ~30-45KB JPEG for ultra-fast submit
+  const compressImageToDataUrl = (file, maxWidth = 640, quality = 0.55) => {
     return new Promise((resolve) => {
       if (!file) return resolve({ name: "", dataUrl: "" });
       const reader = new FileReader();
@@ -232,7 +233,12 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
       errors.aadhaarBack = "Aadhaar Card Back photo is required.";
     }
 
-    // 9. Instagram Follow Proof Screenshot
+    // 9. Instagram Follow Button Clicked
+    if (!hasClickedFollow) {
+      errors.followButton = `You must click the "Follow @${IG_HANDLE}" button above to follow our official page before submitting.`;
+    }
+
+    // 10. Instagram Follow Proof Screenshot
     if (!files.paymentProof) {
       errors.paymentProof = "Instagram follow screenshot proof is required.";
     }
@@ -813,15 +819,43 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
               <div className="md:col-span-6 space-y-4">
                 
                 {/* Open Instagram Follow Button */}
-                <a
-                  href={IG_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full bg-gradient-to-r from-[#833ab4] via-[#fd1d1d] to-[#fcb045] hover:opacity-95 text-white font-bold py-3.5 px-4 rounded-xl text-sm text-center shadow-md transition-all active:scale-98 flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  <InstagramIcon className="w-4 h-4" />
-                  <span>Follow ↗</span>
-                </a>
+                <div className="space-y-2">
+                  <a
+                    href={IG_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => {
+                      setHasClickedFollow(true);
+                      if (fieldErrors.followButton) {
+                        setFieldErrors((prev) => ({ ...prev, followButton: "" }));
+                      }
+                    }}
+                    className={`w-full text-white font-bold py-3.5 px-4 rounded-xl text-sm text-center shadow-md transition-all active:scale-98 flex items-center justify-center gap-2 cursor-pointer ${
+                      hasClickedFollow
+                        ? "bg-emerald-600 hover:bg-emerald-700 ring-2 ring-emerald-300"
+                        : "bg-gradient-to-r from-[#833ab4] via-[#fd1d1d] to-[#fcb045] hover:opacity-95"
+                    }`}
+                  >
+                    <InstagramIcon className="w-4 h-4" />
+                    <span>
+                      {hasClickedFollow ? `✓ Following @${IG_HANDLE}` : `Step 1: Click to Follow @${IG_HANDLE} ↗`}
+                    </span>
+                  </a>
+
+                  {fieldErrors.followButton && (
+                    <div className="p-2.5 rounded-lg bg-red-50 border border-red-200 text-xs text-red-700 font-bold flex items-center gap-2">
+                      <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
+                      <span>{fieldErrors.followButton}</span>
+                    </div>
+                  )}
+
+                  {hasClickedFollow && (
+                    <p className="text-[11px] text-emerald-700 font-semibold bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200 flex items-center gap-1.5">
+                      <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                      <span>Instagram page opened. Now upload your follow screenshot below.</span>
+                    </p>
+                  )}
+                </div>
 
                 {/* Follow Screenshot Upload */}
                 <div>
