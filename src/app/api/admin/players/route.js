@@ -28,6 +28,22 @@ function mapPlayer(r) {
     }
   }
 
+  const photoUrl = (r.photoUrl && !r.photoUrl.includes("placeholder"))
+    ? (r.photoUrl.startsWith("/api/player-photo") || r.photoUrl.startsWith("http") ? r.photoUrl : `/api/player-photo?id=${r.id}`)
+    : "/images/avatar-placeholder.svg";
+
+  const aadhaarFrontUrl = (r.aadhaarFrontUrl && !r.aadhaarFrontUrl.includes("placeholder"))
+    ? (r.aadhaarFrontUrl.startsWith("/api/player-photo") || r.aadhaarFrontUrl.startsWith("http") ? r.aadhaarFrontUrl : `/api/player-photo?id=${r.id}&t=front`)
+    : "/images/doc-placeholder.svg";
+
+  const aadhaarBackUrl = (r.aadhaarBackUrl && !r.aadhaarBackUrl.includes("placeholder"))
+    ? (r.aadhaarBackUrl.startsWith("/api/player-photo") || r.aadhaarBackUrl.startsWith("http") ? r.aadhaarBackUrl : `/api/player-photo?id=${r.id}&t=back`)
+    : "/images/doc-placeholder.svg";
+
+  const paymentProofUrl = (r.paymentProofUrl && !r.paymentProofUrl.includes("placeholder"))
+    ? (r.paymentProofUrl.startsWith("/api/player-photo") || r.paymentProofUrl.startsWith("http") ? r.paymentProofUrl : `/api/player-photo?id=${r.id}&t=proof`)
+    : "/images/payment-placeholder.svg";
+
   return {
     id: r.id,
     displayId,
@@ -47,10 +63,10 @@ function mapPlayer(r) {
       : (r.utrNumber && !r.utrNumber.toUpperCase().includes("FREE") && r.utrNumber.startsWith("@") ? r.utrNumber.slice(1) : ""),
     amount: r.amount !== undefined ? r.amount : 0,
     paymentStatus: r.paymentStatus || "Pending",
-    photoUrl: r.photoUrl || "/images/avatar-placeholder.svg",
-    aadhaarFrontUrl: r.aadhaarFrontUrl || "/images/doc-placeholder.svg",
-    aadhaarBackUrl: r.aadhaarBackUrl || "/images/doc-placeholder.svg",
-    paymentProofUrl: r.paymentProofUrl || "/images/payment-placeholder.svg",
+    photoUrl,
+    aadhaarFrontUrl,
+    aadhaarBackUrl,
+    paymentProofUrl,
     teamId: r.teamId || null,
     cardUrl: r.cardUrl || null,
     notes: r.notes || "",
@@ -187,12 +203,18 @@ export async function POST(request) {
           }
         }
         for (const pid of ids) {
-          MongoRegistration.findOne({ id: pid }).lean().then((p) => {
-            if (p) {
-              const customCard = cardsMap?.[pid] || p.cardUrl;
-              sendPlayerStatusEmail(mapPlayer(p), "Approved", notes || "", customCard).catch(() => {});
-            }
-          }).catch(() => {});
+          const p = await MongoRegistration.findOne({ id: pid }).lean();
+          if (p) {
+            const customCard = cardsMap?.[pid] || p.cardUrl;
+            await sendPlayerStatusEmail(mapPlayer(p), "Approved", notes || "", customCard).catch(() => {});
+          }
+        }
+      } else if (status.toLowerCase() === "rejected") {
+        for (const pid of ids) {
+          const p = await MongoRegistration.findOne({ id: pid }).lean();
+          if (p) {
+            await sendPlayerStatusEmail(mapPlayer(p), "Rejected", notes || "").catch(() => {});
+          }
         }
       }
 
@@ -280,6 +302,13 @@ export async function POST(request) {
     if (action === "edit" && id && playerData) {
       const cleanPlayerData = { ...playerData };
       delete cleanPlayerData._id;
+
+      // Protect stored documents from being overwritten by stream/placeholder URLs
+      ["photoUrl", "aadhaarFrontUrl", "aadhaarBackUrl", "paymentProofUrl", "cardUrl"].forEach((f) => {
+        if (typeof cleanPlayerData[f] === "string" && (cleanPlayerData[f].startsWith("/api/player-photo") || cleanPlayerData[f].includes("placeholder"))) {
+          delete cleanPlayerData[f];
+        }
+      });
       
       // If paymentStatus is set to Rejected, automatically remove from team
       if (cleanPlayerData.paymentStatus && cleanPlayerData.paymentStatus.toLowerCase() === "rejected") {
@@ -300,7 +329,7 @@ export async function POST(request) {
         old?.paymentStatus !== cleanPlayerData.paymentStatus &&
         ["approved", "rejected"].includes(cleanPlayerData.paymentStatus.toLowerCase())
       ) {
-        sendPlayerStatusEmail(mappedUpdated, cleanPlayerData.paymentStatus, cleanPlayerData.notes || "").catch(() => {});
+        await sendPlayerStatusEmail(mappedUpdated, cleanPlayerData.paymentStatus, cleanPlayerData.notes || "").catch(() => {});
       }
 
       const stats = await getCalculatedStats();
@@ -342,7 +371,9 @@ export async function POST(request) {
       const mappedUpdated = mapPlayer(updated);
 
       if (["approved", "rejected"].includes(status.toLowerCase())) {
-        sendPlayerStatusEmail(mappedUpdated, status, notes || "", cardDataUrl || updated?.cardUrl).catch(() => {});
+        await sendPlayerStatusEmail(mappedUpdated, status, notes || "", cardDataUrl || updated?.cardUrl).catch((err) => {
+          console.error(`[Admin status email error for ${id}]:`, err.message);
+        });
       }
 
       const stats = await getCalculatedStats();
