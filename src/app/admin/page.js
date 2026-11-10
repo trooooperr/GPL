@@ -46,7 +46,7 @@ import {
 } from "lucide-react";
 import QRCode from "qrcode";
 import { INITIAL_RULES, INITIAL_FAQS } from "@/lib/constants";
-import PlayerRegistrationCard from "@/components/PlayerRegistrationCard";
+import PlayerRegistrationCard, { renderPlayerCardToDataUrl } from "@/components/PlayerRegistrationCard";
 
 function InstagramIcon({ className = "w-4 h-4" }) {
   return (
@@ -376,10 +376,24 @@ export default function AdminDashboard() {
 
     // 2. Perform DB update in background (lightweight & fast)
     try {
+      let cardDataUrl = null;
+      if (newStatus === "Approved" && targetPlayer) {
+        try {
+          cardDataUrl = await renderPlayerCardToDataUrl({
+            player: targetPlayer,
+            regNum: targetPlayer.displayId || targetPlayer.id,
+            photo: targetPlayer.photoUrl,
+            status: "Approved"
+          });
+        } catch (e) {
+          console.warn("[Card render error]:", e);
+        }
+      }
+
       const res = await fetch("/api/admin/players", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: playerId, status: newStatus, notes }),
+        body: JSON.stringify({ id: playerId, status: newStatus, notes, cardDataUrl }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.success) {
@@ -952,10 +966,28 @@ export default function AdminDashboard() {
     showToast(`${idsToApprove.length} players marked as Approved!`, "success");
 
     try {
+      const cardsMap = {};
+      for (const id of idsToApprove) {
+        const target = players.find((p) => p.id === id);
+        if (target) {
+          try {
+            const dataUrl = await renderPlayerCardToDataUrl({
+              player: target,
+              regNum: target.displayId || target.id,
+              photo: target.photoUrl,
+              status: "Approved"
+            });
+            if (dataUrl) cardsMap[id] = dataUrl;
+          } catch (e) {
+            console.warn("[Batch card render notice]:", e);
+          }
+        }
+      }
+
       const res = await fetch("/api/admin/players", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "batchStatus", ids: idsToApprove, status: "Approved" }),
+        body: JSON.stringify({ action: "batchStatus", ids: idsToApprove, status: "Approved", cardsMap }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.success) {

@@ -4,18 +4,263 @@ import { useEffect, useRef, useState } from "react";
 import { Download, Share2, X, CheckCircle2 } from "lucide-react";
 
 /**
- * PlayerRegistrationCard
- * High-resolution official GPL Season 4 Player Registration Card:
- * - Ultra-crisp official stadium background with gold borders
- * - Radhe Radhe Foundation header & official registration number
- * - Official GPL logo with peacock feather and flute
- * - Goregaon Premier League - Season 4 - Player Registration Card title graphic
- * - Sandeep Jadhav official portrait in bottom-right corner
- * - Completely dynamic Player Photo (uploaded photo or avatar) inside gold frame
- * - Completely dynamic Player Name in metallic bold italic chrome with black outline
- * - Completely dynamic Player ID inside golden oval pill
- * - Completely dynamic Ward and Role inside golden badge pills
+ * drawPlayerCardToCanvas
+ * High-resolution official GPL Season 4 Player Registration Card (935x1024):
+ * - Stadium background with gold borders
+ * - Dynamic Player Photo (uploaded photo or avatar silhouette)
+ * - Dynamic Player Name in metallic chrome bold italic
+ * - Dynamic Player ID inside golden oval pill
+ * - Dynamic Ward and Role inside golden badge frame
+ * - Dynamic Status Badge (Approved/Registered vs Pending)
  */
+export async function drawPlayerCardToCanvas(canvas, { player, regNum, photo, status }) {
+  if (!canvas) return;
+
+  const W = 935;
+  const H = 1024;
+  canvas.width = W;
+  canvas.height = H;
+  const ctx = canvas.getContext("2d");
+
+  const loadImg = (src) =>
+    new Promise((resolve, reject) => {
+      if (!src) return reject(new Error("No source"));
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => resolve(img);
+      img.onerror = reject;
+      img.src = src;
+    });
+
+  const roundRect = (x, y, w, h, r) => {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.arcTo(x + w, y, x + w, y + r, r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+    ctx.lineTo(x + r, y + h);
+    ctx.arcTo(x, y + h, x, y + h - r, r);
+    ctx.lineTo(x, y + r);
+    ctx.arcTo(x, y, x + r, y, r);
+    ctx.closePath();
+  };
+
+  const drawMetallicText = ({
+    text,
+    x,
+    y,
+    baseSize = 28,
+    maxW = 280,
+    align = "center",
+    shear = -0.20,
+    strokeWidth = 6,
+  }) => {
+    ctx.save();
+    let size = baseSize;
+    ctx.font = `900 ${size}px 'Arial Black', Impact, sans-serif`;
+    while (ctx.measureText(text).width > maxW && size > 16) {
+      size -= 2;
+      ctx.font = `900 ${size}px 'Arial Black', Impact, sans-serif`;
+    }
+
+    ctx.textAlign = align;
+    ctx.textBaseline = "middle";
+
+    ctx.translate(x, y);
+    ctx.transform(1, 0, shear, 1, 0, 0);
+
+    ctx.strokeStyle = "#000000";
+    ctx.lineWidth = strokeWidth;
+    ctx.lineJoin = "round";
+    ctx.strokeText(text, 0, 0);
+
+    const grad = ctx.createLinearGradient(0, -size / 2, 0, size / 2);
+    grad.addColorStop(0, "#ffffff");
+    grad.addColorStop(0.55, "#e2e8f0");
+    grad.addColorStop(1, "#b0bcc8");
+    ctx.fillStyle = grad;
+    ctx.fillText(text, 0, 0);
+
+    ctx.restore();
+  };
+
+  try {
+    const baseImg = await loadImg("/images/gpl-card-base.png?v=5");
+    ctx.drawImage(baseImg, 0, 0, W, H);
+  } catch (err) {
+    console.error("Base image load error:", err);
+  }
+
+  const blkX = 70;
+  const blkY = 562;
+  const blkW = 505;
+  const blkH = 185;
+  const scaleP = blkW / 920;
+
+  const px = blkX + 31 * scaleP;
+  const py = blkY + 28 * scaleP;
+  const pw = 270 * scaleP;
+  const ph = 280 * scaleP;
+  const pr = 26 * scaleP;
+
+  roundRect(px, py, pw, ph, pr);
+  ctx.fillStyle = "rgba(10, 14, 28, 0.96)";
+  ctx.fill();
+
+  let photoDrawn = false;
+  const effectivePhoto = photo || player?.photoUrl;
+  if (effectivePhoto && !effectivePhoto.includes("placeholder")) {
+    try {
+      const pImg = await loadImg(effectivePhoto);
+      ctx.save();
+      roundRect(px, py, pw, ph, pr);
+      ctx.clip();
+
+      const srcW = pImg.naturalWidth;
+      const srcH = pImg.naturalHeight;
+      const sq = Math.min(srcW, srcH);
+      const sx = (srcW - sq) / 2;
+      const sy = (srcH - sq) / 2;
+      ctx.drawImage(pImg, sx, sy, sq, sq, px, py, pw, ph);
+      ctx.restore();
+      photoDrawn = true;
+    } catch (_) {}
+  }
+
+  if (!photoDrawn) {
+    ctx.save();
+    roundRect(px, py, pw, ph, pr);
+    ctx.clip();
+    ctx.fillStyle = "rgba(120, 136, 160, 0.85)";
+    const cx = px + pw / 2;
+    const cy = py + ph / 2;
+    ctx.beginPath();
+    ctx.arc(cx, cy - 24, 23, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(cx - 38, cy + 58);
+    ctx.lineTo(cx + 38, cy + 58);
+    ctx.lineTo(cx + 28, cy + 12);
+    ctx.lineTo(cx - 28, cy + 12);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+
+  try {
+    const frameImg = await loadImg("/images/gpl-card-player-frame.png?v=4");
+    ctx.drawImage(frameImg, blkX, blkY, blkW, blkH);
+  } catch (err) {
+    console.error("Player frame load error:", err);
+  }
+
+  const playerName = (player?.name || "PLAYER NAME").toUpperCase();
+  const nameCX = blkX + 649 * scaleP;
+  const nameCY = blkY + 76 * scaleP;
+  drawMetallicText({
+    text: playerName,
+    x: nameCX,
+    y: nameCY,
+    baseSize: 28,
+    maxW: 290,
+    align: "center",
+    shear: -0.22,
+    strokeWidth: 5,
+  });
+
+  const idVal = String(regNum || player?.displayId || player?.regNumber || player?.id || "1001");
+  const idCX = blkX + 626 * scaleP;
+  const idCY = blkY + 273 * scaleP;
+  ctx.save();
+  ctx.font = "900 24px 'Arial Black', Impact, sans-serif";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillStyle = "rgba(0, 0, 0, 0.95)";
+  ctx.fillText(idVal, idCX + 2, idCY + 2);
+  ctx.fillStyle = "#fde047";
+  ctx.fillText(idVal, idCX, idCY);
+  ctx.restore();
+
+  const wrX = 70;
+  const wrY = 761;
+  const wrW = 458;
+  const wrH = 148;
+  const scaleWR = wrW / 995;
+
+  try {
+    const wrFrameImg = await loadImg("/images/gpl-card-ward-role-frame.png?v=4");
+    ctx.drawImage(wrFrameImg, wrX, wrY, wrW, wrH);
+  } catch (err) {
+    console.error("Ward/Role frame load error:", err);
+  }
+
+  const wardText = (player?.ward || "WARD 51").toUpperCase();
+  const wx = wrX + 219 * scaleWR;
+  const wy = wrY + 84 * scaleWR;
+  drawMetallicText({
+    text: wardText,
+    x: wx,
+    y: wy,
+    baseSize: 32,
+    maxW: 270,
+    align: "left",
+    shear: -0.22,
+    strokeWidth: 5,
+  });
+
+  const roleText = (player?.speciality || player?.role || "ALL-ROUNDER").toUpperCase();
+  const rx = wrX + 219 * scaleWR;
+  const ry = wrY + 245 * scaleWR;
+  drawMetallicText({
+    text: roleText,
+    x: rx,
+    y: ry,
+    baseSize: 28,
+    maxW: 270,
+    align: "left",
+    shear: -0.22,
+    strokeWidth: 5,
+  });
+
+  const rawStatus = String(status || player?.paymentStatus || player?.status || "").toLowerCase();
+  const isApproved =
+    rawStatus === "approved" ||
+    rawStatus === "registered" ||
+    player?.isApproved === true;
+
+  const badgeSrc = isApproved
+    ? "/images/gpl-badge-registered.png?v=4"
+    : "/images/gpl-badge-pending.png?v=4";
+
+  try {
+    const badgeImg = await loadImg(badgeSrc);
+    const bw = 220;
+    const bh = Math.round(bw * (badgeImg.naturalHeight / badgeImg.naturalWidth));
+    const bx = 822 - bw;
+    const by = 104;
+    ctx.drawImage(badgeImg, bx, by, bw, bh);
+  } catch (err) {
+    console.error("Status badge load error:", err);
+  }
+}
+
+/**
+ * renderPlayerCardToDataUrl
+ * Renders the personalized player card offscreen and returns a high-res base64 PNG dataUrl
+ */
+export async function renderPlayerCardToDataUrl({ player, regNum, photo, status = "Approved" }) {
+  if (typeof document === "undefined") return null;
+  const canvas = document.createElement("canvas");
+  await drawPlayerCardToCanvas(canvas, {
+    player,
+    regNum: regNum || player?.displayId || player?.regNumber || player?.id,
+    photo: photo || player?.photoUrl,
+    status
+  });
+  return canvas.toDataURL("image/png", 0.95);
+}
+
 export default function PlayerRegistrationCard({ player, regNum, photo, status, onClose }) {
   const canvasRef = useRef(null);
   const [rendered, setRendered] = useState(false);
@@ -25,265 +270,17 @@ export default function PlayerRegistrationCard({ player, regNum, photo, status, 
   const isApproved = rawStatus === "approved" || rawStatus === "registered" || player?.isApproved === true;
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    // Match master template resolution (935x1024)
-    const W = 935;
-    const H = 1024;
-    canvas.width = W;
-    canvas.height = H;
-    const ctx = canvas.getContext("2d");
-
-    const loadImg = (src) =>
-      new Promise((resolve, reject) => {
-        if (!src) return reject(new Error("No source"));
-        const img = new Image();
-        img.crossOrigin = "anonymous";
-        img.onload = () => resolve(img);
-        img.onerror = reject;
-        img.src = src;
-      });
-
-    /** Draw a rounded rectangle path */
-    const roundRect = (x, y, w, h, r) => {
-      ctx.beginPath();
-      ctx.moveTo(x + r, y);
-      ctx.lineTo(x + w - r, y);
-      ctx.arcTo(x + w, y, x + w, y + r, r);
-      ctx.lineTo(x + w, y + h - r);
-      ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
-      ctx.lineTo(x + r, y + h);
-      ctx.arcTo(x, y + h, x, y + h - r, r);
-      ctx.lineTo(x, y + r);
-      ctx.arcTo(x, y, x + r, y, r);
-      ctx.closePath();
+    let isMounted = true;
+    if (canvasRef.current) {
+      drawPlayerCardToCanvas(canvasRef.current, { player, regNum, photo, status })
+        .then(() => {
+          if (isMounted) setRendered(true);
+        })
+        .catch(console.error);
+    }
+    return () => {
+      isMounted = false;
     };
-
-    /** Render metallic bold italic text with black stroke outline and shear */
-    const drawMetallicText = ({
-      text,
-      x,
-      y,
-      baseSize = 28,
-      maxW = 280,
-      align = "center",
-      shear = -0.20,
-      strokeWidth = 6,
-    }) => {
-      ctx.save();
-      let size = baseSize;
-      ctx.font = `900 ${size}px 'Arial Black', Impact, sans-serif`;
-      while (ctx.measureText(text).width > maxW && size > 16) {
-        size -= 2;
-        ctx.font = `900 ${size}px 'Arial Black', Impact, sans-serif`;
-      }
-
-      ctx.textAlign = align;
-      ctx.textBaseline = "middle";
-
-      // Apply italic shear transform around (x, y)
-      ctx.translate(x, y);
-      ctx.transform(1, 0, shear, 1, 0, 0);
-
-      // Black stroke outline
-      ctx.strokeStyle = "#000000";
-      ctx.lineWidth = strokeWidth;
-      ctx.lineJoin = "round";
-      ctx.strokeText(text, 0, 0);
-
-      // Metallic chrome silver-white gradient
-      const grad = ctx.createLinearGradient(0, -size / 2, 0, size / 2);
-      grad.addColorStop(0, "#ffffff");
-      grad.addColorStop(0.55, "#e2e8f0");
-      grad.addColorStop(1, "#b0bcc8");
-      ctx.fillStyle = grad;
-      ctx.fillText(text, 0, 0);
-
-      ctx.restore();
-    };
-
-    const draw = async () => {
-      try {
-        // ─── 1. BASE TEMPLATE ──────────────────────────────────────────────
-        const baseImg = await loadImg("/images/gpl-card-base.png?v=5");
-        ctx.drawImage(baseImg, 0, 0, W, H);
-      } catch (err) {
-        console.error("Base image load error:", err);
-      }
-
-      // ─── 2. DYNAMIC PLAYER INFO BLOCK ──────────────────────────────────
-      const blkX = 70;
-      const blkY = 562;
-      const blkW = 505;
-      const blkH = 185;
-      const scaleP = blkW / 920; // 0.5489
-
-      // A) Photo Box inner bounds
-      const px = blkX + 31 * scaleP; // ~87
-      const py = blkY + 28 * scaleP; // ~577
-      const pw = 270 * scaleP;       // ~148
-      const ph = 280 * scaleP;       // ~154
-      const pr = 26 * scaleP;        // ~14
-
-      // Draw dark background inside photo box
-      roundRect(px, py, pw, ph, pr);
-      ctx.fillStyle = "rgba(10, 14, 28, 0.96)";
-      ctx.fill();
-
-      // Draw player photo or silhouette placeholder
-      let photoDrawn = false;
-      if (photo) {
-        try {
-          const pImg = await loadImg(photo);
-          ctx.save();
-          roundRect(px, py, pw, ph, pr);
-          ctx.clip();
-
-          const srcW = pImg.naturalWidth;
-          const srcH = pImg.naturalHeight;
-          const sq = Math.min(srcW, srcH);
-          const sx = (srcW - sq) / 2;
-          const sy = (srcH - sq) / 2;
-          ctx.drawImage(pImg, sx, sy, sq, sq, px, py, pw, ph);
-          ctx.restore();
-          photoDrawn = true;
-        } catch (_) {}
-      }
-
-      if (!photoDrawn) {
-        // Silhouette avatar placeholder
-        ctx.save();
-        roundRect(px, py, pw, ph, pr);
-        ctx.clip();
-        ctx.fillStyle = "rgba(120, 136, 160, 0.85)";
-        const cx = px + pw / 2;
-        const cy = py + ph / 2;
-        // Head
-        ctx.beginPath();
-        ctx.arc(cx, cy - 24, 23, 0, Math.PI * 2);
-        ctx.fill();
-        // Body
-        ctx.beginPath();
-        ctx.moveTo(cx - 38, cy + 58);
-        ctx.lineTo(cx + 38, cy + 58);
-        ctx.lineTo(cx + 28, cy + 12);
-        ctx.lineTo(cx - 28, cy + 12);
-        ctx.closePath();
-        ctx.fill();
-        ctx.restore();
-      }
-
-      // B) Draw Player Frame overlay
-      try {
-        const frameImg = await loadImg("/images/gpl-card-player-frame.png?v=4");
-        ctx.drawImage(frameImg, blkX, blkY, blkW, blkH);
-      } catch (err) {
-        console.error("Player frame load error:", err);
-      }
-
-      // C) Dynamic Player Name (Metallic Bold Italic Chrome)
-      const playerName = (player?.name || "PLAYER NAME").toUpperCase();
-      const nameCX = blkX + 649 * scaleP; // ~426
-      const nameCY = blkY + 76 * scaleP;  // ~604
-      drawMetallicText({
-        text: playerName,
-        x: nameCX,
-        y: nameCY,
-        baseSize: 28,
-        maxW: 290,
-        align: "center",
-        shear: -0.22,
-        strokeWidth: 5,
-      });
-
-      // D) Dynamic Player ID (Registration Number) inside Gold Oval Pill
-      const idVal = String(regNum || player?.registrationNumber || "1001");
-      const idCX = blkX + 626 * scaleP; // ~414
-      const idCY = blkY + 273 * scaleP; // ~712
-      ctx.save();
-      ctx.font = "900 24px 'Arial Black', Impact, sans-serif";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      // Drop shadow
-      ctx.fillStyle = "rgba(0, 0, 0, 0.95)";
-      ctx.fillText(idVal, idCX + 2, idCY + 2);
-      // Vibrant gold fill
-      ctx.fillStyle = "#fde047";
-      ctx.fillText(idVal, idCX, idCY);
-      ctx.restore();
-
-      // ─── 3. DYNAMIC WARD & ROLE BLOCK ──────────────────────────────────
-      const wrX = 70;
-      const wrY = 761;
-      const wrW = 458;
-      const wrH = 148;
-      const scaleWR = wrW / 995; // 0.4603
-
-      // A) Draw Ward & Role Frame overlay
-      try {
-        const wrFrameImg = await loadImg("/images/gpl-card-ward-role-frame.png?v=4");
-        ctx.drawImage(wrFrameImg, wrX, wrY, wrW, wrH);
-      } catch (err) {
-        console.error("Ward/Role frame load error:", err);
-      }
-
-      // B) Dynamic Ward Value
-      const wardText = (player?.ward || "WARD 51").toUpperCase();
-      const wx = wrX + 219 * scaleWR; // ~171
-      const wy = wrY + 84 * scaleWR;  // ~800
-      drawMetallicText({
-        text: wardText,
-        x: wx,
-        y: wy,
-        baseSize: 32,
-        maxW: 270,
-        align: "left",
-        shear: -0.22,
-        strokeWidth: 5,
-      });
-
-      // C) Dynamic Role Value
-      const roleText = (player?.speciality || player?.role || "ALL-ROUNDER").toUpperCase();
-      const rx = wrX + 219 * scaleWR; // ~171
-      const ry = wrY + 245 * scaleWR; // ~874
-      drawMetallicText({
-        text: roleText,
-        x: rx,
-        y: ry,
-        baseSize: 28,
-        maxW: 270,
-        align: "left",
-        shear: -0.22,
-        strokeWidth: 5,
-      });
-
-      // ─── 4. DYNAMIC STATUS BADGE (PENDING vs REGISTERED) ───────────────
-      const rawStatus = String(status || player?.paymentStatus || player?.status || "").toLowerCase();
-      const isApproved =
-        rawStatus === "approved" ||
-        rawStatus === "registered" ||
-        player?.isApproved === true;
-
-      const badgeSrc = isApproved
-        ? "/images/gpl-badge-registered.png?v=4"
-        : "/images/gpl-badge-pending.png?v=4";
-
-      try {
-        const badgeImg = await loadImg(badgeSrc);
-        const bw = 220;
-        const bh = Math.round(bw * (badgeImg.naturalHeight / badgeImg.naturalWidth));
-        const bx = 822 - bw; // 602 (aligned with right edge of header bar)
-        const by = 104;      // Directly below the top header bar
-        ctx.drawImage(badgeImg, bx, by, bw, bh);
-      } catch (err) {
-        console.error("Status badge load error:", err);
-      }
-
-      setRendered(true);
-    };
-
-    draw().catch(console.error);
   }, [player, regNum, photo, status]);
 
   const handleDownload = () => {

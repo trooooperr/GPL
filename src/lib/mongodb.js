@@ -71,6 +71,7 @@ const RegistrationSchema = new mongoose.Schema({
   aadhaarFrontUrl: String,
   aadhaarBackUrl: String,
   paymentProofUrl: String,
+  cardUrl: String,
   teamId: { type: String, default: null, index: true },
   notes: String,
   registeredAt: { type: String, default: () => new Date().toISOString(), index: true },

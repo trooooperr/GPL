@@ -196,7 +196,7 @@ export async function sendRegistrationNotificationEmail(player, customAdminEmail
   }
 }
 
-export async function sendPlayerStatusEmail(player, status, notes = "") {
+export async function sendPlayerStatusEmail(player, status, notes = "", cardDataUrl = null) {
   try {
     const isApproved = status.toLowerCase() === "approved";
     const isRejected = status.toLowerCase() === "rejected";
@@ -367,13 +367,31 @@ export async function sendPlayerStatusEmail(player, status, notes = "") {
     const attachments = [];
     const isPlayerApproved = String(player?.paymentStatus || "").toLowerCase() === "approved";
     if (isPlayerApproved) {
-      const cardPath = path.join(process.cwd(), "public", "images", "template-player-card-approved.png");
-      if (fs.existsSync(cardPath)) {
-        attachments.push({
-          filename: `GPL4_PlayerCard_${displayPlayerId}_REGISTERED.png`,
-          path: cardPath,
-          cid: "registeredCardImage"
-        });
+      const customCard = cardDataUrl || player?.cardUrl;
+      if (customCard && typeof customCard === "string" && customCard.startsWith("data:image/")) {
+        try {
+          const base64Data = customCard.split(",")[1];
+          if (base64Data) {
+            attachments.push({
+              filename: `GPL4_PlayerCard_${displayPlayerId}_REGISTERED.png`,
+              content: Buffer.from(base64Data, "base64"),
+              cid: "registeredCardImage"
+            });
+          }
+        } catch (e) {
+          console.warn("[Custom Card Buffer Error]:", e.message);
+        }
+      }
+
+      if (attachments.length === 0) {
+        const cardPath = path.join(process.cwd(), "public", "images", "template-player-card-approved.png");
+        if (fs.existsSync(cardPath)) {
+          attachments.push({
+            filename: `GPL4_PlayerCard_${displayPlayerId}_REGISTERED.png`,
+            path: cardPath,
+            cid: "registeredCardImage"
+          });
+        }
       }
     }
 
@@ -400,7 +418,7 @@ export async function sendPlayerStatusEmail(player, status, notes = "") {
   }
 }
 
-export async function sendTeamAssignmentEmail(player, team) {
+export async function sendTeamAssignmentEmail(player, team, cardDataUrl = null) {
   try {
     const playerEmail = player?.email?.trim();
     if (!playerEmail || !playerEmail.includes("@") || playerEmail.endsWith("@gplcricket.local")) {
@@ -505,13 +523,29 @@ export async function sendTeamAssignmentEmail(player, team) {
     const attachments = [];
     const isPlayerApproved = String(player?.paymentStatus || "").toLowerCase() === "approved";
     if (isPlayerApproved) {
-      const cardPath = path.join(process.cwd(), "public", "images", "template-player-card-approved.png");
-      if (fs.existsSync(cardPath)) {
-        attachments.push({
-          filename: `GPL4_PlayerCard_${displayPlayerId}_REGISTERED.png`,
-          path: cardPath,
-          cid: "registeredCardImage"
-        });
+      const customCard = cardDataUrl || player?.cardUrl;
+      if (customCard && typeof customCard === "string" && customCard.startsWith("data:image/")) {
+        try {
+          const base64Data = customCard.split(",")[1];
+          if (base64Data) {
+            attachments.push({
+              filename: `GPL4_PlayerCard_${displayPlayerId}_REGISTERED.png`,
+              content: Buffer.from(base64Data, "base64"),
+              cid: "registeredCardImage"
+            });
+          }
+        } catch (e) {}
+      }
+
+      if (attachments.length === 0) {
+        const cardPath = path.join(process.cwd(), "public", "images", "template-player-card-approved.png");
+        if (fs.existsSync(cardPath)) {
+          attachments.push({
+            filename: `GPL4_PlayerCard_${displayPlayerId}_REGISTERED.png`,
+            path: cardPath,
+            cid: "registeredCardImage"
+          });
+        }
       }
     }
 

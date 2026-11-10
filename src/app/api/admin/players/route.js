@@ -52,6 +52,7 @@ function mapPlayer(r) {
     aadhaarBackUrl: r.aadhaarBackUrl || "/images/doc-placeholder.svg",
     paymentProofUrl: r.paymentProofUrl || "/images/payment-placeholder.svg",
     teamId: r.teamId || null,
+    cardUrl: r.cardUrl || null,
     notes: r.notes || "",
     registeredAt: r.registeredAt || r.createdAt || new Date().toISOString(),
     history: r.history || []
@@ -150,7 +151,7 @@ export async function POST(request) {
   try {
     await connectToDatabase();
     const body = await request.json();
-    const { action, id, ids, status, notes, playerData, teamId } = body;
+    const { action, id, ids, status, notes, playerData, teamId, cardDataUrl, cardsMap } = body;
 
     // 0. BATCH UPDATE STATUS (Multiple Players)
     if (action === "batchStatus" && Array.isArray(ids) && ids.length > 0 && status) {
@@ -176,6 +177,24 @@ export async function POST(request) {
           $push: { history: historyEntry }
         }
       );
+
+      if (status.toLowerCase() === "approved") {
+        if (cardsMap && typeof cardsMap === "object") {
+          for (const [pid, cardUrl] of Object.entries(cardsMap)) {
+            if (cardUrl) {
+              await MongoRegistration.updateOne({ id: pid }, { $set: { cardUrl } }).catch(() => {});
+            }
+          }
+        }
+        for (const pid of ids) {
+          MongoRegistration.findOne({ id: pid }).lean().then((p) => {
+            if (p) {
+              const customCard = cardsMap?.[pid] || p.cardUrl;
+              sendPlayerStatusEmail(mapPlayer(p), "Approved", notes || "", customCard).catch(() => {});
+            }
+          }).catch(() => {});
+        }
+      }
 
       const stats = await getCalculatedStats();
       return NextResponse.json({ success: true, count: ids.length, stats }, { headers: NO_CACHE_HEADERS });
@@ -304,14 +323,17 @@ export async function POST(request) {
         notes: notes || `Status updated to ${status}${isRejected ? " (Removed from team)" : ""}`
       };
 
+      const updateFields = {
+        paymentStatus: status,
+        notes: notes !== undefined ? notes : (old?.notes || ""),
+        ...(isRejected ? { teamId: null } : {}),
+        ...(cardDataUrl ? { cardUrl: cardDataUrl } : {})
+      };
+
       const updated = await MongoRegistration.findOneAndUpdate(
         { id },
         {
-          $set: {
-            paymentStatus: status,
-            notes: notes !== undefined ? notes : (old?.notes || ""),
-            ...(isRejected ? { teamId: null } : {})
-          },
+          $set: updateFields,
           $push: { history: historyEntry }
         },
         { new: true }
@@ -320,7 +342,7 @@ export async function POST(request) {
       const mappedUpdated = mapPlayer(updated);
 
       if (["approved", "rejected"].includes(status.toLowerCase())) {
-        sendPlayerStatusEmail(mappedUpdated, status, notes || "").catch(() => {});
+        sendPlayerStatusEmail(mappedUpdated, status, notes || "", cardDataUrl || updated?.cardUrl).catch(() => {});
       }
 
       const stats = await getCalculatedStats();
