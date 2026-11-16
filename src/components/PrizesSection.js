@@ -42,12 +42,12 @@ export default function PrizesSection({ stats, settings }) {
     },
     {
       title: "Man of the Series",
-      value: "Mobile Phone",
+      value: "₹5000",
       iconName: "emoji_events",
     },
     {
       title: "Winner & Runner-Up",
-      value: "Winner: ₹40,000\nRunner-Up: ₹30,000",
+      value: "Winner: ₹50,000\nRunner-Up: ₹35,000",
       iconName: "military_tech",
     }
   ];

@@ -24,7 +24,7 @@ export default function StatsCounter() {
     },
     {
       icon: Award,
-      value: "₹70,000+",
+      value: "₹1,00,000+",
       label: "Total Cash Prizes",
       color: "text-purple-400"
     },
