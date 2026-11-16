@@ -680,13 +680,19 @@ export default function AdminDashboard() {
     if (!file) return;
     setUploadingLogo(true);
     try {
-      const form = new FormData();
-      form.append("file", file);
-      form.append("prefix", "team_logo");
-      const res = await fetch("/api/admin/upload", { method: "POST", body: form });
-      const data = await res.json();
-      if (data.success) {
-        setEditTeam((prev) => ({ ...prev, logo: data.url }));
+      const compressed = await compressImageToDataUrl(file, 240, 0.7);
+      if (compressed && compressed.dataUrl) {
+        setEditTeam((prev) => ({ ...prev, logo: compressed.dataUrl }));
+        showToast("Logo optimized successfully!", "success");
+      } else {
+        const form = new FormData();
+        form.append("file", file);
+        form.append("prefix", "team_logo");
+        const res = await fetch("/api/admin/upload", { method: "POST", body: form });
+        const data = await res.json();
+        if (data.success) {
+          setEditTeam((prev) => ({ ...prev, logo: data.url }));
+        }
       }
     } catch (err) {
       showToast("Logo upload failed: " + err.message, "error");

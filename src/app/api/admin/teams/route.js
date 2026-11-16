@@ -37,7 +37,7 @@ async function getPopulatedTeams() {
     captain: t.captain,
     established: t.established || "2024",
     championships: t.championships || 0,
-    logo: t.logo || "/images/teams/team-csk.png",
+    logo: t.logo?.startsWith("data:") ? `/api/team-logo?id=${t.id}` : (t.logo || "/images/teams/team-csk.png"),
     themeColor: t.themeColor || "#0041b9",
     members: t.members || [],
     memberDetails: (t.members || [])

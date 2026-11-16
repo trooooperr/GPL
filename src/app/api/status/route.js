@@ -52,7 +52,7 @@ export async function GET(request) {
           id: team.id,
           name: team.name,
           shortCode: team.shortCode,
-          logo: team.logo
+          logo: team.logo?.startsWith("data:") ? `/api/team-logo?id=${team.id}` : (team.logo || "/images/teams/team-csk.png")
         };
       }
     }
