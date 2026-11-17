@@ -63,9 +63,9 @@ function getTransporter() {
           user: process.env.GMAIL_USER,
           pass: process.env.GMAIL_APP_PASSWORD || process.env.GMAIL_PASSWORD
         },
-        connectionTimeout: 3500,
-        socketTimeout: 4000,
-        greetingTimeout: 3000
+        connectionTimeout: 15000,
+        socketTimeout: 20000,
+        greetingTimeout: 15000
       }),
       fromEmail: process.env.GMAIL_USER
     };
@@ -84,17 +84,29 @@ export function format4DigitId(id, regNumber) {
   return "1001";
 }
 
-export function getAdminContactEmail(customEmail = null) {
+export async function getAdminContactEmail(customEmail = null) {
+  if (customEmail && typeof customEmail === "string" && customEmail.includes("@")) {
+    return customEmail.trim();
+  }
+  try {
+    const { connectToDatabase, MongoSetting } = await import("@/lib/mongodb");
+    await connectToDatabase();
+    const doc = await MongoSetting.findOne({ key: "global_settings" }).lean();
+    if (doc?.value?.adminEmail && typeof doc.value.adminEmail === "string" && doc.value.adminEmail.includes("@")) {
+      return doc.value.adminEmail.trim();
+    }
+  } catch (e) {}
+
   return (
-    customEmail ||
     process.env.ADMIN_NOTIFICATION_EMAIL ||
+    process.env.GMAIL_USER ||
     "goregaonpremierleague11@gmail.com"
   );
 }
 
 export async function sendRegistrationNotificationEmail(player, customAdminEmail = null) {
   try {
-    const adminEmail = getAdminContactEmail(customAdminEmail);
+    const adminEmail = await getAdminContactEmail(customAdminEmail);
     const displayPlayerId = format4DigitId(player.id, player.regNumber);
 
     const htmlContent = `
@@ -186,13 +198,146 @@ export async function sendRegistrationNotificationEmail(player, customAdminEmail
       });
       logEmailDispatch({ type: "ADMIN_NOTIFICATION", recipient: adminEmail, playerId: displayPlayerId, status: "SENT" });
       console.log(`[EMAIL] Registration alert successfully sent to admin ${adminEmail} for Player ID ${displayPlayerId}`);
+      return { sent: true, recipient: adminEmail };
     } else {
       logEmailDispatch({ type: "ADMIN_NOTIFICATION", recipient: adminEmail, playerId: displayPlayerId, status: "RECORDED_NO_SMTP" });
       console.log(`[EMAIL NOTICE] SMTP credentials not set in .env. Admin alert prepared for ${adminEmail} (Player ID: ${displayPlayerId}, Name: ${player.name})`);
+      return { sent: false, reason: "No SMTP" };
     }
   } catch (error) {
     console.error("[EMAIL ERROR] Failed to send admin email notification:", error);
     logEmailDispatch({ type: "ADMIN_NOTIFICATION", playerId: player?.id, status: "ERROR", error: error.message });
+    return { sent: false, error: error.message };
+  }
+}
+
+export async function sendPlayerRegistrationConfirmationEmail(player) {
+  try {
+    const playerEmail = player.email?.trim();
+    if (!playerEmail || !playerEmail.includes("@") || playerEmail.endsWith("@gplcricket.local")) {
+      console.log(`[EMAIL NOTICE] Player ${player.id} has no valid submitted email address (${playerEmail}). Skipping registration confirmation email.`);
+      return { sent: false, reason: "No valid email" };
+    }
+
+    const displayPlayerId = format4DigitId(player.id, player.regNumber);
+    const transportInfo = getTransporter();
+    if (!transportInfo) {
+      console.log(`[EMAIL NOTICE] SMTP credentials not set. Skipping player registration confirmation for ${playerEmail}`);
+      return { sent: false, reason: "No SMTP" };
+    }
+
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8" />
+        <style>
+          body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #f8fafc; margin: 0; padding: 20px; color: #1e293b; }
+          .card { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08); }
+          .header { background: linear-gradient(135deg, #081a36 0%, #0041b9 100%); padding: 32px 24px; text-align: center; color: #ffffff; }
+          .header h1 { margin: 0 0 6px; font-size: 24px; font-weight: 800; color: #ffffff; }
+          .header p { margin: 0; color: #cbd5e1; font-size: 13px; }
+          .badge { display: inline-block; background: #fbbf24; color: #78350f; padding: 6px 18px; border-radius: 999px; font-size: 14px; font-weight: 900; margin-top: 16px; letter-spacing: 1px; }
+          .body { padding: 28px 24px; }
+          .intro { font-size: 14px; color: #334155; line-height: 1.6; margin-bottom: 20px; }
+          .status-banner { background: #eff6ff; border: 1.5px solid #bfdbfe; border-radius: 12px; padding: 14px 18px; margin-bottom: 24px; text-align: center; }
+          .status-banner .title { font-size: 12px; color: #64748b; font-weight: 600; text-transform: uppercase; margin-bottom: 4px; }
+          .status-banner .status { color: #1d4ed8; font-size: 15px; font-weight: 800; }
+          .table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+          .table td { padding: 10px 14px; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
+          .label { font-weight: 700; color: #64748b; width: 40%; }
+          .value { color: #0f172a; font-weight: 600; }
+          .next-steps { background: #f0fdf4; border: 1.5px solid #bbf7d0; border-radius: 12px; padding: 16px 20px; margin-top: 24px; }
+          .next-steps h4 { margin: 0 0 8px; font-size: 14px; font-weight: 800; color: #166534; }
+          .next-steps p { margin: 0; font-size: 12px; color: #15803d; line-height: 1.6; }
+          .footer { background: #f8fafc; padding: 20px; text-align: center; font-size: 11px; color: #94a3b8; border-top: 1px solid #e2e8f0; line-height: 1.6; }
+        </style>
+      </head>
+      <body>
+        <div class="card">
+          <div class="header">
+            <h1>Registration Received!</h1>
+            <p>Goregaon Premier League • Radhe Radhe Chashak Season 4</p>
+            <div class="badge">REG ID: #${displayPlayerId}</div>
+          </div>
+          <div class="body">
+            <p class="intro">
+              Hello <strong>${player.name}</strong>,<br/>
+              Thank you for registering for the <strong>Goregaon Premier League (GPL 4)</strong>! Your registration application has been received and logged into our tournament system.
+            </p>
+
+            <div class="status-banner">
+              <div class="title">Current Application Status</div>
+              <div class="status">⏳ Verification Under Review (Pending)</div>
+            </div>
+
+            <table class="table">
+              <tr>
+                <td class="label">Registration ID:</td>
+                <td class="value"><strong>#${displayPlayerId}</strong></td>
+              </tr>
+              <tr>
+                <td class="label">Full Name:</td>
+                <td class="value">${player.name}</td>
+              </tr>
+              <tr>
+                <td class="label">Registered Phone:</td>
+                <td class="value">${player.phone}</td>
+              </tr>
+              <tr>
+                <td class="label">Ward:</td>
+                <td class="value">${player.ward || "Ward 51"}</td>
+              </tr>
+              <tr>
+                <td class="label">Playing Speciality:</td>
+                <td class="value">${player.speciality}</td>
+              </tr>
+              <tr>
+                <td class="label">T-Shirt Size:</td>
+                <td class="value">${player.tshirtSize}</td>
+              </tr>
+              <tr>
+                <td class="label">Track Pant Size:</td>
+                <td class="value">${player.trackSize}</td>
+              </tr>
+              <tr>
+                <td class="label">Submission Time:</td>
+                <td class="value">${new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}</td>
+              </tr>
+            </table>
+
+            <div class="next-steps">
+              <h4>What Happens Next?</h4>
+              <p>
+                1. The organizing committee will review your Aadhaar and Ward 51/54 residency criteria.<br/>
+                2. Once your registration is <strong>Approved</strong>, you will receive an approval email with your official Player ID Card, and you will enter the <strong>Grand Player Auction Pool</strong>!<br/>
+                3. You can also verify your live status anytime on the GPL website under <strong>"Check Status"</strong> using your phone number or Registration ID.
+              </p>
+            </div>
+          </div>
+          <div class="footer">
+            Goregaon Premier League Season 4 • Sambhaji Maidan, Goregaon East, Mumbai<br/>
+            Organised by Mohsin Patel &amp; Balram Gupta (Ballu).
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    await transportInfo.transporter.sendMail({
+      from: `"GPL Cricket" <${transportInfo.fromEmail}>`,
+      to: playerEmail,
+      subject: `🏏 GPL Registration Received: ${player.name} (Reg #${displayPlayerId})`,
+      html: htmlContent
+    });
+
+    logEmailDispatch({ type: "PLAYER_REGISTRATION_CONFIRMATION", recipient: playerEmail, playerId: displayPlayerId, status: "SENT" });
+    console.log(`[EMAIL] Registration confirmation email successfully sent to player ${playerEmail} for ID ${displayPlayerId}`);
+    return { sent: true, recipient: playerEmail };
+  } catch (error) {
+    console.error("[EMAIL ERROR] Failed to send player registration confirmation email:", error);
+    logEmailDispatch({ type: "PLAYER_REGISTRATION_CONFIRMATION", playerId: player?.id, status: "ERROR", error: error.message });
+    return { sent: false, error: error.message };
   }
 }
 
@@ -427,12 +572,16 @@ export async function sendTeamAssignmentEmail(player, team, cardDataUrl = null) 
     }
 
     const displayPlayerId = format4DigitId(player.id, player.regNumber);
-    const adminEmail = getAdminContactEmail();
-    const teamName = team?.name || "Official GPL Team";
-    const teamOwner = team?.owner || "Team Franchise Owner";
-    const teamCaptain = team?.captain || "To be announced";
+    const adminEmail = await getAdminContactEmail();
+    const teamName = team?.name || "Official GPL Franchise";
+    const teamOwner = team?.owner || "Franchise Owner";
+    const teamCaptain = team?.captain || "To be drafted";
+    const teamShortCode = team?.shortCode || "GPL";
+    const soldPrice = Math.max(0, Number(player?.soldPrice) || 0);
 
-    const subject = `🏏 You Have Been Drafted to ${teamName}! - GPL Player Auction`;
+    const subject = soldPrice > 0
+      ? `🏏 Congratulations! Drafted to ${teamName} for ₹${soldPrice.toLocaleString("en-IN")} - GPL Auction`
+      : `🏏 Congratulations! Drafted to ${teamName} - GPL Player Auction`;
 
     const htmlContent = `
       <!DOCTYPE html>
@@ -440,23 +589,35 @@ export async function sendTeamAssignmentEmail(player, team, cardDataUrl = null) 
       <head>
         <meta charset="utf-8" />
         <style>
-          body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #f1f5f9; margin: 0; padding: 24px; color: #1e293b; }
-          .card { max-width: 620px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08); }
-          .header { background: #f8fafc; padding: 28px 24px; text-align: center; border-bottom: 1px solid #e2e8f0; }
-          .header h1 { margin: 0 0 6px; font-size: 24px; font-weight: 800; color: #0f172a; letter-spacing: -0.5px; }
-          .header p { margin: 0; color: #64748b; font-size: 14px; }
-          .badge { display: inline-block; background: #ecfdf5; color: #047857; border: 1.5px solid #a7f3d0; padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 800; margin-top: 14px; text-transform: uppercase; letter-spacing: 0.5px; }
-          .body { padding: 28px 24px; }
-          .team-card { background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 14px; padding: 20px; margin: 20px 0; text-align: center; }
-          .team-title { font-size: 12px; font-weight: bold; color: #64748b; text-transform: uppercase; letter-spacing: 1px; }
-          .team-name { font-size: 24px; font-weight: 900; color: #081a36; margin: 6px 0; }
-          .team-meta { font-size: 13px; color: #475569; }
-          .table { width: 100%; border-collapse: collapse; margin-top: 16px; }
-          .table td { padding: 10px 12px; font-size: 14px; border-bottom: 1px solid #edf2f7; }
+          body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #f8fafc; margin: 0; padding: 24px 16px; color: #1e293b; }
+          .card { max-width: 620px; margin: 0 auto; background: #ffffff; border-radius: 18px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 12px 30px -8px rgba(0, 0, 0, 0.08); }
+          .header { background: linear-gradient(135deg, #081a36 0%, #0041b9 100%); padding: 34px 24px; text-align: center; color: #ffffff; }
+          .header h1 { margin: 0 0 6px; font-size: 24px; font-weight: 900; color: #ffffff; letter-spacing: -0.5px; }
+          .header p { margin: 0; color: #cbd5e1; font-size: 13px; font-weight: 500; }
+          .badge { display: inline-block; background: #fbbf24; color: #78350f; padding: 6px 18px; border-radius: 999px; font-size: 12px; font-weight: 900; margin-top: 14px; text-transform: uppercase; letter-spacing: 1px; }
+          .body { padding: 30px 24px; }
+          .greeting { font-size: 16px; font-weight: 700; color: #0f172a; margin-bottom: 12px; }
+          .intro { font-size: 14px; line-height: 1.6; color: #475569; margin-bottom: 22px; }
+          .team-banner { background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 14px; padding: 20px; text-align: center; margin-bottom: 20px; }
+          .team-code { display: inline-block; background: #e0e7ff; color: #3730a3; padding: 3px 10px; border-radius: 6px; font-size: 11px; font-weight: 800; font-family: monospace; text-transform: uppercase; margin-bottom: 6px; }
+          .team-title { font-size: 25px; font-weight: 900; color: #081a36; margin: 4px 0 8px; }
+          .team-leaders { font-size: 13px; color: #475569; line-height: 1.6; }
+          .bid-box { background: linear-gradient(135deg, #059669 0%, #047857 100%); color: #ffffff; border-radius: 14px; padding: 20px 24px; text-align: center; margin-bottom: 24px; box-shadow: 0 6px 16px -2px rgba(5, 150, 105, 0.3); }
+          .bid-label { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.95; margin-bottom: 4px; }
+          .bid-amount { font-size: 32px; font-weight: 900; font-family: monospace; letter-spacing: 0.5px; line-height: 1.2; }
+          .bid-sub { font-size: 12px; opacity: 0.95; margin-top: 6px; font-weight: 600; }
+          .direct-pick-box { background: #eff6ff; border: 1.5px solid #bfdbfe; border-radius: 14px; padding: 16px 20px; text-align: center; margin-bottom: 24px; }
+          .direct-pick-label { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: #2563eb; margin-bottom: 2px; }
+          .direct-pick-title { font-size: 17px; font-weight: 800; color: #1e3a8a; }
+          .table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+          .table td { padding: 11px 14px; font-size: 13px; border-bottom: 1px solid #f1f5f9; }
           .table tr:last-child td { border-bottom: none; }
-          .label { font-weight: 600; color: #64748b; width: 40%; }
-          .value { color: #0f172a; font-weight: 500; }
-          .footer { background: #f8fafc; padding: 20px; text-align: center; font-size: 12px; color: #94a3b8; border-top: 1px solid #e2e8f0; line-height: 1.5; }
+          .label { font-weight: 700; color: #64748b; width: 38%; }
+          .value { color: #0f172a; font-weight: 600; }
+          .next-steps { background: #f0fdf4; border: 1.5px solid #bbf7d0; border-radius: 14px; padding: 18px 22px; margin-top: 24px; }
+          .next-steps h4 { margin: 0 0 10px; font-size: 14px; font-weight: 800; color: #166534; }
+          .next-steps p { margin: 0; font-size: 12px; color: #15803d; line-height: 1.6; }
+          .footer { background: #f8fafc; padding: 22px 20px; text-align: center; font-size: 11px; color: #94a3b8; border-top: 1px solid #e2e8f0; line-height: 1.6; }
         </style>
       </head>
       <body>
@@ -468,27 +629,39 @@ export async function sendTeamAssignmentEmail(player, team, cardDataUrl = null) 
           </div>
 
           <div class="body">
-            <p style="font-size: 16px; line-height: 1.6; margin: 0 0 16px;">
-              Dear <strong>${player.name}</strong>,
+            <div class="greeting">
+              Dear ${player.name},
+            </div>
+
+            <p class="intro">
+              Congratulations! We are delighted to inform you that you have been officially selected and purchased in the <strong>Goregaon Premier League Season 4 Grand Player Auction</strong>!
             </p>
 
-            <p style="font-size: 14px; line-height: 1.6; color: #334155; margin: 0 0 16px;">
-              We are delighted to congratulate you! You have been successfully selected and drafted to <strong>${teamName}</strong> for the upcoming <strong>Goregaon Premier League (Radhe Radhe Chashak)</strong>!
-            </p>
+            ${
+              soldPrice > 0
+                ? `<div class="bid-box">
+                    <div class="bid-label">🏆 Winning Auction Bid Amount</div>
+                    <div class="bid-amount">₹${soldPrice.toLocaleString("en-IN")}</div>
+                    <div class="bid-sub">Purchased by ${teamName}</div>
+                  </div>`
+                : `<div class="direct-pick-box">
+                    <div class="direct-pick-label">🏆 Franchise Draft Selection</div>
+                    <div class="direct-pick-title">Selected via Official Franchise Pick</div>
+                  </div>`
+            }
 
-            <div class="team-card">
-              <div class="team-title">Your Assigned Team</div>
-              <div class="team-name">${teamName}</div>
-              <div class="team-meta">
-                <strong>Franchise Owner:</strong> ${teamOwner} <br />
-                <strong>Captain:</strong> ${teamCaptain}
+            <div class="team-banner">
+              <span class="team-code">CODE: ${teamShortCode}</span>
+              <div class="team-title">${teamName}</div>
+              <div class="team-leaders">
+                <strong>Franchise Owner:</strong> ${teamOwner} &bull; <strong>Captain:</strong> ${teamCaptain}
               </div>
             </div>
 
             <table class="table">
               <tr>
                 <td class="label">Player ID:</td>
-                <td class="value"><strong style="font-family: monospace; font-size: 15px; color: #0041b9;">${displayPlayerId}</strong></td>
+                <td class="value"><strong style="font-family: monospace; font-size: 15px; color: #0041b9;">#${displayPlayerId}</strong></td>
               </tr>
               <tr>
                 <td class="label">Player Name:</td>
@@ -499,8 +672,12 @@ export async function sendTeamAssignmentEmail(player, team, cardDataUrl = null) 
                 <td class="value">${player.speciality}</td>
               </tr>
               <tr>
+                <td class="label">Ward Constituency:</td>
+                <td class="value">${player.ward || "Ward 51"}</td>
+              </tr>
+              <tr>
                 <td class="label">Kit Sizes:</td>
-                <td class="value">T-Shirt: ${player.tshirtSize} • Track: ${player.trackSize}</td>
+                <td class="value">Jersey: ${player.tshirtSize} &bull; Track: ${player.trackSize}</td>
               </tr>
               <tr>
                 <td class="label">Match Venue:</td>
@@ -508,12 +685,21 @@ export async function sendTeamAssignmentEmail(player, team, cardDataUrl = null) 
               </tr>
             </table>
 
+            <div class="next-steps">
+              <h4>What's Next for You?</h4>
+              <p>
+                1. Your team management (${teamOwner}) will connect with you regarding practice matches and team strategy.<br />
+                2. Your official customized team kit (${player.tshirtSize} Jersey / ${player.trackSize} Track Pant) will be handed to you prior to the opening ceremony.<br />
+                3. Follow live league announcements and match schedules on the official GPL portal.
+              </p>
+            </div>
+
           </div>
 
           <div class="footer">
-            <strong>Goregaon Premier League • Radhe Radhe Chashak</strong><br />
-            Organised by: Mohsin Patel &amp; Balram Gupta (Ballu)<br />
-            Official Contact: <a href="mailto:${adminEmail}">${adminEmail}</a>
+            <strong>Goregaon Premier League &bull; Radhe Radhe Chashak Season 4</strong><br />
+            Organised with pride by Mohsin Patel &amp; Balram Gupta (Ballu)<br />
+            Official Contact: <a href="mailto:${adminEmail}" style="color: #0041b9; text-decoration: none;">${adminEmail}</a>
           </div>
         </div>
       </body>
@@ -552,7 +738,7 @@ export async function sendTeamAssignmentEmail(player, team, cardDataUrl = null) 
     const transportInfo = getTransporter();
     if (transportInfo) {
       await transportInfo.transporter.sendMail({
-        from: `"GPL Tournament Committee" <${adminEmail}>`,
+        from: `"GPL Tournament Committee" <${transportInfo.fromEmail}>`,
         to: playerEmail,
         replyTo: adminEmail,
         subject: subject,
@@ -560,7 +746,7 @@ export async function sendTeamAssignmentEmail(player, team, cardDataUrl = null) 
         attachments
       });
       logEmailDispatch({ type: "TEAM_ASSIGNMENT", recipient: playerEmail, playerId: displayPlayerId, team: teamName, status: "SENT" });
-      console.log(`[EMAIL] Team assignment email sent to ${playerEmail} for team ${teamName}`);
+      console.log(`[EMAIL] Team assignment email sent to ${playerEmail} for team ${teamName} (Sold Price: ₹${soldPrice})`);
       return { sent: true };
     } else {
       logEmailDispatch({ type: "TEAM_ASSIGNMENT", recipient: playerEmail, playerId: displayPlayerId, team: teamName, status: "RECORDED_NO_SMTP" });

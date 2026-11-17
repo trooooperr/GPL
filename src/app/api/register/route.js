@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { rateLimiter, getClientIp } from "@/lib/rate-limit";
-import { sendRegistrationNotificationEmail } from "@/lib/email";
+import { sendRegistrationNotificationEmail, sendPlayerRegistrationConfirmationEmail } from "@/lib/email";
 import { connectToDatabase, MongoRegistration, MongoSetting, getNextPlayerId } from "@/lib/mongodb";
 import { INITIAL_SETTINGS } from "@/lib/constants";
 import {
@@ -194,10 +194,15 @@ export async function POST(request) {
     const newPlayer = await MongoRegistration.create(candidatePlayer);
     console.log("[Register] Player saved to MongoDB with Atomic ID:", id, name);
 
-    // Send email notification to configured admin email (defaults to goregaonpremierleague11@gmail.com)
-    sendRegistrationNotificationEmail(newPlayer, settings.adminEmail).catch((err) => {
+    // Send email notification to configured admin email and player confirmation email
+    try {
+      await Promise.allSettled([
+        sendRegistrationNotificationEmail(newPlayer, settings.adminEmail),
+        sendPlayerRegistrationConfirmationEmail(newPlayer)
+      ]);
+    } catch (err) {
       console.warn("[Register Email Notice]:", err.message);
-    });
+    }
 
     return NextResponse.json({
       success: true,

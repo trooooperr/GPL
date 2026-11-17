@@ -1,5 +1,30 @@
 [
   {
+    "id": "EML-1794922297998",
+    "timestamp": "2026-11-17T13:31:37.998Z",
+    "type": "TEAM_ASSIGNMENT",
+    "recipient": "alokgupta1605@gmail.com",
+    "playerId": "1001",
+    "team": "Colony Super Kings",
+    "status": "SENT"
+  },
+  {
+    "id": "EML-1794922165712",
+    "timestamp": "2026-11-17T13:29:25.712Z",
+    "type": "ADMIN_NOTIFICATION",
+    "recipient": "alokgupta1605@gmail.com",
+    "playerId": "9999",
+    "status": "SENT"
+  },
+  {
+    "id": "EML-1794922164825",
+    "timestamp": "2026-11-17T13:29:24.825Z",
+    "type": "PLAYER_REGISTRATION_CONFIRMATION",
+    "recipient": "alokgupta1605@gmail.com",
+    "playerId": "9999",
+    "status": "SENT"
+  },
+  {
     "id": "EML-1793695822675",
     "timestamp": "2026-11-03T08:50:22.675Z",
     "type": "ADMIN_NOTIFICATION",

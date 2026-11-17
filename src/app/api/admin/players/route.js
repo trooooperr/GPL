@@ -296,7 +296,7 @@ export async function POST(request) {
           { new: true }
         ).lean();
         if (team && updatedDoc) {
-          sendTeamAssignmentEmail(updatedDoc, team).catch(() => {});
+          await sendTeamAssignmentEmail(updatedDoc, team).catch(() => {});
         }
       } else {
         await MongoTeam.updateMany({}, { $pull: { members: id } });

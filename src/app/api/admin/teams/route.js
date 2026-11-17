@@ -155,7 +155,7 @@ export async function POST(request) {
           ).lean();
 
           if (targetTeam && updatedPlayer) {
-            sendTeamAssignmentEmail(updatedPlayer, targetTeam).catch((err) => {
+            await sendTeamAssignmentEmail(updatedPlayer, targetTeam).catch((err) => {
               console.warn("[Auction Draft Email Notice]:", err.message);
             });
           }
