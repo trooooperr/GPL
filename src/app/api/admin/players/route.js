@@ -68,7 +68,9 @@ function mapPlayer(r) {
     aadhaarBackUrl,
     paymentProofUrl,
     teamId: r.teamId || null,
-    cardUrl: r.cardUrl || null,
+    cardUrl: (r.hasCard || (r.cardUrl && !r.cardUrl.includes("placeholder")))
+      ? (r.cardUrl && r.cardUrl.startsWith("/api/player-photo") ? r.cardUrl : `/api/player-photo?id=${r.id}&t=card`)
+      : null,
     soldPrice: Number(r.soldPrice) || 0,
     notes: r.notes || "",
     registeredAt: r.registeredAt || r.createdAt || new Date().toISOString(),
@@ -143,11 +145,27 @@ export async function GET(request) {
       { $set: { utrNumber: "", instagramHandle: "" } }
     ).catch(() => {});
 
-    // Query players and teams count concurrently
+    // Query players and teams count concurrently - exclude heavy cardUrl base64 to keep JSON payload lightweight (~4KB vs 17MB)
     const [players, teamsCount] = await Promise.all([
-      MongoRegistration.find()
-        .sort({ createdAt: -1, registeredAt: -1 })
-        .lean(),
+      MongoRegistration.aggregate([
+        { $sort: { createdAt: -1, registeredAt: -1 } },
+        {
+          $addFields: {
+            hasCard: {
+              $cond: [
+                { $and: [{ $ne: ["$cardUrl", null] }, { $ne: ["$cardUrl", ""] }] },
+                true,
+                false
+              ]
+            }
+          }
+        },
+        {
+          $project: {
+            cardUrl: 0
+          }
+        }
+      ]),
       MongoTeam.countDocuments().catch(() => 11)
     ]);
 

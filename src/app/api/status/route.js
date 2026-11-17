@@ -33,7 +33,7 @@ export async function GET(request) {
 
     const player = await MongoRegistration.findOne(
       { $or: conditions },
-      "id regNumber name phone ward speciality tshirtSize trackSize paymentStatus photoUrl teamId notes createdAt"
+      "id regNumber name phone ward speciality tshirtSize trackSize paymentStatus photoUrl teamId soldPrice notes createdAt"
     ).lean();
 
     if (!player) {
@@ -57,6 +57,10 @@ export async function GET(request) {
       }
     }
 
+    const safePhotoUrl = player.photoUrl && !player.photoUrl.includes("placeholder")
+      ? (player.photoUrl.startsWith("http") || player.photoUrl.startsWith("/api") ? player.photoUrl : `/api/player-photo?id=${player.id}`)
+      : null;
+
     // Return safe public details
     return NextResponse.json({
       success: true,
@@ -71,8 +75,9 @@ export async function GET(request) {
         tshirtSize: player.tshirtSize,
         trackSize: player.trackSize,
         paymentStatus: player.paymentStatus || "Pending",
-        photoUrl: player.photoUrl && !player.photoUrl.includes("placeholder") ? player.photoUrl : null,
+        photoUrl: safePhotoUrl,
         team: teamInfo,
+        soldPrice: Number(player.soldPrice) || 0,
         notes: player.paymentStatus === "Rejected" ? (player.notes || "Incomplete documentation or address verification issue") : null,
         createdAt: player.createdAt
       }

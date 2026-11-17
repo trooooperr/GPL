@@ -5,11 +5,11 @@ export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
-    const docType = searchParams.get("t") || "photo"; // photo | front | back | proof
+    const docType = searchParams.get("t") || "photo"; // photo | front | back | proof | card
 
     const placeholder = docType === "photo" 
       ? "/images/avatar-placeholder.svg" 
-      : "/images/doc-placeholder.svg";
+      : (docType === "card" ? "/images/gpl-card-base.png" : "/images/doc-placeholder.svg");
 
     if (!id) {
       return NextResponse.redirect(new URL(placeholder, request.url));
@@ -21,7 +21,8 @@ export async function GET(request) {
       photo: "photoUrl",
       front: "aadhaarFrontUrl",
       back: "aadhaarBackUrl",
-      proof: "paymentProofUrl"
+      proof: "paymentProofUrl",
+      card: "cardUrl"
     };
 
     const targetField = fieldMap[docType] || "photoUrl";
@@ -36,13 +37,13 @@ export async function GET(request) {
       const parts = rawUrl.split(",");
       if (parts.length > 1) {
         const mimeMatch = parts[0].match(/:(.*?);/);
-        const mime = mimeMatch ? mimeMatch[1] : "image/jpeg";
+        const mime = mimeMatch ? mimeMatch[1] : (docType === "card" ? "image/png" : "image/jpeg");
         const buffer = Buffer.from(parts[1], "base64");
 
         return new Response(buffer, {
           headers: {
             "Content-Type": mime,
-            "Cache-Control": "public, max-age=86400, s-maxage=604800, stale-while-revalidate=2592000"
+            "Cache-Control": "public, max-age=604800, s-maxage=2592000, stale-while-revalidate=86400"
           }
         });
       }

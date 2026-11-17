@@ -23,6 +23,11 @@ export async function GET() {
     ]);
 
     const settings = { ...INITIAL_SETTINGS, ...(settingDoc?.value || {}) };
+    if (settings.aboutPhotos && Array.isArray(settings.aboutPhotos)) {
+      settings.aboutPhotos = settings.aboutPhotos.map((p, idx) =>
+        p.startsWith("data:") ? (idx === 0 ? "/images/gpl-card-1.jpg" : "/images/gpl-card-2.jpg") : p
+      );
+    }
     let total = 0;
     let approved = 0;
     let rejected = 0;

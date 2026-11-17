@@ -591,10 +591,10 @@ export async function sendTeamAssignmentEmail(player, team, cardDataUrl = null) 
         <style>
           body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #f8fafc; margin: 0; padding: 24px 16px; color: #1e293b; }
           .card { max-width: 620px; margin: 0 auto; background: #ffffff; border-radius: 18px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 12px 30px -8px rgba(0, 0, 0, 0.08); }
-          .header { background: linear-gradient(135deg, #081a36 0%, #0041b9 100%); padding: 34px 24px; text-align: center; color: #ffffff; }
-          .header h1 { margin: 0 0 6px; font-size: 24px; font-weight: 900; color: #ffffff; letter-spacing: -0.5px; }
-          .header p { margin: 0; color: #cbd5e1; font-size: 13px; font-weight: 500; }
-          .badge { display: inline-block; background: #fbbf24; color: #78350f; padding: 6px 18px; border-radius: 999px; font-size: 12px; font-weight: 900; margin-top: 14px; text-transform: uppercase; letter-spacing: 1px; }
+          .header { background: #eff6ff; padding: 32px 24px; text-align: center; border-bottom: 2px solid #dbeafe; }
+          .header h1 { margin: 0 0 6px; font-size: 24px; font-weight: 900; color: #1e3a8a; letter-spacing: -0.5px; }
+          .header p { margin: 0; color: #2563eb; font-size: 13px; font-weight: 600; }
+          .badge { display: inline-block; background: #dbeafe; color: #1e40af; border: 1.5px solid #bfdbfe; padding: 6px 18px; border-radius: 999px; font-size: 12px; font-weight: 900; margin-top: 14px; text-transform: uppercase; letter-spacing: 0.5px; }
           .body { padding: 30px 24px; }
           .greeting { font-size: 16px; font-weight: 700; color: #0f172a; margin-bottom: 12px; }
           .intro { font-size: 14px; line-height: 1.6; color: #475569; margin-bottom: 22px; }

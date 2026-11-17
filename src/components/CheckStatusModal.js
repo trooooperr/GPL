@@ -209,7 +209,7 @@ export default function CheckStatusModal({ isOpen, onClose }) {
       ctx.fillStyle = player.team ? "#fcd34d" : "#34d399";
       ctx.font = "900 28px sans-serif";
       const teamLabel = player.team
-        ? player.team.name
+        ? `${player.team.name}${player.soldPrice > 0 ? ` • Bid: ₹${Number(player.soldPrice).toLocaleString("en-IN")}` : ""}`
         : isApproved
         ? "GPL Official Auction Pool (Pending Franchise Draft)"
         : "Pending Document Verification";
@@ -516,6 +516,11 @@ export default function CheckStatusModal({ isOpen, onClose }) {
                           />
                         )}
                         <span>{player.team.name}</span>
+                        {player.soldPrice > 0 && (
+                          <span className="text-emerald-400 font-mono text-[11px] bg-emerald-950/80 px-2 py-0.5 rounded-md border border-emerald-500/30">
+                            ₹{Number(player.soldPrice).toLocaleString("en-IN")}
+                          </span>
+                        )}
                       </div>
                     ) : (
                       <span className="text-emerald-400 font-bold text-[11px]">

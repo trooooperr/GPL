@@ -405,11 +405,15 @@ export default function AdminDashboard() {
       let cardDataUrl = null;
       if (newStatus === "Approved" && targetPlayer) {
         try {
+          const assignedTeam = teams.find((t) => t.id === targetPlayer.teamId);
           cardDataUrl = await renderPlayerCardToDataUrl({
             player: targetPlayer,
             regNum: targetPlayer.displayId || targetPlayer.id,
             photo: targetPlayer.photoUrl,
-            status: "Approved"
+            status: "Approved",
+            teamName: assignedTeam?.name,
+            soldPrice: targetPlayer.soldPrice,
+            teams
           });
         } catch (e) {
           console.warn("[Card render error]:", e);
@@ -1183,11 +1187,15 @@ export default function AdminDashboard() {
         const target = players.find((p) => p.id === id);
         if (target) {
           try {
+            const assignedTeam = teams.find((t) => t.id === target.teamId);
             const dataUrl = await renderPlayerCardToDataUrl({
               player: target,
               regNum: target.displayId || target.id,
               photo: target.photoUrl,
-              status: "Approved"
+              status: "Approved",
+              teamName: assignedTeam?.name,
+              soldPrice: target.soldPrice,
+              teams
             });
             if (dataUrl) cardsMap[id] = dataUrl;
           } catch (e) {
@@ -1400,7 +1408,10 @@ export default function AdminDashboard() {
 
   const handleShareCard = async (player) => {
     const pId = player.displayId || player.id;
-    const shareText = `🏏 Official GPL Season 4 Player Registration Card\nName: ${player.name}\nPlayer ID: #${pId}\nRole: ${player.speciality || 'Cricket Player'}\nWard: ${player.ward || 'Ward 51'}\nStatus: VERIFIED & REGISTERED\nRadhe Radhe Chashak • Goregaon Premier League`;
+    const assignedTeam = teams.find((t) => t.id === player.teamId);
+    const teamLine = assignedTeam ? `\nDrafted Franchise: ${assignedTeam.name}` : "";
+    const bidLine = (player.soldPrice && Number(player.soldPrice) > 0) ? `\nAuction Bid: ₹${Number(player.soldPrice).toLocaleString("en-IN")}` : "";
+    const shareText = `🏏 Official GPL Season 4 Player Registration Card\nName: ${player.name}\nPlayer ID: #${pId}\nRole: ${player.speciality || 'Cricket Player'}\nWard: ${player.ward || 'Ward 51'}${teamLine}${bidLine}\nStatus: VERIFIED & REGISTERED\nRadhe Radhe Chashak • Goregaon Premier League`;
     if (typeof navigator !== "undefined" && navigator.share) {
       try {
         await navigator.share({
@@ -3545,6 +3556,9 @@ export default function AdminDashboard() {
           regNum={selectedCardPlayer.displayId || selectedCardPlayer.id}
           photo={selectedCardPlayer.photoUrl}
           status="Approved"
+          teamName={teams.find((t) => t.id === selectedCardPlayer.teamId)?.name}
+          soldPrice={selectedCardPlayer.soldPrice}
+          teams={teams}
           onClose={() => setSelectedCardPlayer(null)}
         />
       )}
