@@ -413,6 +413,7 @@ export default function AdminDashboard() {
             status: "Approved",
             teamName: assignedTeam?.name,
             soldPrice: targetPlayer.soldPrice,
+            teamLogo: assignedTeam?.logo,
             teams
           });
         } catch (e) {
@@ -1195,6 +1196,7 @@ export default function AdminDashboard() {
               status: "Approved",
               teamName: assignedTeam?.name,
               soldPrice: target.soldPrice,
+              teamLogo: assignedTeam?.logo,
               teams
             });
             if (dataUrl) cardsMap[id] = dataUrl;
@@ -3558,6 +3560,7 @@ export default function AdminDashboard() {
           status="Approved"
           teamName={teams.find((t) => t.id === selectedCardPlayer.teamId)?.name}
           soldPrice={selectedCardPlayer.soldPrice}
+          teamLogo={teams.find((t) => t.id === selectedCardPlayer.teamId)?.logo}
           teams={teams}
           onClose={() => setSelectedCardPlayer(null)}
         />

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Download, Share2, X, CheckCircle2 } from "lucide-react";
+import { INITIAL_TEAMS } from "@/lib/constants";
 
 /**
  * drawPlayerCardToCanvas
@@ -13,7 +14,7 @@ import { Download, Share2, X, CheckCircle2 } from "lucide-react";
  * - Dynamic Ward and Role inside golden badge frame
  * - Dynamic Status Badge (Approved/Registered vs Pending)
  */
-export async function drawPlayerCardToCanvas(canvas, { player, regNum, photo, status, teamName, soldPrice, teams }) {
+export async function drawPlayerCardToCanvas(canvas, { player, regNum, photo, status, teamName, soldPrice, teams, teamLogo }) {
   if (!canvas) return;
 
   const W = 935;
@@ -55,6 +56,7 @@ export async function drawPlayerCardToCanvas(canvas, { player, regNum, photo, st
     align = "center",
     shear = -0.20,
     strokeWidth = 6,
+    fill = null,
   }) => {
     ctx.save();
     let size = baseSize;
@@ -75,11 +77,21 @@ export async function drawPlayerCardToCanvas(canvas, { player, regNum, photo, st
     ctx.lineJoin = "round";
     ctx.strokeText(text, 0, 0);
 
-    const grad = ctx.createLinearGradient(0, -size / 2, 0, size / 2);
-    grad.addColorStop(0, "#ffffff");
-    grad.addColorStop(0.55, "#e2e8f0");
-    grad.addColorStop(1, "#b0bcc8");
-    ctx.fillStyle = grad;
+    if (fill === "green") {
+      const grad = ctx.createLinearGradient(0, -size / 2, 0, size / 2);
+      grad.addColorStop(0, "#86efac"); // Light mint/green highlight
+      grad.addColorStop(0.45, "#22c55e"); // Vibrant emerald green
+      grad.addColorStop(1, "#15803d"); // Rich deep green
+      ctx.fillStyle = grad;
+    } else if (fill) {
+      ctx.fillStyle = fill;
+    } else {
+      const grad = ctx.createLinearGradient(0, -size / 2, 0, size / 2);
+      grad.addColorStop(0, "#ffffff");
+      grad.addColorStop(0.55, "#e2e8f0");
+      grad.addColorStop(1, "#b0bcc8");
+      ctx.fillStyle = grad;
+    }
     ctx.fillText(text, 0, 0);
 
     ctx.restore();
@@ -244,123 +256,92 @@ export async function drawPlayerCardToCanvas(canvas, { player, regNum, photo, st
     console.error("Status badge load error:", err);
   }
 
-  // --- OFFICIAL FRANCHISE & AUCTION BIDDING PLAQUE (BOTTOM LEFT COLUMN) ---
-  const resolvedTeam = teamName || (teams && player?.teamId ? teams.find((t) => t.id === player.teamId)?.name : null) || player?.teamName || (player?.team?.name) || null;
+  // --- TEAM NAME, LOGO & BIDDING AMOUNT (ONLY WHEN ASSIGNED TO A TEAM) ---
+  const matchedTeam =
+    (teams && player?.teamId ? teams.find((t) => t.id === player.teamId) : null) ||
+    (player?.teamId ? INITIAL_TEAMS.find((t) => t.id === player.teamId) : null) ||
+    (teamName ? INITIAL_TEAMS.find((t) => t.name?.toLowerCase() === teamName.toLowerCase()) : null) ||
+    player?.team ||
+    null;
+
+  const resolvedTeam = teamName || matchedTeam?.name || player?.teamName || player?.team?.name || null;
   const resolvedSoldPrice = soldPrice !== undefined ? Number(soldPrice) : (Number(player?.soldPrice) || 0);
+  const resolvedLogo = teamLogo || matchedTeam?.logo || player?.team?.logo || null;
+  const teamShortCode = matchedTeam?.shortCode || "";
 
-  const bx = 70;
-  const by = 918;
-  const bw = 458;
-  const bh = 80;
-  const br = 14;
-
-  ctx.save();
-  roundRect(bx, by, bw, bh, br);
-  ctx.clip();
-
-  // Dark glass gradient background
-  const bannerGrad = ctx.createLinearGradient(bx, by, bx + bw, by + bh);
-  bannerGrad.addColorStop(0, "rgba(7, 18, 42, 0.96)");
-  bannerGrad.addColorStop(1, "rgba(15, 23, 42, 0.98)");
-  ctx.fillStyle = bannerGrad;
-  ctx.fillRect(bx, by, bw, bh);
-
-  // Subtle gold accent strip on top
-  const accentGrad = ctx.createLinearGradient(bx, by, bx + bw, by);
-  accentGrad.addColorStop(0, "#f59e0b");
-  accentGrad.addColorStop(0.5, "#fde047");
-  accentGrad.addColorStop(1, "#f59e0b");
-  ctx.fillStyle = accentGrad;
-  ctx.fillRect(bx, by, bw, 3);
-  ctx.restore();
-
-  // Outer border
-  ctx.save();
-  roundRect(bx, by, bw, bh, br);
-  ctx.strokeStyle = resolvedTeam ? "#f59e0b" : "rgba(255, 255, 255, 0.2)";
-  ctx.lineWidth = 2;
-  ctx.stroke();
-  ctx.restore();
-
+  // If a team is assigned, draw:
+  // 1. Team logo on left (aligned under the ward/role icons)
+  // 2. Team name in metallic font (same font style as ward and role text)
+  // 3. Winning auction bid in green on the right (same font style as ward text)
+  // If NO team is assigned, draft status box is removed completely.
   if (resolvedTeam) {
-    // Left: Drafted Team Section
+    const rowY = 952;
+    const logoCX = 112;
+    const logoCY = rowY;
+    const logoR = 26;
+
+    // 1. Team Logo Badge
+    let teamLogoImg = null;
+    if (resolvedLogo) {
+      try {
+        teamLogoImg = await loadImg(resolvedLogo);
+      } catch (_) {}
+    }
+
     ctx.save();
-    ctx.font = "900 11px 'Arial Black', Impact, sans-serif";
-    ctx.fillStyle = "#fbbf24";
-    ctx.textAlign = "left";
-    ctx.textBaseline = "middle";
-    ctx.fillText("🏆 DRAFTED FRANCHISE", bx + 16, by + 24);
+    ctx.beginPath();
+    ctx.arc(logoCX, logoCY, logoR, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(10, 14, 28, 0.95)";
+    ctx.fill();
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = "#f59e0b"; // Golden circular border matching ward/role theme
+    ctx.stroke();
+    ctx.clip();
+
+    if (teamLogoImg) {
+      ctx.drawImage(teamLogoImg, logoCX - logoR, logoCY - logoR, logoR * 2, logoR * 2);
+    } else {
+      ctx.fillStyle = "#fbbf24";
+      ctx.font = "900 15px 'Arial Black', Impact, sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(teamShortCode || resolvedTeam.slice(0, 3).toUpperCase(), logoCX, logoCY);
+    }
     ctx.restore();
+
+    // 2. Bidding Amount on Right (Green font, same font style & size as ward/role text)
+    const hasBid = resolvedSoldPrice > 0;
+    const bidText = hasBid ? `₹${resolvedSoldPrice.toLocaleString("en-IN")}` : "";
+    const bidMaxW = 150;
+
+    if (hasBid) {
+      drawMetallicText({
+        text: bidText,
+        x: 525,
+        y: rowY,
+        baseSize: 28,
+        maxW: bidMaxW,
+        align: "right",
+        shear: -0.22,
+        strokeWidth: 5,
+        fill: "green"
+      });
+    }
+
+    // 3. Team Name (Same metallic font, size, shear, and stroke as ward & role text)
+    const tx = 156;
+    const teamMaxW = hasBid ? (525 - bidMaxW - 16 - tx) : (525 - tx);
 
     drawMetallicText({
       text: resolvedTeam.toUpperCase(),
-      x: bx + 16,
-      y: by + 53,
-      baseSize: 20,
-      maxW: 240,
+      x: tx,
+      y: rowY,
+      baseSize: 28,
+      maxW: teamMaxW,
       align: "left",
-      shear: -0.15,
-      strokeWidth: 4,
+      shear: -0.22,
+      strokeWidth: 5
     });
-
-    // Vertical Divider
-    ctx.save();
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.moveTo(bx + 268, by + 12);
-    ctx.lineTo(bx + 268, by + bh - 12);
-    ctx.stroke();
-    ctx.restore();
-
-    // Right: Winning Bid Amount Section
-    ctx.save();
-    ctx.textAlign = "left";
-    ctx.textBaseline = "middle";
-    ctx.font = "900 11px 'Arial Black', Impact, sans-serif";
-    ctx.fillStyle = "#94a3b8";
-    ctx.fillText("WINNING BID", bx + 282, by + 24);
-
-    if (resolvedSoldPrice > 0) {
-      const bidText = `₹${resolvedSoldPrice.toLocaleString("en-IN")}`;
-      ctx.font = "900 22px 'Arial Black', Impact, sans-serif";
-      ctx.fillStyle = "rgba(0, 0, 0, 0.8)";
-      ctx.fillText(bidText, bx + 283, by + 54);
-      ctx.fillStyle = "#34d399";
-      ctx.fillText(bidText, bx + 282, by + 53);
-    } else {
-      ctx.font = "900 14px 'Arial Black', Impact, sans-serif";
-      ctx.fillStyle = "#fde047";
-      ctx.fillText("DIRECT DRAFT", bx + 282, by + 53);
-    }
-    ctx.restore();
-  } else {
-    // Unassigned / Auction Pool Player
-    ctx.save();
-    ctx.textAlign = "left";
-    ctx.textBaseline = "middle";
-    ctx.font = "900 11px 'Arial Black', Impact, sans-serif";
-    ctx.fillStyle = "#94a3b8";
-    ctx.fillText("DRAFT STATUS", bx + 16, by + 24);
-    ctx.font = "900 16px 'Arial Black', Impact, sans-serif";
-    ctx.fillStyle = "#f1f5f9";
-    ctx.fillText("AUCTION POOL", bx + 16, by + 53);
-
-    // Vertical Divider
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.moveTo(bx + 268, by + 12);
-    ctx.lineTo(bx + 268, by + bh - 12);
-    ctx.stroke();
-
-    ctx.font = "900 11px 'Arial Black', Impact, sans-serif";
-    ctx.fillStyle = "#94a3b8";
-    ctx.fillText("CATEGORY", bx + 282, by + 24);
-    ctx.font = "900 15px 'Arial Black', Impact, sans-serif";
-    ctx.fillStyle = "#fbbf24";
-    ctx.fillText("OPEN DRAFT", bx + 282, by + 53);
-    ctx.restore();
   }
 }
 
@@ -368,7 +349,7 @@ export async function drawPlayerCardToCanvas(canvas, { player, regNum, photo, st
  * renderPlayerCardToDataUrl
  * Renders the personalized player card offscreen and returns a high-res base64 PNG dataUrl
  */
-export async function renderPlayerCardToDataUrl({ player, regNum, photo, status = "Approved", teamName, soldPrice, teams }) {
+export async function renderPlayerCardToDataUrl({ player, regNum, photo, status = "Approved", teamName, soldPrice, teams, teamLogo }) {
   if (typeof document === "undefined") return null;
   const canvas = document.createElement("canvas");
   await drawPlayerCardToCanvas(canvas, {
@@ -378,12 +359,13 @@ export async function renderPlayerCardToDataUrl({ player, regNum, photo, status 
     status,
     teamName,
     soldPrice,
-    teams
+    teams,
+    teamLogo
   });
   return canvas.toDataURL("image/png", 0.95);
 }
 
-export default function PlayerRegistrationCard({ player, regNum, photo, status, teamName, soldPrice, teams, onClose }) {
+export default function PlayerRegistrationCard({ player, regNum, photo, status, teamName, soldPrice, teams, teamLogo, onClose }) {
   const canvasRef = useRef(null);
   const [rendered, setRendered] = useState(false);
   const [downloading, setDownloading] = useState(false);
@@ -394,7 +376,7 @@ export default function PlayerRegistrationCard({ player, regNum, photo, status, 
   useEffect(() => {
     let isMounted = true;
     if (canvasRef.current) {
-      drawPlayerCardToCanvas(canvasRef.current, { player, regNum, photo, status, teamName, soldPrice, teams })
+      drawPlayerCardToCanvas(canvasRef.current, { player, regNum, photo, status, teamName, soldPrice, teams, teamLogo })
         .then(() => {
           if (isMounted) setRendered(true);
         })
@@ -403,7 +385,7 @@ export default function PlayerRegistrationCard({ player, regNum, photo, status, 
     return () => {
       isMounted = false;
     };
-  }, [player, regNum, photo, status, teamName, soldPrice, teams]);
+  }, [player, regNum, photo, status, teamName, soldPrice, teams, teamLogo]);
 
   const handleDownload = () => {
     setDownloading(true);
