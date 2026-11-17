@@ -6,6 +6,7 @@ import { Users, Search, Trophy, Shield, Filter, Award, Sparkles, ArrowRight } fr
 
 export default function AuctionPool({ players = [], teams = [] }) {
   const [roleFilter, setRoleFilter] = useState("ALL");
+  const [statusFilter, setStatusFilter] = useState("ALL");
   const [searchQuery, setSearchQuery] = useState("");
 
   // Only approved players enter the auction pool
@@ -22,9 +23,16 @@ export default function AuctionPool({ players = [], teams = [] }) {
     return map;
   }, [teams]);
 
+  const soldCount = useMemo(() => approvedPlayers.filter((p) => p.teamId && p.teamId !== "").length, [approvedPlayers]);
+  const unsoldCount = Math.max(0, approvedPlayers.length - soldCount);
+
   // Filtered pool
   const filteredPool = useMemo(() => {
     return approvedPlayers.filter((p) => {
+      // Status filter
+      if (statusFilter === "SOLD" && (!p.teamId || p.teamId === "")) return false;
+      if (statusFilter === "UNSOLD" && p.teamId && p.teamId !== "") return false;
+
       // Role filter
       if (roleFilter !== "ALL") {
         const spec = (p.speciality || "").toLowerCase();
@@ -45,7 +53,7 @@ export default function AuctionPool({ players = [], teams = [] }) {
 
       return true;
     });
-  }, [approvedPlayers, roleFilter, searchQuery]);
+  }, [approvedPlayers, roleFilter, statusFilter, searchQuery]);
 
   return (
     <section id="auction-pool" className="py-16 sm:py-24 bg-white text-slate-900 border-b border-slate-200 relative">
@@ -68,18 +76,55 @@ export default function AuctionPool({ players = [], teams = [] }) {
           <div className="inline-flex items-center gap-3 px-4 py-2 rounded-2xl bg-slate-50 border border-slate-200 text-xs sm:text-sm font-semibold text-slate-700">
             <span className="flex items-center gap-1.5">
               <Users className="w-4 h-4 text-[#059669]" />
-              <strong>{approvedPlayers.length}</strong> Verified Players
+              <strong>{approvedPlayers.length}</strong> Registered / 160 Pool
             </span>
             <span className="text-slate-300">|</span>
-            <span className="text-amber-600 font-bold">10 Franchises Bidding</span>
+            <span className="text-emerald-700 font-bold">{soldCount}/140 Drafted</span>
+            <span className="text-slate-300">|</span>
+            <span className="text-amber-600 font-bold">{unsoldCount} Unsold</span>
           </div>
         </div>
 
         {/* Search & Filter Bar */}
-        <div className="bg-slate-50 p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200 shadow-xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+        <div className="bg-slate-50 p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200 shadow-xs flex flex-col gap-3">
           
-          {/* Role Filter Pills */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-2 md:pb-0 scrollbar-none">
+          {/* Top: Status Tabs + Search */}
+          <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 scrollbar-none">
+              {[
+                { id: "ALL", label: `All Players (${approvedPlayers.length})` },
+                { id: "SOLD", label: `Drafted / Sold (${soldCount})` },
+                { id: "UNSOLD", label: `Unsold Pool (${unsoldCount})` }
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setStatusFilter(tab.id)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
+                    statusFilter === tab.id
+                      ? "bg-[#059669] text-white shadow-xs"
+                      : "bg-white text-slate-700 hover:bg-slate-200/70 border border-slate-200"
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Search Box */}
+            <div className="relative min-w-[240px] md:w-72">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search player name or ward..."
+                className="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-300 bg-white text-xs font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#059669] transition-all"
+              />
+              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            </div>
+          </div>
+
+          {/* Bottom: Role Filter Pills */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pt-1 border-t border-slate-200/80 scrollbar-none">
             {[
               { id: "ALL", label: "All Roles" },
               { id: "batsman", label: "Batsmen" },
@@ -90,27 +135,15 @@ export default function AuctionPool({ players = [], teams = [] }) {
               <button
                 key={tab.id}
                 onClick={() => setRoleFilter(tab.id)}
-                className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
                   roleFilter === tab.id
-                    ? "bg-[#081a36] text-white shadow-sm"
+                    ? "bg-[#081a36] text-white shadow-xs"
                     : "bg-white text-slate-700 hover:bg-slate-200/70 border border-slate-200/80"
                 }`}
               >
                 {tab.label}
               </button>
             ))}
-          </div>
-
-          {/* Search Box */}
-          <div className="relative min-w-[240px] md:w-72">
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search player name or ward..."
-              className="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-300 bg-white text-xs font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#059669] transition-all"
-            />
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
           </div>
 
         </div>
@@ -170,14 +203,19 @@ export default function AuctionPool({ players = [], teams = [] }) {
                   {/* Bottom: Team Allocation or Auction Draft status */}
                   <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
                     {assignedTeam ? (
-                      <span className="inline-flex items-center gap-1.5 text-xs font-bold text-[#081a36] bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200/80 w-full truncate">
-                        <Trophy className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                        <span className="truncate">{assignedTeam.name}</span>
-                      </span>
+                      <div className="flex items-center justify-between text-xs font-bold text-[#081a36] bg-amber-50/90 px-2.5 py-1.5 rounded-lg border border-amber-200/80 w-full truncate">
+                        <span className="flex items-center gap-1.5 truncate">
+                          <Trophy className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                          <span className="truncate">{assignedTeam.name}</span>
+                        </span>
+                        <span className="text-emerald-700 font-mono font-extrabold ml-1 shrink-0">
+                          {player.soldPrice > 0 ? `₹${Number(player.soldPrice).toLocaleString("en-IN")}` : "Drafted"}
+                        </span>
+                      </div>
                     ) : (
-                      <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200/70 w-full justify-center">
-                        <Award className="w-3 h-3 text-emerald-600" />
-                        <span>Auction Draft Pool</span>
+                      <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-slate-600 bg-slate-100 px-2.5 py-1.5 rounded-lg border border-slate-200/80 w-full justify-center">
+                        <Award className="w-3.5 h-3.5 text-slate-500" />
+                        <span>Unsold • In Pool</span>
                       </span>
                     )}
                   </div>

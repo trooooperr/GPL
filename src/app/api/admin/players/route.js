@@ -69,26 +69,31 @@ function mapPlayer(r) {
     paymentProofUrl,
     teamId: r.teamId || null,
     cardUrl: r.cardUrl || null,
+    soldPrice: Number(r.soldPrice) || 0,
     notes: r.notes || "",
     registeredAt: r.registeredAt || r.createdAt || new Date().toISOString(),
     history: r.history || []
   };
 }
 
-async function getCalculatedStats(playersList, teamsCount = 11) {
+async function getCalculatedStats(playersList, teamsCount = 10) {
   let approved = 0;
   let rejected = 0;
   let pending = 0;
   let total = 0;
+  let maxCap = 160;
 
   try {
-    if (!Array.isArray(playersList)) {
-      const [regs, tCount] = await Promise.all([
-        MongoRegistration.find({}, "paymentStatus").lean().exec().catch(() => []),
-        MongoTeam.countDocuments().exec().catch(() => 11)
-      ]);
-      playersList = Array.isArray(regs) ? regs : [];
-      teamsCount = tCount || 11;
+    const [regs, tCount, settingDoc] = await Promise.all([
+      Array.isArray(playersList) ? Promise.resolve(playersList) : MongoRegistration.find({}, "paymentStatus").lean().exec().catch(() => []),
+      MongoTeam.countDocuments().exec().catch(() => 10),
+      MongoSetting.findOne({ key: "global_settings" }).lean().catch(() => null)
+    ]);
+
+    playersList = Array.isArray(regs) ? regs : [];
+    teamsCount = tCount || 10;
+    if (settingDoc?.value?.maxCapacity) {
+      maxCap = Number(settingDoc.value.maxCapacity) || 160;
     }
 
     if (Array.isArray(playersList)) {
@@ -110,8 +115,6 @@ async function getCalculatedStats(playersList, teamsCount = 11) {
     console.error("[getCalculatedStats Error]:", err);
   }
 
-  const maxCap = (teamsCount || 11) * 14;
-
   return {
     totalRegistrations: total,
     totalRegistered: total,
@@ -121,7 +124,7 @@ async function getCalculatedStats(playersList, teamsCount = 11) {
     available: Math.max(0, maxCap - approved),
     remainingSlots: Math.max(0, maxCap - approved),
     maxCapacity: maxCap,
-    totalTeams: teamsCount || 11
+    totalTeams: teamsCount || 10
   };
 }
 
@@ -167,7 +170,7 @@ export async function POST(request) {
   try {
     await connectToDatabase();
     const body = await request.json();
-    const { action, id, ids, status, notes, playerData, teamId, cardDataUrl, cardsMap } = body;
+    const { action, id, ids, status, notes, playerData, teamId, cardDataUrl, cardsMap, soldPrice } = body;
 
     // 0. BATCH UPDATE STATUS (Multiple Players)
     if (action === "batchStatus" && Array.isArray(ids) && ids.length > 0 && status) {
@@ -188,7 +191,7 @@ export async function POST(request) {
           $set: {
             paymentStatus: status,
             ...(notes !== undefined ? { notes } : {}),
-            ...(isRejected ? { teamId: null } : {})
+            ...(isRejected ? { teamId: null, soldPrice: 0 } : {})
           },
           $push: { history: historyEntry }
         }
@@ -284,15 +287,20 @@ export async function POST(request) {
             { status: 400, headers: NO_CACHE_HEADERS }
           );
         }
+        const numericSoldPrice = Math.max(0, Number(soldPrice) || 0);
         await MongoTeam.updateMany({}, { $pull: { members: id } });
         await MongoTeam.findOneAndUpdate({ id: teamId }, { $addToSet: { members: id } });
-        const updatedDoc = await MongoRegistration.findOneAndUpdate({ id }, { teamId }, { new: true }).lean();
+        const updatedDoc = await MongoRegistration.findOneAndUpdate(
+          { id },
+          { teamId, soldPrice: numericSoldPrice },
+          { new: true }
+        ).lean();
         if (team && updatedDoc) {
           sendTeamAssignmentEmail(updatedDoc, team).catch(() => {});
         }
       } else {
         await MongoTeam.updateMany({}, { $pull: { members: id } });
-        await MongoRegistration.findOneAndUpdate({ id }, { teamId: null });
+        await MongoRegistration.findOneAndUpdate({ id }, { teamId: null, soldPrice: 0 });
       }
       const stats = await getCalculatedStats();
       return NextResponse.json({ success: true, id, teamId, stats }, { headers: NO_CACHE_HEADERS });
@@ -302,6 +310,9 @@ export async function POST(request) {
     if (action === "edit" && id && playerData) {
       const cleanPlayerData = { ...playerData };
       delete cleanPlayerData._id;
+      if (cleanPlayerData.soldPrice !== undefined) {
+        cleanPlayerData.soldPrice = Math.max(0, Number(cleanPlayerData.soldPrice) || 0);
+      }
 
       // Protect stored documents from being overwritten by stream/placeholder URLs
       ["photoUrl", "aadhaarFrontUrl", "aadhaarBackUrl", "paymentProofUrl", "cardUrl"].forEach((f) => {
@@ -314,6 +325,7 @@ export async function POST(request) {
       if (cleanPlayerData.paymentStatus && cleanPlayerData.paymentStatus.toLowerCase() === "rejected") {
         await MongoTeam.updateMany({}, { $pull: { members: id } });
         cleanPlayerData.teamId = null;
+        cleanPlayerData.soldPrice = 0;
       }
 
       const old = await MongoRegistration.findOne({ id }, "paymentStatus notes").lean();
@@ -355,7 +367,7 @@ export async function POST(request) {
       const updateFields = {
         paymentStatus: status,
         notes: notes !== undefined ? notes : (old?.notes || ""),
-        ...(isRejected ? { teamId: null } : {}),
+        ...(isRejected ? { teamId: null, soldPrice: 0 } : {}),
         ...(cardDataUrl ? { cardUrl: cardDataUrl } : {})
       };
 

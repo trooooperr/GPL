@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { verifyAuthCookie } from "@/lib/auth";
-import { connectToDatabase, MongoTeam, MongoRegistration } from "@/lib/mongodb";
+import { connectToDatabase, MongoTeam, MongoRegistration, MongoSetting } from "@/lib/mongodb";
 import { INITIAL_TEAMS } from "@/lib/constants";
 import { sendTeamAssignmentEmail } from "@/lib/email";
 
@@ -14,9 +14,10 @@ const NO_CACHE_HEADERS = {
 };
 
 async function getPopulatedTeams() {
-  const [mongoTeams, mongoRegs] = await Promise.all([
+  const [mongoTeams, mongoRegs, settingDoc] = await Promise.all([
     MongoTeam.find().lean(),
-    MongoRegistration.find({}, "id name speciality ward tshirtSize").lean()
+    MongoRegistration.find({}, "id name speciality ward tshirtSize soldPrice").lean(),
+    MongoSetting.findOne({ key: "global_settings" }).lean()
   ]);
 
   let rawTeams = mongoTeams;
@@ -28,29 +29,41 @@ async function getPopulatedTeams() {
   }
   
   const regs = mongoRegs || [];
+  const defaultPurse = Number(settingDoc?.value?.defaultTeamPurse) || 100000;
 
-  return rawTeams.map((t) => ({
-    id: t.id,
-    name: t.name,
-    shortCode: t.shortCode,
-    owner: t.owner,
-    captain: t.captain,
-    established: t.established || "2024",
-    championships: t.championships || 0,
-    logo: t.logo?.startsWith("data:") ? `/api/team-logo?id=${t.id}` : (t.logo || "/images/teams/team-csk.png"),
-    themeColor: t.themeColor || "#0041b9",
-    members: t.members || [],
-    memberDetails: (t.members || [])
+  return rawTeams.map((t) => {
+    const initialPurse = typeof t.initialPurse === "number" ? t.initialPurse : defaultPurse;
+    const teamMembers = (t.members || [])
       .map((mid) => regs.find((r) => r.id === mid))
-      .filter(Boolean)
-      .map((r) => ({
+      .filter(Boolean);
+
+    const spentPurse = teamMembers.reduce((sum, m) => sum + (Number(m.soldPrice) || 0), 0);
+    const remainingPurse = Math.max(0, initialPurse - spentPurse);
+
+    return {
+      id: t.id,
+      name: t.name,
+      shortCode: t.shortCode,
+      owner: t.owner,
+      captain: t.captain,
+      established: t.established || "2024",
+      championships: t.championships || 0,
+      logo: t.logo?.startsWith("data:") ? `/api/team-logo?id=${t.id}` : (t.logo || "/images/teams/team-csk.png"),
+      themeColor: t.themeColor || "#0041b9",
+      initialPurse,
+      spentPurse,
+      remainingPurse,
+      members: t.members || [],
+      memberDetails: teamMembers.map((r) => ({
         id: r.id,
         name: r.name,
         speciality: r.speciality,
         ward: r.ward,
-        tshirtSize: r.tshirtSize
+        tshirtSize: r.tshirtSize,
+        soldPrice: Number(r.soldPrice) || 0
       }))
-  }));
+    };
+  });
 }
 
 export async function GET(request) {
@@ -78,7 +91,7 @@ export async function POST(request) {
   try {
     await connectToDatabase();
     const body = await request.json();
-    const { action, teamId, teamData, playerId, playerIds } = body;
+    const { action, teamId, teamData, playerId, playerIds, soldPrice } = body;
 
     // 0. BATCH ASSIGN PLAYERS TO TEAM
     if (action === "batchAssign" && Array.isArray(playerIds) && playerIds.length > 0) {
@@ -98,11 +111,12 @@ export async function POST(request) {
         const toAdd = eligibleIds.slice(0, availableSlots);
 
         if (toAdd.length > 0) {
+          const numericSoldPrice = Math.max(0, Number(soldPrice) || 0);
           await MongoTeam.findOneAndUpdate({ id: teamId }, { $addToSet: { members: { $each: toAdd } } });
-          await MongoRegistration.updateMany({ id: { $in: toAdd } }, { $set: { teamId } });
+          await MongoRegistration.updateMany({ id: { $in: toAdd } }, { $set: { teamId, soldPrice: numericSoldPrice } });
         }
       } else {
-        await MongoRegistration.updateMany({ id: { $in: playerIds } }, { $set: { teamId: null } });
+        await MongoRegistration.updateMany({ id: { $in: playerIds } }, { $set: { teamId: null, soldPrice: 0 } });
       }
 
       const teams = await getPopulatedTeams();
@@ -132,10 +146,11 @@ export async function POST(request) {
               { status: 400, headers: NO_CACHE_HEADERS }
             );
           }
+          const numericSoldPrice = Math.max(0, Number(soldPrice) || 0);
           await MongoTeam.findOneAndUpdate({ id: teamId }, { $addToSet: { members: playerId } });
           const updatedPlayer = await MongoRegistration.findOneAndUpdate(
             { id: playerId },
-            { teamId },
+            { teamId, soldPrice: numericSoldPrice },
             { new: true }
           ).lean();
 
@@ -147,8 +162,18 @@ export async function POST(request) {
         } else {
           // Unassign from team
           await MongoTeam.updateMany({}, { $pull: { members: playerId } });
-          await MongoRegistration.findOneAndUpdate({ id: playerId }, { teamId: null });
+          await MongoRegistration.findOneAndUpdate({ id: playerId }, { teamId: null, soldPrice: 0 });
         }
+      }
+      const teams = await getPopulatedTeams();
+      return NextResponse.json({ success: true, teams }, { headers: NO_CACHE_HEADERS });
+    }
+
+    // 1.5 UPDATE PLAYER SOLD PRICE
+    if (action === "updateSoldPrice") {
+      if (playerId) {
+        const numericSoldPrice = Math.max(0, Number(soldPrice) || 0);
+        await MongoRegistration.findOneAndUpdate({ id: playerId }, { soldPrice: numericSoldPrice });
       }
       const teams = await getPopulatedTeams();
       return NextResponse.json({ success: true, teams }, { headers: NO_CACHE_HEADERS });
@@ -168,6 +193,9 @@ export async function POST(request) {
     if ((action === "update" || teamId) && teamData) {
       const cleanData = { ...teamData };
       delete cleanData._id;
+      if (cleanData.initialPurse !== undefined) {
+        cleanData.initialPurse = Math.max(0, Number(cleanData.initialPurse) || 0);
+      }
       if (teamId) {
         await MongoTeam.findOneAndUpdate(
           { id: teamId },
@@ -185,6 +213,12 @@ export async function POST(request) {
       delete cleanData._id;
       if (!cleanData.id) {
         cleanData.id = `team-${Date.now()}`;
+      }
+      if (cleanData.initialPurse !== undefined) {
+        cleanData.initialPurse = Math.max(0, Number(cleanData.initialPurse) || 0);
+      } else {
+        const settingDoc = await MongoSetting.findOne({ key: "global_settings" }).lean();
+        cleanData.initialPurse = Number(settingDoc?.value?.defaultTeamPurse) || 100000;
       }
       await MongoTeam.create(cleanData);
       const teams = await getPopulatedTeams();

@@ -73,6 +73,7 @@ const RegistrationSchema = new mongoose.Schema({
   paymentProofUrl: String,
   cardUrl: String,
   teamId: { type: String, default: null, index: true },
+  soldPrice: { type: Number, default: 0 },
   notes: String,
   registeredAt: { type: String, default: () => new Date().toISOString(), index: true },
   history: [
@@ -96,6 +97,7 @@ const TeamSchema = new mongoose.Schema({
   championships: { type: Number, default: 0 },
   logo: String,
   themeColor: { type: String, default: "#0041b9" },
+  initialPurse: { type: Number, default: 100000 },
   members: [String]
 }, schemaOptions);
 

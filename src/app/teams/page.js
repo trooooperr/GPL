@@ -34,7 +34,7 @@ export default async function TeamsPage() {
       MongoTeam.find().lean(),
       MongoRegistration.find(
         { $or: [{ teamId: { $exists: true, $ne: null, $ne: "" } }, { paymentStatus: "Approved" }] },
-        "id regNumber name speciality ward tshirtSize trackSize paymentStatus photoUrl teamId"
+        "id regNumber name speciality ward tshirtSize trackSize paymentStatus photoUrl teamId soldPrice"
       ).lean(),
       MongoSetting.findOne({ key: "global_settings" }).lean(),
     ]);
@@ -58,13 +58,24 @@ export default async function TeamsPage() {
         trackSize: r.trackSize,
         paymentStatus: r.paymentStatus,
         photoUrl,
-        teamId: r.teamId
+        teamId: r.teamId,
+        soldPrice: Number(r.soldPrice) || 0
       };
     });
     players = regs;
 
-    if (mongoTeams && mongoTeams.length > 0) {
-      teams = mongoTeams.map((t) => ({
+    const defaultPurse = Number(settings.defaultTeamPurse) || 100000;
+    const rawTeams = mongoTeams && mongoTeams.length > 0 ? mongoTeams : INITIAL_TEAMS;
+
+    teams = rawTeams.map((t) => {
+      const initialPurse = typeof t.initialPurse === "number" ? t.initialPurse : defaultPurse;
+      const teamMembers = (t.members || [])
+        .map((mid) => regs.find((r) => r.id === mid))
+        .filter(Boolean);
+      const spentPurse = teamMembers.reduce((sum, m) => sum + (Number(m.soldPrice) || 0), 0);
+      const remainingPurse = Math.max(0, initialPurse - spentPurse);
+
+      return {
         id: t.id,
         name: t.name,
         shortCode: t.shortCode,
@@ -74,9 +85,12 @@ export default async function TeamsPage() {
         championships: t.championships || 0,
         logo: t.logo?.startsWith("data:") ? `/api/team-logo?id=${t.id}` : (t.logo || "/images/teams/team-csk.png"),
         themeColor: t.themeColor || "#0041b9",
+        initialPurse,
+        spentPurse,
+        remainingPurse,
         members: t.members || []
-      }));
-    }
+      };
+    });
   } catch (err) {
     console.error("[Teams Page MongoDB Fetch Error]:", err.message);
   }

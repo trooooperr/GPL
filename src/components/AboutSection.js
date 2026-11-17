@@ -47,9 +47,9 @@ export default function AboutSection() {
 
                 <div className="flex items-center gap-3 text-xs text-slate-300">
                   <div className="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold">
-                    140
+                    160
                   </div>
-                  <span>Players entering the official auction (10 Teams × 14 Players)</span>
+                  <span>Players registering in official pool (140 drafted across 10 teams × 14, 20 pool reserves)</span>
                 </div>
 
                 <div className="flex items-center gap-3 text-xs text-slate-300">

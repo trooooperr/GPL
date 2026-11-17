@@ -168,6 +168,9 @@ export default function TeamsPortalClient({ teams = [], players = [], settings =
                     <span>•</span>
                     <span className="text-[#059669] font-bold">{squadCount}/14</span>
                   </div>
+                  <div className="text-[10px] font-mono font-bold text-emerald-700 mt-0.5">
+                    ₹{Math.round(((team.remainingPurse !== undefined ? team.remainingPurse : (team.initialPurse || 100000) - (team.spentPurse || 0))) / 1000)}k left
+                  </div>
                 </button>
               );
             })}
@@ -246,8 +249,8 @@ export default function TeamsPortalClient({ teams = [], players = [], settings =
                 </div>
               </div>
 
-              {/* Franchise Details (4 Clean Boxes) */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-50 rounded-2xl p-4 border border-slate-200">
+              {/* Franchise Details (6 Boxes with Purse & Capacity) */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 bg-slate-50 rounded-2xl p-4 border border-slate-200">
                 <div className="space-y-0.5">
                   <span className="text-[10px] uppercase font-bold text-slate-400 block">Owner</span>
                   <div className="font-bold text-slate-900 text-xs sm:text-sm truncate">
@@ -256,24 +259,37 @@ export default function TeamsPortalClient({ teams = [], players = [], settings =
                 </div>
 
                 <div className="space-y-0.5">
-                  <span className="text-[10px] uppercase font-bold text-slate-400 block">Team Captain</span>
+                  <span className="text-[10px] uppercase font-bold text-slate-400 block">Captain</span>
                   <div className="font-bold text-amber-700 text-xs sm:text-sm truncate">
                     {currentTeam.captain || "To be drafted"}
                   </div>
                 </div>
 
                 <div className="space-y-0.5">
-                  <span className="text-[10px] uppercase font-bold text-slate-400 block">Titles</span>
-                  <div className="font-bold text-slate-900 text-xs sm:text-sm flex items-center gap-1">
-                    <Trophy className="w-3.5 h-3.5 text-amber-500" />
-                    <span>{currentTeam.championships || 0} Titles</span>
+                  <span className="text-[10px] uppercase font-bold text-slate-400 block">Squad</span>
+                  <div className="font-mono font-bold text-[#059669] text-xs sm:text-sm">
+                    {displayPlayers.length} / 14 Max
                   </div>
                 </div>
 
                 <div className="space-y-0.5">
-                  <span className="text-[10px] uppercase font-bold text-slate-400 block">Squad Capacity</span>
-                  <div className="font-mono font-bold text-[#059669] text-xs sm:text-sm">
-                    {displayPlayers.length} / 14 Players
+                  <span className="text-[10px] uppercase font-bold text-slate-400 block">Total Purse</span>
+                  <div className="font-mono font-bold text-slate-800 text-xs sm:text-sm">
+                    ₹{(currentTeam.initialPurse || 100000).toLocaleString("en-IN")}
+                  </div>
+                </div>
+
+                <div className="space-y-0.5">
+                  <span className="text-[10px] uppercase font-bold text-slate-400 block">Spent</span>
+                  <div className="font-mono font-bold text-amber-700 text-xs sm:text-sm">
+                    ₹{(currentTeam.spentPurse || 0).toLocaleString("en-IN")}
+                  </div>
+                </div>
+
+                <div className="space-y-0.5">
+                  <span className="text-[10px] uppercase font-bold text-slate-400 block">Remaining</span>
+                  <div className="font-mono font-black text-emerald-700 text-xs sm:text-sm">
+                    ₹{(currentTeam.remainingPurse !== undefined ? currentTeam.remainingPurse : Math.max(0, (currentTeam.initialPurse || 100000) - (currentTeam.spentPurse || 0))).toLocaleString("en-IN")}
                   </div>
                 </div>
               </div>
@@ -416,13 +432,19 @@ export default function TeamsPortalClient({ teams = [], players = [], settings =
                   </div>
                 </div>
 
-                {/* Status Bar */}
+                {/* Status & Auction Sold Price Bar */}
                 <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
-                  <span className="text-slate-400 font-medium">Squad Status:</span>
-                  <span className="font-bold text-[#059669] flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#059669]" />
-                    <span>{currentTeam ? "Verified Squad Member" : "In Auction Pool"}</span>
-                  </span>
+                  <span className="text-slate-400 font-medium">{currentTeam ? "Auction Price:" : "Pool Status:"}</span>
+                  {currentTeam ? (
+                    <span className="font-mono font-extrabold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                      {player.soldPrice > 0 ? `₹${Number(player.soldPrice).toLocaleString("en-IN")}` : "Direct Pick"}
+                    </span>
+                  ) : (
+                    <span className="font-bold text-[#059669] flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#059669]" />
+                      <span>Available in Pool</span>
+                    </span>
+                  )}
                 </div>
               </div>
             ))}

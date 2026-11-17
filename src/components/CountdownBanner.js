@@ -43,7 +43,7 @@ export default function CountdownBanner({ stats, settings, onOpenStatusModal }) 
     return () => clearInterval(interval);
   }, [targetDate]);
 
-  const maxCapacity = stats?.maxCapacity || 140;
+  const maxCapacity = stats?.maxCapacity || 160;
   const approved = stats?.approved || 0;
   const fillPercentage = Math.min(100, Math.round((approved / maxCapacity) * 100));
 

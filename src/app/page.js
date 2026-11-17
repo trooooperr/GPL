@@ -39,10 +39,10 @@ export default async function Home() {
     approved: 0,
     rejected: 0,
     pending: 0,
-    available: 140,
-    remainingSlots: 140,
+    available: 160,
+    remainingSlots: 160,
     totalTeams: 10,
-    maxCapacity: 140,
+    maxCapacity: 160,
     registrationFee: 100,
     upiId: "shahbazkhandm@okhdfcbank"
   };
@@ -65,7 +65,7 @@ export default async function Home() {
       MongoTeam.find().lean(),
       MongoRegistration.find(
         { paymentStatus: "Approved" },
-        "id regNumber name speciality ward tshirtSize trackSize paymentStatus photoUrl teamId"
+        "id regNumber name speciality ward tshirtSize trackSize paymentStatus photoUrl teamId soldPrice"
       ).lean(),
       MongoRule.findOne().lean(),
       MongoFaq.findOne().lean(),
@@ -108,13 +108,24 @@ export default async function Home() {
         trackSize: r.trackSize,
         paymentStatus: r.paymentStatus,
         photoUrl,
-        teamId: r.teamId
+        teamId: r.teamId,
+        soldPrice: Number(r.soldPrice) || 0
       };
     });
     players = regs;
 
-    if (mongoTeams && mongoTeams.length > 0) {
-      teams = mongoTeams.map((t) => ({
+    const defaultPurse = Number(settings.defaultTeamPurse) || 100000;
+    const rawTeams = mongoTeams && mongoTeams.length > 0 ? mongoTeams : INITIAL_TEAMS;
+
+    teams = rawTeams.map((t) => {
+      const initialPurse = typeof t.initialPurse === "number" ? t.initialPurse : defaultPurse;
+      const teamMembers = (t.members || [])
+        .map((mid) => regs.find((r) => r.id === mid))
+        .filter(Boolean);
+      const spentPurse = teamMembers.reduce((sum, m) => sum + (Number(m.soldPrice) || 0), 0);
+      const remainingPurse = Math.max(0, initialPurse - spentPurse);
+
+      return {
         id: t.id,
         name: t.name,
         shortCode: t.shortCode,
@@ -124,26 +135,27 @@ export default async function Home() {
         championships: t.championships || 0,
         logo: t.logo?.startsWith("data:") ? `/api/team-logo?id=${t.id}` : (t.logo || "/images/teams/team-csk.png"),
         themeColor: t.themeColor || "#0041b9",
+        initialPurse,
+        spentPurse,
+        remainingPurse,
         members: t.members || [],
-        memberDetails: (t.members || [])
-          .map((mid) => regs.find((r) => r.id === mid))
-          .filter(Boolean)
-          .map((r) => ({
-            id: r.id,
-            name: r.name,
-            speciality: r.speciality,
-            ward: r.ward,
-            tshirtSize: r.tshirtSize
-          }))
-      }));
-    }
+        memberDetails: teamMembers.map((r) => ({
+          id: r.id,
+          name: r.name,
+          speciality: r.speciality,
+          ward: r.ward,
+          tshirtSize: r.tshirtSize,
+          soldPrice: Number(r.soldPrice) || 0
+        }))
+      };
+    });
 
     const total = totalCount || regs.length;
     const approved = approvedCount || regs.length;
     const rejected = rejectedCount || 0;
     const pending = pendingCount || 0;
     const totalTeamsCount = teams.length || 10;
-    const cap = totalTeamsCount * 14;
+    const cap = settings.maxCapacity || 160;
 
     stats = {
       totalRegistrations: total,

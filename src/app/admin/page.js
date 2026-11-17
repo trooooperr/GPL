@@ -167,6 +167,8 @@ export default function AdminDashboard() {
   const [rejectReason, setRejectReason] = useState("");
   const [isRejecting, setIsRejecting] = useState(false);
   const [isSavingPlayer, setIsSavingPlayer] = useState(false);
+  const [auctionDraftModal, setAuctionDraftModal] = useState(null); // { player, teamId, soldPrice }
+  const [editPriceModal, setEditPriceModal] = useState(null); // { player, soldPrice }
 
   // Fast parallel dashboard data loader
   const loadAllData = async () => {
@@ -542,8 +544,8 @@ export default function AdminDashboard() {
     });
   };
 
-  // --- TEAM ASSIGNMENT (ZERO DELAY OPTIMISTIC FEEDBACK) ---
-  const handleAssignTeam = async (playerId, teamId) => {
+  // --- TEAM ASSIGNMENT & AUCTION BIDDING (ZERO DELAY OPTIMISTIC FEEDBACK) ---
+  const handleAssignTeam = async (playerId, teamId, soldPrice = 0) => {
     const cleanTeamId = teamId && teamId !== "unassign" && teamId !== "" ? teamId : null;
     const targetPlayer = players.find((p) => p.id === playerId);
 
@@ -552,12 +554,13 @@ export default function AdminDashboard() {
       return;
     }
 
+    const numericSoldPrice = cleanTeamId ? Math.max(0, Number(soldPrice) || 0) : 0;
     const prevPlayers = players;
     const prevTeams = teams;
 
     // 1. OPTIMISTIC UPDATE: Instant dropdown change and squad count update
     setPlayers((prev) =>
-      prev.map((p) => (p.id === playerId ? { ...p, teamId: cleanTeamId } : p))
+      prev.map((p) => (p.id === playerId ? { ...p, teamId: cleanTeamId, soldPrice: numericSoldPrice } : p))
     );
 
     setTeams((prev) =>
@@ -572,7 +575,9 @@ export default function AdminDashboard() {
 
     const teamObj = teams.find((t) => t.id === cleanTeamId);
     showToast(
-      cleanTeamId ? `Assigned to ${teamObj?.name || "team"}!` : "Player unassigned from team.",
+      cleanTeamId
+        ? `Drafted to ${teamObj?.name || "team"}${numericSoldPrice > 0 ? ` for ₹${numericSoldPrice.toLocaleString("en-IN")}` : ""}!`
+        : "Player unassigned from team.",
       "success"
     );
 
@@ -581,7 +586,7 @@ export default function AdminDashboard() {
       const res = await fetch("/api/admin/teams", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "assign", playerId, teamId: cleanTeamId }),
+        body: JSON.stringify({ action: "assign", playerId, teamId: cleanTeamId, soldPrice: numericSoldPrice }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.success) {
@@ -596,6 +601,35 @@ export default function AdminDashboard() {
       setPlayers(prevPlayers);
       setTeams(prevTeams);
       showToast("Failed to assign team: " + err.message, "error");
+    }
+  };
+
+  // --- UPDATE PLAYER AUCTION SOLD PRICE DIRECTLY ---
+  const handleUpdateSoldPrice = async (playerId, newSoldPrice) => {
+    const numericSoldPrice = Math.max(0, Number(newSoldPrice) || 0);
+    const prevPlayers = players;
+
+    setPlayers((prev) =>
+      prev.map((p) => (p.id === playerId ? { ...p, soldPrice: numericSoldPrice } : p))
+    );
+    showToast(`Updated sold price to ₹${numericSoldPrice.toLocaleString("en-IN")}`, "success");
+
+    try {
+      const res = await fetch("/api/admin/teams", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "updateSoldPrice", playerId, soldPrice: numericSoldPrice }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.success) {
+        setPlayers(prevPlayers);
+        showToast(data.error || "Failed to update price", "error");
+      } else if (data.teams) {
+        setTeams(data.teams);
+      }
+    } catch (err) {
+      setPlayers(prevPlayers);
+      showToast("Failed to update price: " + err.message, "error");
     }
   };
 
@@ -1885,18 +1919,49 @@ export default function AdminDashboard() {
                           <span className="text-[10px] font-bold uppercase bg-amber-200/60 px-1.5 py-0.5 rounded">Pending</span>
                         </div>
                       ) : (
-                        <select
-                          value={player.teamId || ""}
-                          onChange={(e) => handleAssignTeam(player.id, e.target.value)}
-                          className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-semibold text-slate-700"
-                        >
-                          <option value="">— Unassigned (Auction Pool) —</option>
-                          {teams.map((t, tIdx) => (
-                            <option key={t.id || tIdx} value={t.id}>
-                              {t.name} ({t.shortCode})
-                            </option>
-                          ))}
-                        </select>
+                        <div className="space-y-1.5">
+                          <select
+                            value={player.teamId || ""}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              if (!val) {
+                                handleAssignTeam(player.id, "", 0);
+                              } else {
+                                setAuctionDraftModal({
+                                  player,
+                                  teamId: val,
+                                  soldPrice: player.soldPrice || 1000
+                                });
+                              }
+                            }}
+                            className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-semibold text-slate-700"
+                          >
+                            <option value="">— Unassigned (Auction Pool) —</option>
+                            {teams.map((t, tIdx) => (
+                              <option key={t.id || tIdx} value={t.id}>
+                                {t.name} ({t.shortCode})
+                              </option>
+                            ))}
+                          </select>
+                          {player.teamId && (
+                            <div className="flex items-center justify-between px-2 py-1 rounded-md bg-emerald-50 border border-emerald-200 text-[11px]">
+                              <span className="text-slate-600 font-medium">Sold Price:</span>
+                              <div className="flex items-center gap-1.5">
+                                <span className="font-mono font-bold text-emerald-800">
+                                  ₹{Number(player.soldPrice || 0).toLocaleString("en-IN")}
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => setEditPriceModal({ player, soldPrice: player.soldPrice || 0 })}
+                                  className="text-blue-600 hover:text-blue-800 p-0.5"
+                                  title="Edit Auction Sold Price"
+                                >
+                                  <Edit className="w-3 h-3" />
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       )}
                     </div>
 
@@ -2102,18 +2167,46 @@ export default function AdminDashboard() {
                                   <span>Approve to Assign</span>
                                 </div>
                               ) : (
-                                <select
-                                  value={player.teamId || ""}
-                                  onChange={(e) => handleAssignTeam(player.id, e.target.value)}
-                                  className="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-[#0041b9] shadow-xs"
-                                >
-                                  <option value="">— Unassigned (Auction Pool) —</option>
-                                  {teams.map((t, tIdx) => (
-                                    <option key={t.id || tIdx} value={t.id}>
-                                      {t.name}
-                                    </option>
-                                  ))}
-                                </select>
+                                <div className="space-y-1">
+                                  <select
+                                    value={player.teamId || ""}
+                                    onChange={(e) => {
+                                      const val = e.target.value;
+                                      if (!val) {
+                                        handleAssignTeam(player.id, "", 0);
+                                      } else {
+                                        setAuctionDraftModal({
+                                          player,
+                                          teamId: val,
+                                          soldPrice: player.soldPrice || 1000
+                                        });
+                                      }
+                                    }}
+                                    className="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-[#0041b9] shadow-xs"
+                                  >
+                                    <option value="">— Unassigned (Auction Pool) —</option>
+                                    {teams.map((t, tIdx) => (
+                                      <option key={t.id || tIdx} value={t.id}>
+                                        {t.name}
+                                      </option>
+                                    ))}
+                                  </select>
+                                  {player.teamId && (
+                                    <div className="flex items-center gap-1.5 text-[11px]">
+                                      <span className="font-mono font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+                                        ₹{Number(player.soldPrice || 0).toLocaleString("en-IN")}
+                                      </span>
+                                      <button
+                                        type="button"
+                                        onClick={() => setEditPriceModal({ player, soldPrice: player.soldPrice || 0 })}
+                                        className="text-slate-400 hover:text-blue-600 p-0.5 cursor-pointer"
+                                        title="Edit Sold Price"
+                                      >
+                                        <Edit className="w-3 h-3" />
+                                      </button>
+                                    </div>
+                                  )}
+                                </div>
                               )}
                             </td>
                             <td className="py-4 px-5 text-right">
@@ -2421,7 +2514,24 @@ export default function AdminDashboard() {
                         <span className="text-slate-400">Squad:</span>
                         <span className="font-mono font-bold text-[#0041b9] flex items-center gap-1">
                           <span>{players.filter((p) => p.teamId === team.id).length} / 14 Players</span>
-
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-[11px] pt-1 border-t border-slate-200">
+                        <span className="text-slate-400">Total Purse:</span>
+                        <span className="font-mono font-bold text-slate-700">
+                          ₹{(team.initialPurse || 100000).toLocaleString("en-IN")}
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-[11px]">
+                        <span className="text-slate-400">Spent:</span>
+                        <span className="font-mono font-bold text-amber-700">
+                          ₹{(team.spentPurse || 0).toLocaleString("en-IN")}
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-[11px]">
+                        <span className="text-slate-400">Remaining:</span>
+                        <span className="font-mono font-extrabold text-emerald-700">
+                          ₹{(team.remainingPurse !== undefined ? team.remainingPurse : Math.max(0, (team.initialPurse || 100000) - (team.spentPurse || 0))).toLocaleString("en-IN")}
                         </span>
                       </div>
                     </div>
@@ -2618,6 +2728,44 @@ export default function AdminDashboard() {
                   onChange={(e) => setSettings({ ...settings, adminEmail: e.target.value })}
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm focus:ring-2 focus:ring-[#0041b9]"
                 />
+              </div>
+
+              {/* Tournament Registration Capacity & Team Purse */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl bg-slate-50 border border-slate-200">
+                <div>
+                  <label className="block text-xs font-bold text-slate-800 mb-1">
+                    Total Player Registration Capacity
+                  </label>
+                  <input
+                    type="number"
+                    min="10"
+                    max="500"
+                    required
+                    value={settings.maxCapacity !== undefined ? settings.maxCapacity : 160}
+                    onChange={(e) => setSettings({ ...settings, maxCapacity: Math.max(1, parseInt(e.target.value, 10) || 160) })}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-sm font-bold text-slate-900 focus:ring-2 focus:ring-[#0041b9]"
+                  />
+                  <p className="text-[11px] text-slate-500 mt-1">
+                    Total pool limit (160 players). Exactly 140 will be drafted across 10 teams (14/team), remaining stay unsold in pool.
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-800 mb-1">
+                    Default Franchise Auction Purse (₹)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="1000"
+                    required
+                    value={settings.defaultTeamPurse !== undefined ? settings.defaultTeamPurse : 100000}
+                    onChange={(e) => setSettings({ ...settings, defaultTeamPurse: Math.max(0, parseInt(e.target.value, 10) || 100000) })}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-sm font-mono font-bold text-slate-900 focus:ring-2 focus:ring-[#0041b9]"
+                  />
+                  <p className="text-[11px] text-slate-500 mt-1">
+                    Default auction purse budget given to each franchise (default ₹1,00,000).
+                  </p>
+                </div>
               </div>
 
               {/* About Section Photos Manager */}
@@ -3664,6 +3812,22 @@ export default function AdminDashboard() {
                 />
               </div>
 
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">Team Auction Purse / Budget (₹)</label>
+                <input
+                  type="number"
+                  min="0"
+                  step="1000"
+                  placeholder="100000"
+                  value={editTeam.initialPurse !== undefined ? editTeam.initialPurse : 100000}
+                  onChange={(e) => setEditTeam({ ...editTeam, initialPurse: Math.max(0, parseInt(e.target.value, 10) || 0) })}
+                  className="w-full px-3 py-2 rounded-lg border border-slate-200 font-mono font-bold text-slate-800"
+                />
+                <span className="text-[10px] text-slate-400 mt-0.5 block">
+                  Initial budget allocated to this franchise for auction drafting (default ₹1,00,000).
+                </span>
+              </div>
+
               {/* Logo Upload */}
               <div>
                 <label className="font-bold text-slate-700 block mb-1">Team Logo Badge</label>
@@ -3824,6 +3988,28 @@ export default function AdminDashboard() {
               </div>
             </div>
 
+            {/* Team Purse Summary Banner */}
+            <div className="grid grid-cols-3 gap-2 bg-slate-50 p-2.5 rounded-xl border border-slate-200 text-center">
+              <div>
+                <span className="text-[10px] text-slate-400 font-bold block uppercase">Total Purse</span>
+                <span className="text-xs font-mono font-bold text-slate-800">
+                  ₹{(viewSquadTeam.initialPurse || 100000).toLocaleString("en-IN")}
+                </span>
+              </div>
+              <div>
+                <span className="text-[10px] text-slate-400 font-bold block uppercase">Spent</span>
+                <span className="text-xs font-mono font-bold text-amber-700">
+                  ₹{(viewSquadTeam.spentPurse || 0).toLocaleString("en-IN")}
+                </span>
+              </div>
+              <div>
+                <span className="text-[10px] text-slate-400 font-bold block uppercase">Remaining</span>
+                <span className="text-xs font-mono font-black text-emerald-700">
+                  ₹{(viewSquadTeam.remainingPurse !== undefined ? viewSquadTeam.remainingPurse : Math.max(0, (viewSquadTeam.initialPurse || 100000) - (viewSquadTeam.spentPurse || 0))).toLocaleString("en-IN")}
+                </span>
+              </div>
+            </div>
+
             {/* Squad List */}
             <div className="flex-1 overflow-y-auto py-1 space-y-2 max-h-[55vh] pr-1">
               {players.filter((p) => p.teamId === viewSquadTeam.id).length === 0 ? (
@@ -3863,7 +4049,16 @@ export default function AdminDashboard() {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-1.5 shrink-0">
+                      <div className="flex items-center gap-2 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => setEditPriceModal({ player, soldPrice: player.soldPrice || 0 })}
+                          className="px-2 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-mono font-bold text-[11px] flex items-center gap-1 transition-colors cursor-pointer"
+                          title="Click to edit sold price"
+                        >
+                          <span>₹{Number(player.soldPrice || 0).toLocaleString("en-IN")}</span>
+                          <Edit className="w-2.5 h-2.5 text-emerald-600" />
+                        </button>
                         <button
                           type="button"
                           onClick={() => {
@@ -4113,6 +4308,249 @@ export default function AdminDashboard() {
               >
                 Confirm Batch Rejection
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* MODAL: AUCTION DRAFT & BIDDING */}
+      {/* ========================================================================= */}
+      {auctionDraftModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-5 sm:p-6 shadow-2xl relative space-y-4">
+            <button
+              onClick={() => setAuctionDraftModal(null)}
+              className="absolute top-4 right-4 p-1.5 text-slate-400 hover:text-slate-700 rounded-lg cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex items-center gap-2">
+              <span className="p-2 rounded-xl bg-amber-100 text-amber-700">
+                <Trophy className="w-5 h-5" />
+              </span>
+              <div>
+                <h3 className="font-extrabold text-slate-900 text-base leading-tight">Auction Draft Player</h3>
+                <p className="text-xs text-slate-500">Assign player to team with final sold bid price</p>
+              </div>
+            </div>
+
+            {/* Target Team & Player preview */}
+            {(() => {
+              const targetTeam = teams.find((t) => t.id === auctionDraftModal.teamId);
+              const player = auctionDraftModal.player;
+              const teamMembersCount = (targetTeam?.members || []).filter((m) => m !== player.id).length;
+              const teamRemainingPurse = targetTeam?.remainingPurse !== undefined
+                ? targetTeam.remainingPurse
+                : Math.max(0, (targetTeam?.initialPurse || 100000) - (targetTeam?.spentPurse || 0));
+              const currentBid = Math.max(0, Number(auctionDraftModal.soldPrice) || 0);
+              const balanceAfterBid = teamRemainingPurse - currentBid;
+              const isOverBudget = balanceAfterBid < 0;
+              const isTeamFull = teamMembersCount >= 14;
+
+              return (
+                <div className="space-y-4 text-xs">
+                  {/* Player Strip */}
+                  <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+                    <div>
+                      <div className="font-bold text-slate-900 text-sm">{player.name}</div>
+                      <div className="text-slate-500 text-[11px] font-medium">
+                        #{player.regNumber || player.id} • {player.speciality} • {player.ward}
+                      </div>
+                    </div>
+                    <span className="font-mono text-[10px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+                      Approved
+                    </span>
+                  </div>
+
+                  {/* Team Strip */}
+                  <div className="p-3 rounded-xl bg-blue-50/50 border border-blue-200/80 flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-9 h-9 rounded-lg bg-white border border-slate-200 p-1 flex items-center justify-center shrink-0">
+                        {targetTeam?.logo ? (
+                          <img src={targetTeam.logo} alt={targetTeam.name} className="max-h-full max-w-full object-contain" />
+                        ) : (
+                          <Trophy className="w-5 h-5 text-blue-600" />
+                        )}
+                      </div>
+                      <div>
+                        <div className="font-bold text-slate-900">{targetTeam?.name || "Selected Team"}</div>
+                        <div className="text-[11px] text-slate-500 font-mono">
+                          Squad: {teamMembersCount} / 14 Players
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-[10px] text-slate-400 font-bold uppercase">Available Purse</div>
+                      <div className="font-mono font-black text-emerald-700 text-xs sm:text-sm">
+                        ₹{teamRemainingPurse.toLocaleString("en-IN")}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Bid Input */}
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">
+                      Sold Price / Winning Bid Amount (₹)
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-sm">₹</span>
+                      <input
+                        type="number"
+                        min="0"
+                        step="500"
+                        value={auctionDraftModal.soldPrice}
+                        onChange={(e) => setAuctionDraftModal({ ...auctionDraftModal, soldPrice: Math.max(0, parseInt(e.target.value, 10) || 0) })}
+                        className="w-full pl-8 pr-3 py-2.5 rounded-xl border border-slate-300 font-mono text-base font-bold text-slate-900 focus:ring-2 focus:ring-[#0041b9] outline-none"
+                        autoFocus
+                      />
+                    </div>
+
+                    {/* Quick increment buttons */}
+                    <div className="flex flex-wrap gap-1.5 mt-2">
+                      {[1000, 2500, 5000, 10000, 15000, 20000].map((val) => (
+                        <button
+                          key={val}
+                          type="button"
+                          onClick={() => setAuctionDraftModal({ ...auctionDraftModal, soldPrice: val })}
+                          className={`px-2.5 py-1 rounded-lg text-[11px] font-bold border transition-colors cursor-pointer ${
+                            Number(auctionDraftModal.soldPrice) === val
+                              ? "bg-[#081a36] text-white border-[#081a36]"
+                              : "bg-white text-slate-700 hover:bg-slate-100 border-slate-200"
+                          }`}
+                        >
+                          ₹{(val / 1000)}k
+                        </button>
+                      ))}
+                      {[500, 1000, 2000].map((inc) => (
+                        <button
+                          key={`+${inc}`}
+                          type="button"
+                          onClick={() => setAuctionDraftModal({ ...auctionDraftModal, soldPrice: (Number(auctionDraftModal.soldPrice) || 0) + inc })}
+                          className="px-2 py-1 rounded-lg text-[11px] font-bold bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 transition-colors cursor-pointer"
+                        >
+                          +{inc >= 1000 ? `₹${inc / 1000}k` : `₹${inc}`}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Purse Calculation Preview */}
+                  <div className={`p-3 rounded-xl border ${isOverBudget ? "bg-red-50 border-red-200 text-red-800" : "bg-slate-50 border-slate-200 text-slate-700"}`}>
+                    <div className="flex justify-between text-[11px] font-semibold mb-1">
+                      <span>Purse Before Sale:</span>
+                      <span className="font-mono">₹{teamRemainingPurse.toLocaleString("en-IN")}</span>
+                    </div>
+                    <div className="flex justify-between text-[11px] font-semibold mb-1">
+                      <span>Sold Price Deducted:</span>
+                      <span className="font-mono text-amber-700">- ₹{currentBid.toLocaleString("en-IN")}</span>
+                    </div>
+                    <div className="flex justify-between text-xs font-black pt-1 border-t border-slate-200">
+                      <span>Remaining After Sale:</span>
+                      <span className={`font-mono ${isOverBudget ? "text-red-700" : "text-emerald-700"}`}>
+                        ₹{balanceAfterBid.toLocaleString("en-IN")}
+                      </span>
+                    </div>
+                    {isOverBudget && (
+                      <p className="text-[11px] text-red-600 font-bold mt-1.5 flex items-center gap-1">
+                        <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                        <span>Warning: Bid exceeds team's available budget!</span>
+                      </p>
+                    )}
+                    {isTeamFull && (
+                      <p className="text-[11px] text-red-600 font-bold mt-1.5 flex items-center gap-1">
+                        <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                        <span>Warning: Team already has 14 players!</span>
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Modal Action Buttons */}
+                  <div className="flex gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => setAuctionDraftModal(null)}
+                      className="flex-1 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      disabled={isTeamFull || !targetTeam}
+                      onClick={() => {
+                        handleAssignTeam(player.id, targetTeam.id, currentBid);
+                        setAuctionDraftModal(null);
+                      }}
+                      className="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 text-white font-bold text-xs shadow-md transition-all cursor-pointer flex items-center justify-center gap-1"
+                    >
+                      <Check className="w-4 h-4" />
+                      <span>Confirm Draft &amp; Sell</span>
+                    </button>
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* MODAL: QUICK EDIT PLAYER SOLD PRICE */}
+      {/* ========================================================================= */}
+      {editPriceModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-white rounded-2xl max-w-sm w-full p-5 sm:p-6 shadow-2xl relative space-y-4">
+            <button
+              onClick={() => setEditPriceModal(null)}
+              className="absolute top-4 right-4 p-1.5 text-slate-400 hover:text-slate-700 rounded-lg cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div>
+              <h3 className="font-extrabold text-slate-900 text-base leading-tight">Edit Auction Sold Price</h3>
+              <p className="text-xs text-slate-500 font-medium">
+                {editPriceModal.player.name} (#{editPriceModal.player.regNumber || editPriceModal.player.id})
+              </p>
+            </div>
+
+            <div className="space-y-3 text-xs">
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">Sold Price (₹)</label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-sm">₹</span>
+                  <input
+                    type="number"
+                    min="0"
+                    step="500"
+                    value={editPriceModal.soldPrice}
+                    onChange={(e) => setEditPriceModal({ ...editPriceModal, soldPrice: Math.max(0, parseInt(e.target.value, 10) || 0) })}
+                    className="w-full pl-8 pr-3 py-2.5 rounded-xl border border-slate-300 font-mono text-base font-bold text-slate-900 focus:ring-2 focus:ring-[#0041b9] outline-none"
+                    autoFocus
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setEditPriceModal(null)}
+                  className="flex-1 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleUpdateSoldPrice(editPriceModal.player.id, editPriceModal.soldPrice);
+                    setEditPriceModal(null);
+                  }}
+                  className="flex-1 py-2.5 rounded-xl bg-[#0041b9] hover:bg-[#003399] text-white font-bold shadow-md cursor-pointer"
+                >
+                  Save Price
+                </button>
+              </div>
             </div>
           </div>
         </div>

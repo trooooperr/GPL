@@ -4,7 +4,8 @@ export const INITIAL_SETTINGS = {
     "/images/gpl-card-1.jpg",
     "/images/gpl-card-2.jpg"
   ],
-  maxCapacity: 140,
+  maxCapacity: 160,
+  defaultTeamPurse: 100000,
   registrationOpen: true,
   tournamentTitle: "Goregaon Premier League - Radhe Radhe Chashak",
   venue: "Sambhaji Maidan, Goregaon East, Mumbai",
@@ -68,7 +69,7 @@ export const INITIAL_AWARDS = [
   },
   {
     title: "Registered Players",
-    value: "140 Players",
+    value: "160 Players",
     iconName: "sports_cricket",
   },
   {
@@ -119,6 +120,7 @@ export const INITIAL_TEAMS = [
     "championships": 2,
     "logo": "/images/teams/team-csk.png",
     "themeColor": "#eab308",
+    "initialPurse": 100000,
     "members": []
   },
   {
@@ -131,6 +133,7 @@ export const INITIAL_TEAMS = [
     "championships": 1,
     "logo": "/images/teams/team-kkr.png",
     "themeColor": "#7e22ce",
+    "initialPurse": 100000,
     "members": []
   },
   {
@@ -143,6 +146,7 @@ export const INITIAL_TEAMS = [
     "championships": 1,
     "logo": "/images/teams/team-gt.png",
     "themeColor": "#0d9488",
+    "initialPurse": 100000,
     "members": []
   },
   {
@@ -155,6 +159,7 @@ export const INITIAL_TEAMS = [
     "championships": 0,
     "logo": "/images/teams/team-dc.png",
     "themeColor": "#2563eb",
+    "initialPurse": 100000,
     "members": []
   },
   {
@@ -167,6 +172,7 @@ export const INITIAL_TEAMS = [
     "championships": 2,
     "logo": "/images/teams/team-rr.png",
     "themeColor": "#ec4899",
+    "initialPurse": 100000,
     "members": []
   },
   {
@@ -179,6 +185,7 @@ export const INITIAL_TEAMS = [
     "championships": 1,
     "logo": "/images/teams/team-mi.png",
     "themeColor": "#1d4ed8",
+    "initialPurse": 100000,
     "members": []
   },
   {
@@ -191,6 +198,7 @@ export const INITIAL_TEAMS = [
     "championships": 0,
     "logo": "/images/teams/team-rcb.png",
     "themeColor": "#dc2626",
+    "initialPurse": 100000,
     "members": []
   },
   {
@@ -203,6 +211,7 @@ export const INITIAL_TEAMS = [
     "championships": 1,
     "logo": "/images/teams/team-srh.png",
     "themeColor": "#ea580c",
+    "initialPurse": 100000,
     "members": []
   },
   {
@@ -215,6 +224,7 @@ export const INITIAL_TEAMS = [
     "championships": 0,
     "logo": "/images/teams/team-pbks.png",
     "themeColor": "#b91c1c",
+    "initialPurse": 100000,
     "members": []
   },
   {
@@ -227,6 +237,7 @@ export const INITIAL_TEAMS = [
     "championships": 1,
     "logo": "/images/teams/team-vbsg.png",
     "themeColor": "#0284c7",
+    "initialPurse": 100000,
     "members": []
   }
 ];

@@ -36,8 +36,8 @@ export async function GET() {
       else if (c._id === "Pending") pending = cnt;
     });
 
-    const totalTeams = totalTeamsCount || 11;
-    const cap = totalTeams * 14;
+    const totalTeams = totalTeamsCount || 10;
+    const cap = settings.maxCapacity || 160;
 
     return NextResponse.json({
       success: true,
@@ -65,13 +65,14 @@ export async function GET() {
         approved: 0,
         rejected: 0,
         pending: 0,
-        available: 140,
-        remainingSlots: 140,
+        available: 160,
+        remainingSlots: 160,
         totalTeams: 10,
-        maxCapacity: 140,
+        maxCapacity: 160,
         registrationFee: 100,
         upiId: "shahbazkhandm@okhdfcbank"
-      }
+      },
+      settings: INITIAL_SETTINGS
     }, { headers: NO_CACHE_HEADERS });
   }
 }
