@@ -117,6 +117,14 @@ const FaqSchema = new mongoose.Schema({
   }]
 }, schemaOptions);
 
+const AwardSchema = new mongoose.Schema({
+  awards: [{
+    title: { type: String, required: true },
+    value: { type: String, required: true },
+    iconName: { type: String, default: "emoji_events" }
+  }]
+}, schemaOptions);
+
 const AuditSchema = new mongoose.Schema({
   id: String,
   timestamp: String,
@@ -134,6 +142,7 @@ export const MongoTeam = mongoose.models.Team || mongoose.model("Team", TeamSche
 export const MongoSetting = mongoose.models.Setting || mongoose.model("Setting", SettingSchema);
 export const MongoRule = mongoose.models.Rule || mongoose.model("Rule", RuleSchema);
 export const MongoFaq = mongoose.models.Faq || mongoose.model("Faq", FaqSchema);
+export const MongoAward = mongoose.models.Award || mongoose.model("Award", AwardSchema);
 export const MongoAudit = mongoose.models.Audit || mongoose.model("Audit", AuditSchema);
 export const MongoCounter = mongoose.models.Counter || mongoose.model("Counter", CounterSchema);
 

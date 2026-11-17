@@ -15,7 +15,7 @@ import VenueMap from "@/components/VenueMap";
 import Footer from "@/components/Footer";
 import CheckStatusModal from "@/components/CheckStatusModal";
 
-export default function HomeClient({ teams, rules, faqs, settings, stats, players }) {
+export default function HomeClient({ teams, rules, faqs, awards, settings, stats, players }) {
   const [statusModalOpen, setStatusModalOpen] = useState(false);
 
   return (
@@ -40,7 +40,7 @@ export default function HomeClient({ teams, rules, faqs, settings, stats, player
       <Hero stats={stats} settings={settings} />
 
       {/* Tournament Awards & Cash Prizes */}
-      <PrizesSection stats={stats} settings={settings} />
+      <PrizesSection stats={stats} settings={settings} awards={awards} />
 
       {/* Live Auction Pool / Verified Players Directory */}
       <AuctionPool players={players} teams={teams} />

@@ -4,9 +4,10 @@ import {
   MongoRegistration,
   MongoRule,
   MongoFaq,
+  MongoAward,
   MongoSetting
 } from "@/lib/mongodb";
-import { INITIAL_TEAMS, INITIAL_RULES, INITIAL_FAQS, INITIAL_SETTINGS } from "@/lib/constants";
+import { INITIAL_TEAMS, INITIAL_RULES, INITIAL_FAQS, INITIAL_AWARDS, INITIAL_SETTINGS } from "@/lib/constants";
 import HomeClient from "@/components/HomeClient";
 
 export const revalidate = 60;
@@ -29,6 +30,7 @@ export default async function Home() {
   let teams = INITIAL_TEAMS;
   let rules = INITIAL_RULES;
   let faqs = INITIAL_FAQS;
+  let awards = INITIAL_AWARDS;
   let settings = INITIAL_SETTINGS;
   let players = [];
   let stats = {
@@ -53,6 +55,7 @@ export default async function Home() {
       mongoRegs,
       ruleDoc,
       faqDoc,
+      awardDoc,
       settingDoc,
       totalCount,
       approvedCount,
@@ -66,6 +69,7 @@ export default async function Home() {
       ).lean(),
       MongoRule.findOne().lean(),
       MongoFaq.findOne().lean(),
+      MongoAward.findOne().lean(),
       MongoSetting.findOne({ key: "global_settings" }).lean(),
       MongoRegistration.countDocuments().catch(() => 0),
       MongoRegistration.countDocuments({ paymentStatus: "Approved" }).catch(() => 0),
@@ -83,6 +87,10 @@ export default async function Home() {
 
     if (faqDoc && faqDoc.faqs && Array.isArray(faqDoc.faqs) && faqDoc.faqs.length > 0) {
       faqs = faqDoc.faqs;
+    }
+
+    if (awardDoc && awardDoc.awards && Array.isArray(awardDoc.awards) && awardDoc.awards.length > 0) {
+      awards = awardDoc.awards;
     }
 
     const regs = (mongoRegs || []).map((r) => {
@@ -159,6 +167,7 @@ export default async function Home() {
       teams={teams}
       rules={rules}
       faqs={faqs}
+      awards={awards}
       settings={settings}
       stats={stats}
       players={players}

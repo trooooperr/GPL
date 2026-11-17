@@ -1,56 +1,23 @@
 "use client";
 
-export default function PrizesSection({ stats, settings }) {
-  const teamsCount = stats?.totalTeams || 11;
+import { INITIAL_AWARDS } from "@/lib/constants";
+
+export default function PrizesSection({ stats, settings, awards: propAwards = [] }) {
+  const teamsCount = stats?.totalTeams || 10;
   const totalCapacity = teamsCount * 14;
 
-  const features = [
-    {
-      title: "Our Teams",
-      value: `${teamsCount} Teams`,
-      iconName: "groups",
-    },
-    {
-      title: "Registered Players",
-      value: `${totalCapacity} Players`,
-      iconName: "sports_cricket",
-    },
-    {
-      title: "Awards & Prizes",
-      value: "Multiple Awards Throughout GPL",
-      iconName: "emoji_events",
-    },
-    {
-      title: "Registration Award",
-      value: "Track & T-shirt for every registered player",
-      iconName: "badge",
-    },
-    {
-      title: "Man of the Match",
-      value: "₹1000 Every Match",
-      iconName: "sports",
-    },
-    {
-      title: "Best Batsman",
-      value: "₹5000",
-      iconName: "sports_cricket",
-    },
-    {
-      title: "Best Bowler",
-      value: "₹5000",
-      iconName: "stadium",
-    },
-    {
-      title: "Man of the Series",
-      value: "₹5000",
-      iconName: "emoji_events",
-    },
-    {
-      title: "Winner & Runner-Up",
-      value: "Winner: ₹50,000\nRunner-Up: ₹35,000",
-      iconName: "military_tech",
+  const rawAwards = propAwards && propAwards.length > 0 ? propAwards : INITIAL_AWARDS;
+
+  const features = rawAwards.map((item) => {
+    // Dynamically synchronize stats if default placeholder values are present
+    if (item.title === "Our Teams" && (!item.value || item.value.includes("Teams"))) {
+      return { ...item, value: `${teamsCount} Teams` };
     }
-  ];
+    if (item.title === "Registered Players" && (!item.value || item.value.includes("Players"))) {
+      return { ...item, value: `${totalCapacity} Players` };
+    }
+    return item;
+  });
 
   return (
     <section id="awards" className="py-10 sm:py-16 lg:py-24 bg-[#f8fafc]">

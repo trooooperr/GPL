@@ -42,10 +42,11 @@ import {
   CheckSquare,
   Square,
   HelpCircle,
-  Share2
+  Share2,
+  Award
 } from "lucide-react";
 import QRCode from "qrcode";
-import { INITIAL_RULES, INITIAL_FAQS } from "@/lib/constants";
+import { INITIAL_RULES, INITIAL_FAQS, INITIAL_AWARDS } from "@/lib/constants";
 import PlayerRegistrationCard, { renderPlayerCardToDataUrl } from "@/components/PlayerRegistrationCard";
 
 function InstagramIcon({ className = "w-4 h-4" }) {
@@ -60,7 +61,7 @@ function InstagramIcon({ className = "w-4 h-4" }) {
 
 export default function AdminDashboard() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState("players"); // players | teams | sizing | settings | rules | faqs
+  const [activeTab, setActiveTab] = useState("players"); // players | cards | teams | sizing | settings | rules | faqs | awards
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState(null);
@@ -70,6 +71,7 @@ export default function AdminDashboard() {
   const [confirmModal, setConfirmModal] = useState(null);
   const [rules, setRules] = useState(INITIAL_RULES);
   const [faqs, setFaqs] = useState(INITIAL_FAQS);
+  const [awards, setAwards] = useState(INITIAL_AWARDS);
   const [settings, setSettings] = useState({
     instagramUsername: "mi_sandeep_jadhav",
     registrationFee: 0,
@@ -147,6 +149,14 @@ export default function AdminDashboard() {
   const [editingFaqQ, setEditingFaqQ] = useState("");
   const [editingFaqA, setEditingFaqA] = useState("");
   const [savingFaqs, setSavingFaqs] = useState(false);
+  const [newAwardTitle, setNewAwardTitle] = useState("");
+  const [newAwardValue, setNewAwardValue] = useState("");
+  const [newAwardIcon, setNewAwardIcon] = useState("emoji_events");
+  const [editingAwardIdx, setEditingAwardIdx] = useState(null);
+  const [editingAwardTitle, setEditingAwardTitle] = useState("");
+  const [editingAwardValue, setEditingAwardValue] = useState("");
+  const [editingAwardIcon, setEditingAwardIcon] = useState("emoji_events");
+  const [savingAwards, setSavingAwards] = useState(false);
   const [savingSettings, setSavingSettings] = useState(false);
   const [settingsMsg, setSettingsMsg] = useState("");
   const [uploadingLogo, setUploadingLogo] = useState(false);
@@ -199,6 +209,16 @@ export default function AdminDashboard() {
       }
       if (dataTeams.success) setTeams(dataTeams.teams || []);
       if (dataSettings.success) setSettings(dataSettings.settings || {});
+
+      Promise.all([
+        fetch("/api/admin/rules", { cache: "no-store" }).then((r) => r.json()).catch(() => ({})),
+        fetch("/api/admin/faqs", { cache: "no-store" }).then((r) => r.json()).catch(() => ({})),
+        fetch("/api/admin/awards", { cache: "no-store" }).then((r) => r.json()).catch(() => ({}))
+      ]).then(([dataRules, dataFaqs, dataAwards]) => {
+        if (dataRules?.success && Array.isArray(dataRules.rules)) setRules(dataRules.rules);
+        if (dataFaqs?.success && Array.isArray(dataFaqs.faqs)) setFaqs(dataFaqs.faqs);
+        if (dataAwards?.success && Array.isArray(dataAwards.awards)) setAwards(dataAwards.awards);
+      }).catch(() => {});
 
     } catch (err) {
       console.error("Dashboard data load error:", err);
@@ -258,17 +278,21 @@ export default function AdminDashboard() {
           setLoading(false);
         }
 
-        // Secondary background load: rules and faqs (non-blocking)
+        // Secondary background load: rules, faqs, and awards (non-blocking)
         Promise.all([
           fetch("/api/admin/rules", { cache: "no-store" }).then((r) => r.json()).catch(() => ({})),
-          fetch("/api/admin/faqs", { cache: "no-store" }).then((r) => r.json()).catch(() => ({}))
-        ]).then(([dataRules, dataFaqs]) => {
+          fetch("/api/admin/faqs", { cache: "no-store" }).then((r) => r.json()).catch(() => ({})),
+          fetch("/api/admin/awards", { cache: "no-store" }).then((r) => r.json()).catch(() => ({}))
+        ]).then(([dataRules, dataFaqs, dataAwards]) => {
           if (!isMounted) return;
           if (dataRules.success && Array.isArray(dataRules.rules) && dataRules.rules.length > 0) {
             setRules(dataRules.rules);
           }
           if (dataFaqs.success && Array.isArray(dataFaqs.faqs) && dataFaqs.faqs.length > 0) {
             setFaqs(dataFaqs.faqs);
+          }
+          if (dataAwards.success && Array.isArray(dataAwards.awards) && dataAwards.awards.length > 0) {
+            setAwards(dataAwards.awards);
           }
         }).catch(() => {});
 
@@ -908,6 +932,154 @@ export default function AdminDashboard() {
     }
   };
 
+  // --- AWARDS / FEATURES MANAGER ---
+  const handleAddAward = async () => {
+    if (!newAwardTitle.trim() || !newAwardValue.trim()) {
+      showToast("Please enter both title and prize / feature details", "error");
+      return;
+    }
+    setSavingAwards(true);
+    const updated = [
+      ...awards,
+      {
+        title: newAwardTitle.trim(),
+        value: newAwardValue.trim(),
+        iconName: newAwardIcon.trim() || "emoji_events"
+      }
+    ];
+    try {
+      const res = await fetch("/api/admin/awards", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ awards: updated }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setAwards(data.awards);
+        setNewAwardTitle("");
+        setNewAwardValue("");
+        setNewAwardIcon("emoji_events");
+        showToast("Award / Feature card added successfully!", "success");
+      } else {
+        showToast("Failed to add award: " + (data.error || "Unknown error"), "error");
+      }
+    } catch (err) {
+      showToast("Failed to add award: " + err.message, "error");
+    } finally {
+      setSavingAwards(false);
+    }
+  };
+
+  const handleDeleteAward = async (idx) => {
+    const updated = awards.filter((_, i) => i !== idx);
+    try {
+      const res = await fetch("/api/admin/awards", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ awards: updated }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setAwards(data.awards);
+        showToast("Award card removed", "success");
+      }
+    } catch (err) {
+      showToast("Failed to delete award: " + err.message, "error");
+    }
+  };
+
+  const handleStartEditAward = (idx, item) => {
+    setEditingAwardIdx(idx);
+    setEditingAwardTitle(item.title || "");
+    setEditingAwardValue(item.value || "");
+    setEditingAwardIcon(item.iconName || "emoji_events");
+  };
+
+  const handleCancelEditAward = () => {
+    setEditingAwardIdx(null);
+    setEditingAwardTitle("");
+    setEditingAwardValue("");
+    setEditingAwardIcon("emoji_events");
+  };
+
+  const handleSaveEditAward = async (idx) => {
+    if (!editingAwardTitle.trim() || !editingAwardValue.trim()) {
+      showToast("Both title and prize details are required", "error");
+      return;
+    }
+    const updated = [...awards];
+    updated[idx] = {
+      title: editingAwardTitle.trim(),
+      value: editingAwardValue.trim(),
+      iconName: editingAwardIcon.trim() || "emoji_events"
+    };
+    try {
+      const res = await fetch("/api/admin/awards", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ awards: updated }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setAwards(data.awards);
+        setEditingAwardIdx(null);
+        setEditingAwardTitle("");
+        setEditingAwardValue("");
+        showToast("Award card updated successfully!", "success");
+      } else {
+        showToast("Failed to update: " + (data.error || "Unknown error"), "error");
+      }
+    } catch (err) {
+      showToast("Failed to update award: " + err.message, "error");
+    }
+  };
+
+  const handleMoveAward = async (idx, direction) => {
+    const targetIdx = direction === "up" ? idx - 1 : idx + 1;
+    if (targetIdx < 0 || targetIdx >= awards.length) return;
+    const updated = [...awards];
+    const temp = updated[idx];
+    updated[idx] = updated[targetIdx];
+    updated[targetIdx] = temp;
+    try {
+      const res = await fetch("/api/admin/awards", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ awards: updated }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setAwards(data.awards);
+      }
+    } catch (err) {
+      showToast("Failed to move card: " + err.message, "error");
+    }
+  };
+
+  const handleResetAwards = async () => {
+    setConfirmModal({
+      title: "Reset Awards to Default?",
+      message: "This will restore the original 9 tournament awards and prizes cards (Winner ₹50,000, Runner-up ₹35,000, Man of Series ₹5,000, etc.).",
+      confirmText: "Yes, Reset to Default",
+      onConfirm: async () => {
+        try {
+          const res = await fetch("/api/admin/awards", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ awards: INITIAL_AWARDS }),
+          });
+          const data = await res.json();
+          if (data.success) {
+            setAwards(data.awards);
+            showToast("Awards reset to default successfully!", "success");
+          }
+        } catch (err) {
+          showToast("Failed to reset awards: " + err.message, "error");
+        }
+      }
+    });
+  };
+
   // Filtered Players with role, team, and registration number search
   const filteredPlayers = players.filter((p) => {
     const matchesQuery =
@@ -1219,6 +1391,7 @@ export default function AdminDashboard() {
     { id: "settings", label: "Instagram & Settings", icon: InstagramIcon },
     { id: "rules", label: "Rules", icon: FileText },
     { id: "faqs", label: "FAQs", icon: HelpCircle },
+    { id: "awards", label: "Features & Awards", icon: Award },
   ];
 
   return (
@@ -2781,6 +2954,231 @@ export default function AdminDashboard() {
                 >
                   <Plus className="w-4 h-4" />
                   <span>{savingFaqs ? "Saving FAQ..." : "Add FAQ"}</span>
+                </button>
+              </div>
+            </div>
+
+          </div>
+        )}
+
+        {/* ========================================================================= */}
+        {/* TAB 8: FEATURES & TOURNAMENT AWARDS */}
+        {/* ========================================================================= */}
+        {activeTab === "awards" && (
+          <div className="max-w-4xl mx-auto bg-white rounded-2xl border border-slate-200 p-4 sm:p-8 shadow-xs space-y-6">
+            
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+              <div>
+                <h2 className="text-lg sm:text-xl font-bold text-[#081a36]">Features &amp; Tournament Awards</h2>
+                <p className="text-xs text-slate-500">
+                  Manage the cards displayed in the &quot;Features &amp; Awards&quot; section on the public homepage.
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleResetAwards}
+                  className="px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+                  title="Reset to original 9 award cards"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                  <span>Reset Default</span>
+                </button>
+                <span className="px-3 py-1.5 rounded-full bg-emerald-50 text-[#059669] font-bold text-xs border border-emerald-200 shrink-0">
+                  {awards.length} Cards
+                </span>
+              </div>
+            </div>
+
+            {/* Awards Grid List */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+              {awards.map((item, idx) => (
+                <div
+                  key={idx}
+                  className="p-4 rounded-xl bg-slate-50 border border-slate-200 flex flex-col justify-between text-xs transition-all hover:border-slate-300"
+                >
+                  {editingAwardIdx === idx ? (
+                    <div className="space-y-3">
+                      <div>
+                        <label className="text-[11px] font-bold text-slate-600 block mb-1">Card Title</label>
+                        <input
+                          type="text"
+                          value={editingAwardTitle}
+                          onChange={(e) => setEditingAwardTitle(e.target.value)}
+                          className="w-full px-3 py-1.5 rounded-lg border border-blue-400 bg-white text-slate-800 text-xs font-bold focus:outline-none"
+                          placeholder="e.g. Winner &amp; Runner-Up"
+                          autoFocus
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[11px] font-bold text-slate-600 block mb-1">
+                          Prize / Value Details (multi-line supported)
+                        </label>
+                        <textarea
+                          rows={2}
+                          value={editingAwardValue}
+                          onChange={(e) => setEditingAwardValue(e.target.value)}
+                          className="w-full px-3 py-1.5 rounded-lg border border-blue-400 bg-white text-slate-800 text-xs focus:outline-none resize-none leading-relaxed"
+                          placeholder="e.g. Winner: ₹50,000&#10;Runner-Up: ₹35,000"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[11px] font-bold text-slate-600 block mb-1">Icon Symbol</label>
+                        <select
+                          value={editingAwardIcon}
+                          onChange={(e) => setEditingAwardIcon(e.target.value)}
+                          className="w-full px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-800 text-xs focus:outline-none"
+                        >
+                          <option value="emoji_events">🏆 emoji_events (Trophy)</option>
+                          <option value="military_tech">🎖️ military_tech (Medal)</option>
+                          <option value="sports_cricket">🏏 sports_cricket (Cricket)</option>
+                          <option value="sports">📣 sports (Whistle / Match)</option>
+                          <option value="stadium">🏟️ stadium (Ground / Bowler)</option>
+                          <option value="badge">🪪 badge (Registration Kit)</option>
+                          <option value="groups">👥 groups (Teams)</option>
+                          <option value="monetization_on">💰 monetization_on (Cash)</option>
+                          <option value="workspace_premium">⭐ workspace_premium (Ribbon)</option>
+                          <option value="star">✨ star (Star Award)</option>
+                          <option value="celebration">🎉 celebration (Party / Bash)</option>
+                        </select>
+                      </div>
+                      <div className="flex justify-end gap-2 pt-1">
+                        <button
+                          type="button"
+                          onClick={handleCancelEditAward}
+                          className="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-lg cursor-pointer flex items-center gap-1.5"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                          <span>Cancel</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleSaveEditAward(idx)}
+                          className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg cursor-pointer flex items-center gap-1.5 shadow-xs"
+                        >
+                          <Check className="w-3.5 h-3.5" />
+                          <span>Save Changes</span>
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div>
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <span
+                            className="material-symbols-outlined text-[20px] text-[#059669] select-none p-1.5 rounded-lg bg-emerald-50 border border-emerald-100"
+                            style={{ fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24" }}
+                          >
+                            {item.iconName || "emoji_events"}
+                          </span>
+                          <div>
+                            <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">
+                              Card #{idx + 1}
+                            </span>
+                            <h4 className="font-bold text-slate-900 text-xs sm:text-sm leading-snug">
+                              {item.title}
+                            </h4>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-1 shrink-0">
+                          <button
+                            onClick={() => handleMoveAward(idx, "up")}
+                            disabled={idx === 0}
+                            className="p-1 text-slate-400 hover:text-slate-700 disabled:opacity-20 rounded cursor-pointer"
+                            title="Move Left / Up"
+                          >
+                            <ArrowUp className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => handleMoveAward(idx, "down")}
+                            disabled={idx === awards.length - 1}
+                            className="p-1 text-slate-400 hover:text-slate-700 disabled:opacity-20 rounded cursor-pointer"
+                            title="Move Right / Down"
+                          >
+                            <ArrowDown className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => handleStartEditAward(idx, item)}
+                            className="p-1 text-slate-400 hover:text-[#0041b9] rounded cursor-pointer"
+                            title="Edit Card"
+                          >
+                            <Edit className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteAward(idx)}
+                            className="p-1 text-slate-400 hover:text-red-600 rounded cursor-pointer"
+                            title="Delete Card"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="mt-3 p-2.5 rounded-lg bg-white border border-slate-100 text-xs font-semibold text-slate-700 whitespace-pre-line leading-relaxed">
+                        {item.value}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Add New Award / Feature Card Form */}
+            <div className="pt-4 border-t border-slate-100 space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-slate-700 block">Add New Feature or Award Card</label>
+                <span className="text-[11px] text-slate-400">Card will instantly reflect on the public website</span>
+              </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="sm:col-span-2">
+                  <input
+                    type="text"
+                    placeholder="Card Title (e.g. Best Fielder / Maximum Sixes)"
+                    value={newAwardTitle}
+                    onChange={(e) => setNewAwardTitle(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-[#059669] outline-none bg-slate-50 focus:bg-white"
+                  />
+                </div>
+                <div>
+                  <select
+                    value={newAwardIcon}
+                    onChange={(e) => setNewAwardIcon(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-[#059669] outline-none bg-slate-50 focus:bg-white"
+                  >
+                    <option value="emoji_events">🏆 Trophy (emoji_events)</option>
+                    <option value="military_tech">🎖️ Medal (military_tech)</option>
+                    <option value="sports_cricket">🏏 Cricket Bat (sports_cricket)</option>
+                    <option value="sports">📣 Whistle (sports)</option>
+                    <option value="stadium">🏟️ Stadium (stadium)</option>
+                    <option value="badge">🪪 Kit / Badge (badge)</option>
+                    <option value="groups">👥 Teams (groups)</option>
+                    <option value="monetization_on">💰 Cash (monetization_on)</option>
+                    <option value="workspace_premium">⭐ Premium Ribbon</option>
+                    <option value="star">✨ Star Award</option>
+                    <option value="celebration">🎉 Celebration</option>
+                  </select>
+                </div>
+              </div>
+
+              <textarea
+                rows={2}
+                placeholder="Prize or feature details (e.g. ₹2,500 Cash Prize + Trophy)..."
+                value={newAwardValue}
+                onChange={(e) => setNewAwardValue(e.target.value)}
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-[#059669] outline-none resize-none leading-relaxed bg-slate-50 focus:bg-white"
+              />
+
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={handleAddAward}
+                  disabled={!newAwardTitle.trim() || !newAwardValue.trim() || savingAwards}
+                  className="w-full sm:w-auto px-5 py-2.5 bg-[#059669] hover:bg-[#047857] disabled:bg-slate-300 disabled:cursor-not-allowed text-white rounded-xl font-bold text-xs transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>{savingAwards ? "Saving..." : "Add Award Card"}</span>
                 </button>
               </div>
             </div>

@@ -60,6 +60,54 @@ export const INITIAL_FAQS = [
   }
 ];
 
+export const INITIAL_AWARDS = [
+  {
+    title: "Our Teams",
+    value: "10 Teams",
+    iconName: "groups",
+  },
+  {
+    title: "Registered Players",
+    value: "140 Players",
+    iconName: "sports_cricket",
+  },
+  {
+    title: "Awards & Prizes",
+    value: "Multiple Awards Throughout GPL",
+    iconName: "emoji_events",
+  },
+  {
+    title: "Registration Award",
+    value: "Track & T-shirt for every registered player",
+    iconName: "badge",
+  },
+  {
+    title: "Man of the Match",
+    value: "₹1000 Every Match",
+    iconName: "sports",
+  },
+  {
+    title: "Best Batsman",
+    value: "₹5000",
+    iconName: "sports_cricket",
+  },
+  {
+    title: "Best Bowler",
+    value: "₹5000",
+    iconName: "stadium",
+  },
+  {
+    title: "Man of the Series",
+    value: "₹5000",
+    iconName: "emoji_events",
+  },
+  {
+    title: "Winner & Runner-Up",
+    value: "Winner: ₹50,000\nRunner-Up: ₹35,000",
+    iconName: "military_tech",
+  }
+];
+
 export const INITIAL_TEAMS = [
   {
     "id": "team-1",
