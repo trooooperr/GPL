@@ -3982,7 +3982,7 @@ export default function AdminDashboard() {
                   <label className="font-bold text-slate-700 block mb-1">Phone</label>
                   <input
                     type="text"
-                    value={editPlayer.phone}
+                    value={editPlayer.phone || ""}
                     onChange={(e) => setEditPlayer({ ...editPlayer, phone: e.target.value })}
                     className="w-full px-3 py-2 rounded-lg border border-slate-200"
                   />
@@ -3990,7 +3990,7 @@ export default function AdminDashboard() {
                 <div>
                   <label className="font-bold text-slate-700 block mb-1">Ward</label>
                   <select
-                    value={editPlayer.ward}
+                    value={editPlayer.ward || "Ward 51"}
                     onChange={(e) => setEditPlayer({ ...editPlayer, ward: e.target.value })}
                     className="w-full px-3 py-2 rounded-lg border border-slate-200"
                   >
@@ -3999,6 +3999,59 @@ export default function AdminDashboard() {
                     <option value="Other Ward">Other Ward</option>
                   </select>
                 </div>
+              </div>
+
+              {/* Date of Birth (DOB) and Age */}
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Date of Birth (DOB)</label>
+                  <input
+                    type="date"
+                    value={editPlayer.dob ? (editPlayer.dob.includes("T") ? editPlayer.dob.split("T")[0] : editPlayer.dob) : ""}
+                    onChange={(e) => {
+                      const newDob = e.target.value;
+                      let newAge = editPlayer.age;
+                      if (newDob) {
+                        const birthYear = new Date(newDob).getFullYear();
+                        if (!isNaN(birthYear)) {
+                          newAge = Math.max(10, Math.min(80, new Date().getFullYear() - birthYear));
+                        }
+                      }
+                      setEditPlayer({ ...editPlayer, dob: newDob, age: newAge });
+                    }}
+                    className="w-full px-3 py-2 rounded-lg border border-slate-200"
+                  />
+                </div>
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">
+                    Age {editPlayer.age ? `(${editPlayer.age} yrs)` : ""}
+                  </label>
+                  <input
+                    type="number"
+                    min="10"
+                    max="80"
+                    placeholder="e.g. 24"
+                    value={editPlayer.age !== undefined && editPlayer.age !== null ? editPlayer.age : ""}
+                    onChange={(e) => setEditPlayer({ ...editPlayer, age: parseInt(e.target.value, 10) || null })}
+                    className="w-full px-3 py-2 rounded-lg border border-slate-200"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">Cricket Role / Speciality</label>
+                <select
+                  value={editPlayer.speciality || "Right-hand batsman"}
+                  onChange={(e) => setEditPlayer({ ...editPlayer, speciality: e.target.value })}
+                  className="w-full px-3 py-2 rounded-lg border border-slate-200"
+                >
+                  <option value="Right-hand batsman">Right-hand batsman</option>
+                  <option value="Left-hand batsman">Left-hand batsman</option>
+                  <option value="Right-hand bowler">Right-hand bowler</option>
+                  <option value="Left-hand bowler">Left-hand bowler</option>
+                  <option value="All-rounder">All-rounder</option>
+                  <option value="Wicket keeper batsman">Wicket keeper batsman</option>
+                </select>
               </div>
 
               <div className="grid grid-cols-2 gap-2">

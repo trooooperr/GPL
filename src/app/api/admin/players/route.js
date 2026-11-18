@@ -359,6 +359,20 @@ export async function POST(request) {
           delete cleanPlayerData[f];
         }
       });
+
+      if (cleanPlayerData.dob && !cleanPlayerData.age) {
+        const birthDate = new Date(cleanPlayerData.dob);
+        if (!isNaN(birthDate.getTime())) {
+          const calculatedAge = Math.floor((Date.now() - birthDate.getTime()) / (365.25 * 24 * 3600 * 1000));
+          if (calculatedAge > 0 && calculatedAge < 100) {
+            cleanPlayerData.age = calculatedAge;
+          }
+        }
+      }
+
+      if (cleanPlayerData.age !== undefined && cleanPlayerData.age !== null) {
+        cleanPlayerData.age = parseInt(cleanPlayerData.age, 10) || null;
+      }
       
       // If paymentStatus is set to Rejected, automatically remove from team
       if (cleanPlayerData.paymentStatus && cleanPlayerData.paymentStatus.toLowerCase() === "rejected") {
