@@ -207,12 +207,19 @@ export default function CheckStatusModal({ isOpen, onClose }) {
       ctx.fillText("FRANCHISE ALLOCATION", 75, 545);
 
       ctx.fillStyle = player.team ? "#fcd34d" : "#34d399";
-      ctx.font = "900 28px sans-serif";
       const teamLabel = player.team
         ? `${player.team.name}${player.soldPrice > 0 ? ` • Bid: ${Number(player.soldPrice).toLocaleString("en-IN")}` : ""}`
         : isApproved
-        ? "GPL Official Auction Pool (Pending Franchise Draft)"
+        ? "Official GPL Auction Pool (Pending Draft)"
         : "Pending Document Verification";
+
+      const maxTextWidth = 640;
+      let fontSize = player.team ? 24 : 20;
+      ctx.font = `900 ${fontSize}px sans-serif`;
+      while (ctx.measureText(teamLabel).width > maxTextWidth && fontSize > 14) {
+        fontSize -= 1;
+        ctx.font = `900 ${fontSize}px sans-serif`;
+      }
       ctx.fillText(teamLabel, 75, 595);
 
       // Verification Watermark / Barcode Simulation
