@@ -29,7 +29,7 @@ async function getPopulatedTeams() {
   }
   
   const regs = mongoRegs || [];
-  const defaultPurse = Number(settingDoc?.value?.defaultTeamPurse) || 100000;
+  const defaultPurse = Number(settingDoc?.value?.defaultTeamPurse) || 10000000;
 
   return rawTeams.map((t) => {
     const initialPurse = typeof t.initialPurse === "number" ? t.initialPurse : defaultPurse;
@@ -91,7 +91,7 @@ export async function POST(request) {
   try {
     await connectToDatabase();
     const body = await request.json();
-    const { action, teamId, teamData, playerId, playerIds, soldPrice } = body;
+    const { action, teamId, teamData, playerId, playerIds, soldPrice, cardDataUrl } = body;
 
     // 0. BATCH ASSIGN PLAYERS TO TEAM
     if (action === "batchAssign" && Array.isArray(playerIds) && playerIds.length > 0) {
@@ -148,14 +148,18 @@ export async function POST(request) {
           }
           const numericSoldPrice = Math.max(0, Number(soldPrice) || 0);
           await MongoTeam.findOneAndUpdate({ id: teamId }, { $addToSet: { members: playerId } });
+          const updateFields = { teamId, soldPrice: numericSoldPrice };
+          if (cardDataUrl) {
+            updateFields.cardUrl = cardDataUrl;
+          }
           const updatedPlayer = await MongoRegistration.findOneAndUpdate(
             { id: playerId },
-            { teamId, soldPrice: numericSoldPrice },
+            updateFields,
             { new: true }
           ).lean();
 
           if (targetTeam && updatedPlayer) {
-            await sendTeamAssignmentEmail(updatedPlayer, targetTeam).catch((err) => {
+            await sendTeamAssignmentEmail(updatedPlayer, targetTeam, cardDataUrl).catch((err) => {
               console.warn("[Auction Draft Email Notice]:", err.message);
             });
           }
@@ -173,7 +177,11 @@ export async function POST(request) {
     if (action === "updateSoldPrice") {
       if (playerId) {
         const numericSoldPrice = Math.max(0, Number(soldPrice) || 0);
-        await MongoRegistration.findOneAndUpdate({ id: playerId }, { soldPrice: numericSoldPrice });
+        const updateFields = { soldPrice: numericSoldPrice };
+        if (cardDataUrl) {
+          updateFields.cardUrl = cardDataUrl;
+        }
+        await MongoRegistration.findOneAndUpdate({ id: playerId }, updateFields);
       }
       const teams = await getPopulatedTeams();
       return NextResponse.json({ success: true, teams }, { headers: NO_CACHE_HEADERS });
@@ -218,7 +226,7 @@ export async function POST(request) {
         cleanData.initialPurse = Math.max(0, Number(cleanData.initialPurse) || 0);
       } else {
         const settingDoc = await MongoSetting.findOne({ key: "global_settings" }).lean();
-        cleanData.initialPurse = Number(settingDoc?.value?.defaultTeamPurse) || 100000;
+        cleanData.initialPurse = Number(settingDoc?.value?.defaultTeamPurse) || 10000000;
       }
       await MongoTeam.create(cleanData);
       const teams = await getPopulatedTeams();

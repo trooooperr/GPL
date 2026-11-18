@@ -42,7 +42,7 @@ export async function GET() {
     });
 
     const totalTeams = totalTeamsCount || 10;
-    const cap = settings.maxCapacity || 160;
+    const cap = settings.maxCapacity || 200;
 
     return NextResponse.json({
       success: true,
@@ -70,10 +70,10 @@ export async function GET() {
         approved: 0,
         rejected: 0,
         pending: 0,
-        available: 160,
-        remainingSlots: 160,
+        available: 200,
+        remainingSlots: 200,
         totalTeams: 10,
-        maxCapacity: 160,
+        maxCapacity: 200,
         registrationFee: 100,
         upiId: "shahbazkhandm@okhdfcbank"
       },

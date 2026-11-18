@@ -76,7 +76,7 @@ export default function AuctionPool({ players = [], teams = [] }) {
           <div className="inline-flex items-center gap-3 px-4 py-2 rounded-2xl bg-slate-50 border border-slate-200 text-xs sm:text-sm font-semibold text-slate-700">
             <span className="flex items-center gap-1.5">
               <Users className="w-4 h-4 text-[#059669]" />
-              <strong>{approvedPlayers.length}</strong> Registered / 160 Pool
+              <strong>{approvedPlayers.length}</strong> Registered / 200 Pool
             </span>
             <span className="text-slate-300">|</span>
             <span className="text-emerald-700 font-bold">{soldCount}/140 Drafted</span>
@@ -209,7 +209,7 @@ export default function AuctionPool({ players = [], teams = [] }) {
                           <span className="truncate">{assignedTeam.name}</span>
                         </span>
                         <span className="text-emerald-700 font-mono font-extrabold ml-1 shrink-0">
-                          {player.soldPrice > 0 ? `₹${Number(player.soldPrice).toLocaleString("en-IN")}` : "Drafted"}
+                          {player.soldPrice > 0 ? Number(player.soldPrice).toLocaleString("en-IN") : "Drafted"}
                         </span>
                       </div>
                     ) : (

@@ -580,7 +580,7 @@ export async function sendTeamAssignmentEmail(player, team, cardDataUrl = null) 
     const soldPrice = Math.max(0, Number(player?.soldPrice) || 0);
 
     const subject = soldPrice > 0
-      ? `🏏 Congratulations! Drafted to ${teamName} for ₹${soldPrice.toLocaleString("en-IN")} - GPL Auction`
+      ? `🏏 Congratulations! Drafted to ${teamName} for ${soldPrice.toLocaleString("en-IN")} - GPL Auction`
       : `🏏 Congratulations! Drafted to ${teamName} - GPL Player Auction`;
 
     const htmlContent = `
@@ -641,7 +641,7 @@ export async function sendTeamAssignmentEmail(player, team, cardDataUrl = null) 
               soldPrice > 0
                 ? `<div class="bid-box">
                     <div class="bid-label">🏆 Winning Auction Bid Amount</div>
-                    <div class="bid-amount">₹${soldPrice.toLocaleString("en-IN")}</div>
+                    <div class="bid-amount">${soldPrice.toLocaleString("en-IN")}</div>
                     <div class="bid-sub">Purchased by ${teamName}</div>
                   </div>`
                 : `<div class="direct-pick-box">
@@ -746,7 +746,7 @@ export async function sendTeamAssignmentEmail(player, team, cardDataUrl = null) 
         attachments
       });
       logEmailDispatch({ type: "TEAM_ASSIGNMENT", recipient: playerEmail, playerId: displayPlayerId, team: teamName, status: "SENT" });
-      console.log(`[EMAIL] Team assignment email sent to ${playerEmail} for team ${teamName} (Sold Price: ₹${soldPrice})`);
+      console.log(`[EMAIL] Team assignment email sent to ${playerEmail} for team ${teamName} (Sold Price: ${soldPrice})`);
       return { sent: true };
     } else {
       logEmailDispatch({ type: "TEAM_ASSIGNMENT", recipient: playerEmail, playerId: displayPlayerId, team: teamName, status: "RECORDED_NO_SMTP" });

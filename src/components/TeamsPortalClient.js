@@ -169,7 +169,7 @@ export default function TeamsPortalClient({ teams = [], players = [], settings =
                     <span className="text-[#059669] font-bold">{squadCount}/14</span>
                   </div>
                   <div className="text-[10px] font-mono font-bold text-emerald-700 mt-0.5">
-                    ₹{Math.round(((team.remainingPurse !== undefined ? team.remainingPurse : (team.initialPurse || 100000) - (team.spentPurse || 0))) / 1000)}k left
+                    {Math.round(((team.remainingPurse !== undefined ? team.remainingPurse : (team.initialPurse || 10000000) - (team.spentPurse || 0))) / 100000)}L left
                   </div>
                 </button>
               );
@@ -275,21 +275,21 @@ export default function TeamsPortalClient({ teams = [], players = [], settings =
                 <div className="space-y-0.5">
                   <span className="text-[10px] uppercase font-bold text-slate-400 block">Total Purse</span>
                   <div className="font-mono font-bold text-slate-800 text-xs sm:text-sm">
-                    ₹{(currentTeam.initialPurse || 100000).toLocaleString("en-IN")}
+                    {(currentTeam.initialPurse || 10000000).toLocaleString("en-IN")}
                   </div>
                 </div>
 
                 <div className="space-y-0.5">
                   <span className="text-[10px] uppercase font-bold text-slate-400 block">Spent</span>
                   <div className="font-mono font-bold text-amber-700 text-xs sm:text-sm">
-                    ₹{(currentTeam.spentPurse || 0).toLocaleString("en-IN")}
+                    {(currentTeam.spentPurse || 0).toLocaleString("en-IN")}
                   </div>
                 </div>
 
                 <div className="space-y-0.5">
                   <span className="text-[10px] uppercase font-bold text-slate-400 block">Remaining</span>
                   <div className="font-mono font-black text-emerald-700 text-xs sm:text-sm">
-                    ₹{(currentTeam.remainingPurse !== undefined ? currentTeam.remainingPurse : Math.max(0, (currentTeam.initialPurse || 100000) - (currentTeam.spentPurse || 0))).toLocaleString("en-IN")}
+                    {(currentTeam.remainingPurse !== undefined ? currentTeam.remainingPurse : Math.max(0, (currentTeam.initialPurse || 10000000) - (currentTeam.spentPurse || 0))).toLocaleString("en-IN")}
                   </div>
                 </div>
               </div>
@@ -437,7 +437,7 @@ export default function TeamsPortalClient({ teams = [], players = [], settings =
                   <span className="text-slate-400 font-medium">{currentTeam ? "Auction Price:" : "Pool Status:"}</span>
                   {currentTeam ? (
                     <span className="font-mono font-extrabold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
-                      {player.soldPrice > 0 ? `₹${Number(player.soldPrice).toLocaleString("en-IN")}` : "Direct Pick"}
+                      {player.soldPrice > 0 ? Number(player.soldPrice).toLocaleString("en-IN") : "Direct Pick"}
                     </span>
                   ) : (
                     <span className="font-bold text-[#059669] flex items-center gap-1">

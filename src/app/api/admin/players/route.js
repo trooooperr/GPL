@@ -83,7 +83,7 @@ async function getCalculatedStats(playersList, teamsCount = 10) {
   let rejected = 0;
   let pending = 0;
   let total = 0;
-  let maxCap = 160;
+  let maxCap = 200;
 
   try {
     const [regs, tCount, settingDoc] = await Promise.all([
@@ -95,7 +95,7 @@ async function getCalculatedStats(playersList, teamsCount = 10) {
     playersList = Array.isArray(regs) ? regs : [];
     teamsCount = tCount || 10;
     if (settingDoc?.value?.maxCapacity) {
-      maxCap = Number(settingDoc.value.maxCapacity) || 160;
+      maxCap = Number(settingDoc.value.maxCapacity) || 200;
     }
 
     if (Array.isArray(playersList)) {

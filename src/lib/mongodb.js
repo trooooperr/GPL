@@ -97,7 +97,7 @@ const TeamSchema = new mongoose.Schema({
   championships: { type: Number, default: 0 },
   logo: String,
   themeColor: { type: String, default: "#0041b9" },
-  initialPurse: { type: Number, default: 100000 },
+  initialPurse: { type: Number, default: 10000000 },
   members: [String]
 }, schemaOptions);
 

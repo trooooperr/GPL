@@ -64,7 +64,7 @@ export default async function TeamsPage() {
     });
     players = regs;
 
-    const defaultPurse = Number(settings.defaultTeamPurse) || 100000;
+    const defaultPurse = Number(settings.defaultTeamPurse) || 10000000;
     const rawTeams = mongoTeams && mongoTeams.length > 0 ? mongoTeams : INITIAL_TEAMS;
 
     teams = rawTeams.map((t) => {

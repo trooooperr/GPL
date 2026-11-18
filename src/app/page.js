@@ -39,10 +39,10 @@ export default async function Home() {
     approved: 0,
     rejected: 0,
     pending: 0,
-    available: 160,
-    remainingSlots: 160,
+    available: 200,
+    remainingSlots: 200,
     totalTeams: 10,
-    maxCapacity: 160,
+    maxCapacity: 200,
     registrationFee: 100,
     upiId: "shahbazkhandm@okhdfcbank"
   };
@@ -114,7 +114,7 @@ export default async function Home() {
     });
     players = regs;
 
-    const defaultPurse = Number(settings.defaultTeamPurse) || 100000;
+    const defaultPurse = Number(settings.defaultTeamPurse) || 10000000;
     const rawTeams = mongoTeams && mongoTeams.length > 0 ? mongoTeams : INITIAL_TEAMS;
 
     teams = rawTeams.map((t) => {
@@ -155,7 +155,7 @@ export default async function Home() {
     const rejected = rejectedCount || 0;
     const pending = pendingCount || 0;
     const totalTeamsCount = teams.length || 10;
-    const cap = settings.maxCapacity || 160;
+    const cap = settings.maxCapacity || 200;
 
     stats = {
       totalRegistrations: total,

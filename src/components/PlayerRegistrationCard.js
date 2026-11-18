@@ -309,9 +309,9 @@ export async function drawPlayerCardToCanvas(canvas, { player, regNum, photo, st
     }
     ctx.restore();
 
-    // 2. Bidding Amount on Right (Green font, same font style & size as ward/role text)
+    // 2. Bidding Amount on Right (Green font, same font style & size as ward/role text - without currency icon)
     const hasBid = resolvedSoldPrice > 0;
-    const bidText = hasBid ? `₹${resolvedSoldPrice.toLocaleString("en-IN")}` : "";
+    const bidText = hasBid ? Number(resolvedSoldPrice).toLocaleString("en-IN") : "";
     const bidMaxW = 150;
 
     if (hasBid) {

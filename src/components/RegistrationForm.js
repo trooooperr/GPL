@@ -48,8 +48,8 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
   const [savedPlayerPhoto, setSavedPlayerPhoto] = useState("");
   const [dynamicQrDataUrl, setDynamicQrDataUrl] = useState("");
 
-  // Dynamic capacity & remaining slots calculation based on maxCapacity (default 160)
-  const calcMaxCap = settings?.maxCapacity || stats?.maxCapacity || 160;
+  // Dynamic capacity & remaining slots calculation based on maxCapacity (default 200)
+  const calcMaxCap = settings?.maxCapacity || stats?.maxCapacity || 200;
   const calcApproved = stats?.approved !== undefined ? stats.approved : (stats?.totalRegistered || 0);
   const calcRemaining = Math.max(0, calcMaxCap - calcApproved);
 
@@ -85,7 +85,7 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
         const res = await fetch("/api/stats");
         const data = await res.json();
         if (data.success && data.stats) {
-          const cap = data.stats.maxCapacity || 160;
+          const cap = data.stats.maxCapacity || 200;
           const rem = data.stats.remainingSlots !== undefined ? data.stats.remainingSlots : Math.max(0, cap - (data.stats.approved || 0));
           setMaxCapacity(cap);
           setRemainingSlots(rem);
