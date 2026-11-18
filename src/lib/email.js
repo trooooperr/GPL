@@ -320,7 +320,7 @@ export async function sendPlayerRegistrationConfirmationEmail(player) {
           <div class="footer">
             Goregaon Premier League Season 4 • Sambhaji Maidan, Goregaon East, Mumbai<br/>
             Organised by Sandeep Jadhav (Founder of Radhe Radhe Foundation)<br/>
-            Official Admin Contact: <a href="mailto:goregaonpremierleague11@gmail.com">goregaonpremierleague11@gmail.com</a>
+            📧 <a href="mailto:goregaonpremierleague11@gmail.com" style="color: #64748b; text-decoration: none; font-weight: 600;">goregaonpremierleague11@gmail.com</a>
           </div>
         </div>
       </body>
@@ -504,7 +504,7 @@ export async function sendPlayerStatusEmail(player, status, notes = "", cardData
           <div class="footer">
             <strong>Goregaon Premier League • Radhe Radhe Chashak</strong><br />
             Organised by: Sandeep Jadhav (Founder of Radhe Radhe Foundation)<br />
-            Official Admin Contact: <a href="mailto:goregaonpremierleague11@gmail.com">goregaonpremierleague11@gmail.com</a><br />
+            📧 <a href="mailto:goregaonpremierleague11@gmail.com" style="color: #64748b; text-decoration: none; font-weight: 600;">goregaonpremierleague11@gmail.com</a><br />
             This is an automated tournament status dispatch.
           </div>
         </div>
@@ -702,7 +702,7 @@ export async function sendTeamAssignmentEmail(player, team, cardDataUrl = null) 
           <div class="footer">
             <strong>Goregaon Premier League &bull; Radhe Radhe Chashak Season 4</strong><br />
             Organised with pride by Sandeep Jadhav (Founder of Radhe Radhe Foundation)<br />
-            Official Contact: <a href="mailto:goregaonpremierleague11@gmail.com" style="color: #0041b9; text-decoration: none;">goregaonpremierleague11@gmail.com</a>
+            📧 <a href="mailto:goregaonpremierleague11@gmail.com" style="color: #64748b; text-decoration: none; font-weight: 600;">goregaonpremierleague11@gmail.com</a>
           </div>
         </div>
       </body>
