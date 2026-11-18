@@ -16,7 +16,7 @@ export default function Footer() {
           </div>
           <div className="text-xs text-slate-400 text-left leading-tight">
             <strong className="text-white block font-semibold">Goregaon Premier League</strong>
-            Organised by Sandeep Jadhav (Founder, Radhe Radhe Foundation) • Event Managed by ROYAL STRIKER GROUP
+            Organised by Sandeep Jadhav (Founder, Radhe Radhe Foundation)
           </div>
         </div>
 
