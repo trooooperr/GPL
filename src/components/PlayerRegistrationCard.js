@@ -256,7 +256,7 @@ export async function drawPlayerCardToCanvas(canvas, { player, regNum, photo, st
     console.error("Status badge load error:", err);
   }
 
-  // --- TEAM NAME, LOGO & BIDDING AMOUNT (ONLY WHEN ASSIGNED TO A TEAM) ---
+  // --- TEAM NAME & BIDDING AMOUNT (ONLY WHEN ASSIGNED TO A TEAM) ---
   const matchedTeam =
     (teams && player?.teamId ? teams.find((t) => t.id === player.teamId) : null) ||
     (player?.teamId ? INITIAL_TEAMS.find((t) => t.id === player.teamId) : null) ||
@@ -266,82 +266,82 @@ export async function drawPlayerCardToCanvas(canvas, { player, regNum, photo, st
 
   const resolvedTeam = teamName || matchedTeam?.name || player?.teamName || player?.team?.name || null;
   const resolvedSoldPrice = soldPrice !== undefined ? Number(soldPrice) : (Number(player?.soldPrice) || 0);
-  const resolvedLogo = teamLogo || matchedTeam?.logo || player?.team?.logo || null;
-  const teamShortCode = matchedTeam?.shortCode || "";
 
   // If a team is assigned, draw:
-  // 1. Team logo on left (aligned under the ward/role icons)
-  // 2. Team name in metallic font (same font style as ward and role text)
-  // 3. Winning auction bid in green on the right (same font style as ward text)
-  // If NO team is assigned, draft status box is removed completely.
+  // 1. Golden metallic capsule/pill border matching the Ward/Role frames above
+  // 2. Enlarged prominent Team Name inside the golden pill
+  // 3. Winning auction bid amount on the right in green
+  // (Team logo is removed as requested)
   if (resolvedTeam) {
-    const rowY = 952;
-    const logoCX = 112;
-    const logoCY = rowY;
-    const logoR = 26;
+    const pillW = wrW; // 458 - matches the width of the pills above
+    const pillH = 70;
+    const pillX = wrX; // 70 - aligns with the pills above
+    const pillY = wrY + 148 + 4; // 761 + 148 + 4 = 913
+    const textY = pillY + pillH / 2 + 1; // vertical center = 949
 
-    // 1. Team Logo Badge
-    let teamLogoImg = null;
-    if (resolvedLogo) {
-      try {
-        teamLogoImg = await loadImg(resolvedLogo);
-      } catch (_) {}
+    // 1. Draw Golden Pill Frame (identical 3D golden border as the pills above)
+    try {
+      const teamPillImg = await loadImg("/images/gpl-card-team-pill-frame.png?v=2");
+      ctx.drawImage(teamPillImg, pillX, pillY, pillW, pillH);
+    } catch (err) {
+      // Fallback golden pill drawing if image load fails
+      ctx.save();
+      ctx.beginPath();
+      roundRect(pillX, pillY, pillW, pillH, 24);
+      ctx.fillStyle = "rgba(10, 14, 28, 0.9)";
+      ctx.fill();
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = "#fbbf24";
+      ctx.stroke();
+      ctx.restore();
     }
 
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(logoCX, logoCY, logoR, 0, Math.PI * 2);
-    ctx.fillStyle = "rgba(10, 14, 28, 0.95)";
-    ctx.fill();
-    ctx.lineWidth = 3;
-    ctx.strokeStyle = "#f59e0b"; // Golden circular border matching ward/role theme
-    ctx.stroke();
-    ctx.clip();
-
-    if (teamLogoImg) {
-      ctx.drawImage(teamLogoImg, logoCX - logoR, logoCY - logoR, logoR * 2, logoR * 2);
-    } else {
-      ctx.fillStyle = "#fbbf24";
-      ctx.font = "900 15px 'Arial Black', Impact, sans-serif";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText(teamShortCode || resolvedTeam.slice(0, 3).toUpperCase(), logoCX, logoCY);
-    }
-    ctx.restore();
-
-    // 2. Bidding Amount on Right (Green font, same font style & size as ward/role text - without currency icon)
+    // 2. Team Name & Sold Bidding Amount (Enlarged font, no logo)
     const hasBid = resolvedSoldPrice > 0;
     const bidText = hasBid ? Number(resolvedSoldPrice).toLocaleString("en-IN") : "";
-    const bidMaxW = 150;
+    const bidMaxW = 145;
 
     if (hasBid) {
+      // Bidding Amount on the Right (Green metallic font)
       drawMetallicText({
         text: bidText,
-        x: 525,
-        y: rowY,
-        baseSize: 28,
+        x: pillX + pillW - 24, // approx 504
+        y: textY,
+        baseSize: 32,
         maxW: bidMaxW,
         align: "right",
         shear: -0.22,
         strokeWidth: 5,
         fill: "green"
       });
+
+      // Enlarged Team Name on the Left
+      const tx = pillX + 26; // approx 96
+      const teamMaxW = pillW - bidMaxW - 46; // 458 - 145 - 46 = 267
+
+      drawMetallicText({
+        text: resolvedTeam.toUpperCase(),
+        x: tx,
+        y: textY,
+        baseSize: 32,
+        maxW: teamMaxW,
+        align: "left",
+        shear: -0.22,
+        strokeWidth: 5
+      });
+    } else {
+      // Centered Team Name across the entire pill if no bid
+      drawMetallicText({
+        text: resolvedTeam.toUpperCase(),
+        x: pillX + pillW / 2,
+        y: textY,
+        baseSize: 36,
+        maxW: pillW - 50,
+        align: "center",
+        shear: -0.22,
+        strokeWidth: 5
+      });
     }
-
-    // 3. Team Name (Same metallic font, size, shear, and stroke as ward & role text)
-    const tx = 156;
-    const teamMaxW = hasBid ? (525 - bidMaxW - 16 - tx) : (525 - tx);
-
-    drawMetallicText({
-      text: resolvedTeam.toUpperCase(),
-      x: tx,
-      y: rowY,
-      baseSize: 28,
-      maxW: teamMaxW,
-      align: "left",
-      shear: -0.22,
-      strokeWidth: 5
-    });
   }
 }
 

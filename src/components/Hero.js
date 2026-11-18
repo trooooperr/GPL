@@ -48,7 +48,7 @@ export default function Hero({ settings }) {
           <div className="lg:col-span-7 flex justify-center lg:justify-end">
             <div className={`grid gap-3 sm:gap-5 lg:gap-6 w-full max-w-2xl ${photos.length <= 2 ? 'grid-cols-2' : photos.length === 3 ? 'grid-cols-3' : 'grid-cols-2 sm:grid-cols-3'}`}>
               {photos.map((src, i) => (
-                <div key={i} className="rounded-xl sm:rounded-2xl overflow-hidden shadow-md sm:shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 bg-slate-900 border border-slate-200">
+                <div key={i} className="rounded-xl sm:rounded-2xl overflow-hidden shadow-md sm:shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 bg-transparent border border-slate-200">
                   <img
                     src={src}
                     alt={`GPL About Photo ${i + 1}`}

@@ -1984,7 +1984,7 @@ export default function AdminDashboard() {
                                 setAuctionDraftModal({
                                   player,
                                   teamId: val,
-                                  soldPrice: player.soldPrice || 1000
+                                  soldPrice: player.soldPrice || 100000
                                 });
                               }
                             }}
@@ -2232,7 +2232,7 @@ export default function AdminDashboard() {
                                         setAuctionDraftModal({
                                           player,
                                           teamId: val,
-                                          soldPrice: player.soldPrice || 1000
+                                          soldPrice: player.soldPrice || 100000
                                         });
                                       }
                                     }}
@@ -4664,13 +4664,13 @@ export default function AdminDashboard() {
                   {/* Bid Input */}
                   <div>
                     <label className="font-bold text-slate-700 block mb-1">
-                      Sold Price / Winning Bid Amount
+                      Sold Price / Winning Bid Amount (Min Base: 1,00,000)
                     </label>
                     <div className="relative">
                       <input
                         type="number"
-                        min="0"
-                        step="500"
+                        min="100000"
+                        step="10000"
                         value={auctionDraftModal.soldPrice}
                         onChange={(e) => setAuctionDraftModal({ ...auctionDraftModal, soldPrice: Math.max(0, parseInt(e.target.value, 10) || 0) })}
                         className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 font-mono text-base font-bold text-slate-900 focus:ring-2 focus:ring-[#0041b9] outline-none"
@@ -4680,7 +4680,7 @@ export default function AdminDashboard() {
 
                     {/* Quick increment buttons */}
                     <div className="flex flex-wrap gap-1.5 mt-2">
-                      {[1000, 2500, 5000, 10000, 15000, 20000].map((val) => (
+                      {[100000, 150000, 200000, 250000, 300000, 500000, 1000000].map((val) => (
                         <button
                           key={val}
                           type="button"
@@ -4691,17 +4691,17 @@ export default function AdminDashboard() {
                               : "bg-white text-slate-700 hover:bg-slate-100 border-slate-200"
                           }`}
                         >
-                          {(val / 1000)}k
+                          {val >= 10000000 ? `${val / 10000000} Cr` : `${val / 100000}L`}
                         </button>
                       ))}
-                      {[500, 1000, 2000].map((inc) => (
+                      {[25000, 50000, 100000, 200000].map((inc) => (
                         <button
                           key={`+${inc}`}
                           type="button"
                           onClick={() => setAuctionDraftModal({ ...auctionDraftModal, soldPrice: (Number(auctionDraftModal.soldPrice) || 0) + inc })}
                           className="px-2 py-1 rounded-lg text-[11px] font-bold bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 transition-colors cursor-pointer"
                         >
-                          +{inc >= 1000 ? `${inc / 1000}k` : `${inc}`}
+                          +{inc >= 100000 ? `${inc / 100000}L` : `${inc / 1000}k`}
                         </button>
                       ))}
                     </div>

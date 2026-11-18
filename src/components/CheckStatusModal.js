@@ -247,7 +247,7 @@ export default function CheckStatusModal({ isOpen, onClose }) {
 
       ctx.fillStyle = "#cbd5e1";
       ctx.font = "16px sans-serif";
-      ctx.fillText("Organized by Mohsin Patel & Balram Gupta (Ballu)", 50, 895);
+      ctx.fillText("Organized by Sandeep Jadhav (Founder, Radhe Radhe Foundation)", 50, 895);
       ctx.fillText("Non-transferable official accreditation badge for Radhe Radhe Chasak GPL4.", 50, 925);
 
       // Trigger download
