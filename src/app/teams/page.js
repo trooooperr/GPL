@@ -16,8 +16,9 @@ export const metadata = {
     "GPL Teams",
     "GPL Squads",
     "Radhe Radhe Chasak GPL4",
-    "Mohsin Patel",
-    "Balram Gupta",
+    "Sandeep Jadhav",
+    "Radhe Radhe Foundation",
+    "ROYAL STRIKER GROUP",
     "Sambhaji Maidan"
   ]
 };

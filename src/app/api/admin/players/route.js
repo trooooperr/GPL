@@ -61,7 +61,7 @@ function mapPlayer(r) {
     email: r.email,
     phone: (r.phone || "").replace(/\D/g, "").slice(0, 10),
     dob: r.dob,
-    age: r.age,
+    age: r.age || (r.dob && !isNaN(new Date(r.dob).getFullYear()) ? Math.max(10, Math.min(80, new Date().getFullYear() - new Date(r.dob).getFullYear())) : null),
     ward: r.ward || "Ward 51",
     speciality: r.speciality,
     tshirtSize: r.tshirtSize,

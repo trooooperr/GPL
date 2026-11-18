@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { verifyAuthCookie } from "@/lib/auth";
-import { connectToDatabase, MongoSetting } from "@/lib/mongodb";
+import { connectToDatabase, MongoSetting, MongoTeam, MongoAward } from "@/lib/mongodb";
 import { INITIAL_SETTINGS } from "@/lib/constants";
 
 export const dynamic = "force-dynamic";
@@ -46,6 +46,21 @@ export async function POST(request) {
       { key: "global_settings", value: merged },
       { upsert: true }
     );
+
+    // Sync team default purse across all franchise teams if purse was updated
+    if (body.defaultTeamPurse !== undefined) {
+      const newPurse = Number(body.defaultTeamPurse) || 10000000;
+      await MongoTeam.updateMany({}, { $set: { initialPurse: newPurse } }).catch(() => {});
+    }
+
+    // Sync awards badge if maxCapacity was updated
+    if (body.maxCapacity !== undefined) {
+      const newCap = Number(body.maxCapacity) || 200;
+      await MongoAward.updateOne(
+        { title: /\d+\s*Players/i },
+        { $set: { title: `${newCap} Players` } }
+      ).catch(() => {});
+    }
 
     return NextResponse.json({ success: true, settings: merged }, { headers: NO_CACHE_HEADERS });
   } catch (e) {

@@ -276,7 +276,7 @@ export default function CheckStatusModal({ isOpen, onClose }) {
             </div>
             <div>
               <h3 className="font-extrabold text-base sm:text-lg leading-tight">Check Registration Status</h3>
-              <p className="text-[11px] text-blue-200/80">Radhe Radhe Chasak GPL4 • Mohsin Patel &amp; Balram Gupta</p>
+              <p className="text-[11px] text-blue-200/80">Radhe Radhe Chasak GPL4 • Sandeep Jadhav (Radhe Radhe Foundation)</p>
             </div>
           </div>
           <button
@@ -413,7 +413,7 @@ export default function CheckStatusModal({ isOpen, onClose }) {
                     Only verified players from Ward 51 &amp; Ward 54 with confirmed Instagram follow screenshot can receive an official accreditation pass. If this is an error, please reach out directly to the organizers.
                   </p>
                   <div className="pt-2 text-xs font-semibold text-slate-700 bg-white p-3 rounded-xl border border-slate-200">
-                    <div>Organizers: <strong>Mohsin Patel &amp; Balram Gupta (Ballu)</strong></div>
+                    <div>Organizer: <strong>Sandeep Jadhav (Founder, Radhe Radhe Foundation)</strong></div>
                     <div className="text-[11px] text-slate-500 mt-1">Ground: Sambhaji Maidan, Goregaon East</div>
                   </div>
                 </div>
@@ -513,6 +513,11 @@ export default function CheckStatusModal({ isOpen, onClose }) {
                             src={player.team.logo}
                             alt={player.team.name}
                             className="w-5 h-5 object-contain"
+                            onError={(e) => {
+                              if (e.target.src.includes("-v2.png")) {
+                                e.target.src = e.target.src.replace("-v2.png", ".png");
+                              }
+                            }}
                           />
                         )}
                         <span>{player.team.name}</span>
@@ -540,7 +545,7 @@ export default function CheckStatusModal({ isOpen, onClose }) {
                   {/* Pass Footer */}
                   <div className="flex items-center justify-between pt-2 border-t border-white/10 text-[10px] text-slate-300 font-medium">
                     <span>Radhe Radhe Chasak GPL4</span>
-                    <span className="text-amber-300/90 font-bold">Mohsin Patel &amp; Balram Gupta</span>
+                    <span className="text-amber-300/90 font-bold">Sandeep Jadhav (Radhe Radhe Foundation)</span>
                   </div>
                 </div>
               )}

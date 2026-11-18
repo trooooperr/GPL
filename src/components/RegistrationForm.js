@@ -319,7 +319,7 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
             Register for GPL
           </h2>
           <p className="text-slate-600 text-sm sm:text-base">
-            Radhe Radhe Chashak • Organised by Mohsin Patel &amp; Balram Gupta (Ballu)
+            Radhe Radhe Chashak • Organised by Sandeep Jadhav (Founder, Radhe Radhe Foundation)
           </p>
 
           {/* Remaining Slots Counter Banner */}
@@ -487,7 +487,7 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
               Online player registrations for Goregaon Premier League are currently closed by the organizing committee. Please contact the tournament coordinators for inquiries.
             </p>
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-full text-xs font-semibold text-slate-700">
-              <span>Ward 51 &amp; 54 • Mohsin Patel &amp; Balram Gupta (Ballu)</span>
+              <span>Ward 51 &amp; 54 • Sandeep Jadhav (Radhe Radhe Foundation)</span>
             </div>
           </div>
         ) : (

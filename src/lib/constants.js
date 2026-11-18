@@ -57,7 +57,7 @@ export const INITIAL_FAQS = [
   },
   {
     q: "Whom should I contact if I made an error during registration?",
-    a: "Contact the organizing committee headed by Shri Mohsin Patel & Balram Gupta (Ballu), or email us at goregaonpremierleague11@gmail.com with your name, phone number, and registration number for prompt correction."
+    a: "Contact the organizing committee headed by Shri Sandeep Jadhav (Founder, Radhe Radhe Foundation), or email us at goregaonpremierleague11@gmail.com with your name, phone number, and registration number for prompt correction."
   }
 ];
 
@@ -170,7 +170,7 @@ export const INITIAL_TEAMS = [
     "captain": "Super Star Captain",
     "established": "2024",
     "championships": 2,
-    "logo": "/images/teams/team-scs.png",
+    "logo": "/images/teams/team-scs-v2.png",
     "themeColor": "#eab308",
     "initialPurse": 10000000,
     "members": []
@@ -235,7 +235,7 @@ export const INITIAL_TEAMS = [
     "captain": "Warriors Captain",
     "established": "2024",
     "championships": 1,
-    "logo": "/images/teams/team-vbw.png",
+    "logo": "/images/teams/team-vbw-v2.png",
     "themeColor": "#b91c1c",
     "initialPurse": 10000000,
     "members": []

@@ -33,7 +33,7 @@ export default function AboutSection() {
               </h3>
 
               <p className="text-slate-300 text-sm leading-relaxed mb-6">
-                Organized with precision by <strong>Mohsin Patel & Balram Gupta (Ballu)</strong> GPL brings IPL-grade atmosphere to our local grounds.
+                Organized with precision by <strong>Sandeep Jadhav (Founder, Radhe Radhe Foundation)</strong> &bull; Event Managed by <strong>ROYAL STRIKER GROUP</strong>, GPL brings IPL-grade atmosphere to our local grounds.
               </p>
 
               {/* Badges */}

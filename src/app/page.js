@@ -14,12 +14,14 @@ export const revalidate = 60;
 
 export const metadata = {
   title: "Goregaon Premier League (GPL) - Radhe Radhe Chashak",
-  description: "Official website of Goregaon Premier League organised by Mohsin Patel & Balram Gupta (Ballu). Ward 51-54 Goregaon East.",
+  description: "Official website of Goregaon Premier League organised by Sandeep Jadhav (Founder, Radhe Radhe Foundation). Ward 51-54 Goregaon East.",
   keywords: [
     "Goregaon Premier League",
     "GPL",
     "Radhe Radhe Chashak",
-    "Mohsin Patel & Balram Gupta (Ballu)",
+    "Sandeep Jadhav",
+    "Radhe Radhe Foundation",
+    "ROYAL STRIKER GROUP",
     "Ward 51",
     "Ward 54",
     "Sambhaji Maidan"

@@ -693,7 +693,29 @@ export default function AdminDashboard() {
       const data = await res.json();
       if (data.success) {
         setSettings(data.settings);
-        setSettingsMsg("Settings & Official Instagram configuration updated successfully!");
+        if (data.settings?.maxCapacity) {
+          const cap = Number(data.settings.maxCapacity);
+          setStats((prev) => ({
+            ...prev,
+            maxCapacity: cap,
+            available: Math.max(0, cap - (prev?.approved || 0)),
+            remainingSlots: Math.max(0, cap - (prev?.approved || 0))
+          }));
+        }
+        if (data.settings?.defaultTeamPurse) {
+          const newPurse = Number(data.settings.defaultTeamPurse);
+          setTeams((prev) =>
+            prev.map((t) => {
+              const spent = t.spentPurse || 0;
+              return {
+                ...t,
+                initialPurse: newPurse,
+                remainingPurse: Math.max(0, newPurse - spent)
+              };
+            })
+          );
+        }
+        setSettingsMsg("Settings & Tournament configuration updated successfully!");
         setTimeout(() => setSettingsMsg(""), 3000);
       }
     } catch (err) {
@@ -1518,7 +1540,7 @@ export default function AdminDashboard() {
                 </span>
               </div>
               <p className="text-[11px] text-slate-400 hidden md:block">
-                Radhe Radhe Chashak • Mohsin Patel &amp; Balram Gupta (Ballu) 
+                Radhe Radhe Chashak • Sandeep Jadhav (Founder, Radhe Radhe Foundation) 
               </p>
             </div>
           </div>
@@ -1917,9 +1939,9 @@ export default function AdminDashboard() {
                         </a>
                       </div>
                       <div>
-                        <span className="text-[10px] uppercase font-bold text-slate-400 block">Ward &amp; Role</span>
+                        <span className="text-[10px] uppercase font-bold text-slate-400 block">Ward, Role &amp; Age</span>
                         <span className="font-semibold text-slate-800 text-[11px] block leading-snug break-words">
-                          {player.ward} • {player.speciality}
+                          {player.age ? `${player.age}y` : (player.dob && !isNaN(new Date(player.dob).getFullYear()) ? `${Math.max(10, Math.min(80, new Date().getFullYear() - new Date(player.dob).getFullYear()))}y` : "—")} • {player.ward} • {player.speciality}
                         </span>
                       </div>
                       <div>
@@ -2099,6 +2121,7 @@ export default function AdminDashboard() {
                         />
                       </th>
                       <th className="py-4 px-4">Player</th>
+                      <th className="py-4 px-3 text-center">Age</th>
                       <th className="py-4 px-4">Role &amp; Ward</th>
                       <th className="py-4 px-4">Kit Size</th>
                       <th className="py-4 px-4">Documents</th>
@@ -2139,6 +2162,11 @@ export default function AdminDashboard() {
                                   </div>
                                 </div>
                               </div>
+                            </td>
+                            <td className="py-4 px-3 text-center">
+                              <span className="px-2 py-1 rounded-md bg-slate-100 font-mono font-bold text-xs text-slate-800">
+                                {player.age ? `${player.age}y` : (player.dob && !isNaN(new Date(player.dob).getFullYear()) ? `${Math.max(10, Math.min(80, new Date().getFullYear() - new Date(player.dob).getFullYear()))}y` : "—")}
+                              </span>
                             </td>
                             <td className="py-4 px-5">
                               <div className="font-semibold text-slate-800">{player.speciality}</div>
@@ -2534,6 +2562,11 @@ export default function AdminDashboard() {
                               src={team.logo}
                               alt={team.name}
                               className="max-h-full max-w-full object-contain"
+                              onError={(e) => {
+                                if (e.target.src.includes("-v2.png")) {
+                                  e.target.src = e.target.src.replace("-v2.png", ".png");
+                                }
+                              }}
                             />
                           ) : (
                             <ImageIcon className="w-6 h-6 text-slate-400" />
@@ -2798,6 +2831,11 @@ export default function AdminDashboard() {
                                 src={team.logo || "/images/teams/team-csk.png"}
                                 alt={team.name}
                                 className="w-full h-full object-contain"
+                                onError={(e) => {
+                                  if (e.target.src.includes("-v2.png")) {
+                                    e.target.src = e.target.src.replace("-v2.png", ".png");
+                                  }
+                                }}
                               />
                             </div>
                             <div>
@@ -3007,14 +3045,14 @@ export default function AdminDashboard() {
                   <input
                     type="number"
                     min="10"
-                    max="500"
+                    max="5000"
                     required
                     value={settings.maxCapacity !== undefined ? settings.maxCapacity : 200}
                     onChange={(e) => setSettings({ ...settings, maxCapacity: Math.max(1, parseInt(e.target.value, 10) || 200) })}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-sm font-bold text-slate-900 focus:ring-2 focus:ring-[#0041b9]"
                   />
                   <p className="text-[11px] text-slate-500 mt-1">
-                    Total pool limit (200 players). Exactly 140 will be drafted across 10 teams (14/team), remaining stay unsold in pool.
+                    Total pool limit ({settings.maxCapacity || 200} players). Exactly 140 will be drafted across 10 teams (14/team), remaining stay unsold in pool.
                   </p>
                 </div>
                 <div>
@@ -3024,14 +3062,14 @@ export default function AdminDashboard() {
                   <input
                     type="number"
                     min="0"
-                    step="10000"
+                    step="50000"
                     required
                     value={settings.defaultTeamPurse !== undefined ? settings.defaultTeamPurse : 10000000}
                     onChange={(e) => setSettings({ ...settings, defaultTeamPurse: Math.max(0, parseInt(e.target.value, 10) || 10000000) })}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-sm font-mono font-bold text-slate-900 focus:ring-2 focus:ring-[#0041b9]"
                   />
                   <p className="text-[11px] text-slate-500 mt-1">
-                    Default auction purse budget given to each franchise (default 1 Cr / 1,00,00,000).
+                    Default auction purse budget given to each franchise (Current: {Number(settings.defaultTeamPurse || 10000000).toLocaleString("en-IN")}).
                   </p>
                 </div>
               </div>
@@ -3757,10 +3795,16 @@ export default function AdminDashboard() {
             </div>
 
             {/* Info Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 text-xs bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 text-xs bg-slate-50 p-3.5 rounded-xl border border-slate-200">
               <div>
                 <span className="text-slate-400 block text-[10px] uppercase font-bold">Speciality</span>
                 <span className="font-bold text-slate-900 truncate block">{inspectPlayer.speciality}</span>
+              </div>
+              <div>
+                <span className="text-slate-400 block text-[10px] uppercase font-bold">Age</span>
+                <span className="font-bold text-slate-900 truncate block">
+                  {inspectPlayer.age ? `${inspectPlayer.age} yrs` : (inspectPlayer.dob && !isNaN(new Date(inspectPlayer.dob).getFullYear()) ? `${Math.max(10, Math.min(80, new Date().getFullYear() - new Date(inspectPlayer.dob).getFullYear()))} yrs` : "—")}
+                </span>
               </div>
               <div>
                 <span className="text-slate-400 block text-[10px] uppercase font-bold">Ward</span>
@@ -4628,7 +4672,7 @@ export default function AdminDashboard() {
                     <div>
                       <div className="font-bold text-slate-900 text-sm">{player.name}</div>
                       <div className="text-slate-500 text-[11px] font-medium">
-                        #{player.regNumber || player.id} • {player.speciality} • {player.ward}
+                        #{player.regNumber || player.id} • {player.age ? `${player.age}y` : (player.dob && !isNaN(new Date(player.dob).getFullYear()) ? `${Math.max(10, Math.min(80, new Date().getFullYear() - new Date(player.dob).getFullYear()))}y` : "")} • {player.speciality} • {player.ward}
                       </div>
                     </div>
                     <span className="font-mono text-[10px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">

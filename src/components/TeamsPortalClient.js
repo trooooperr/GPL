@@ -149,6 +149,11 @@ export default function TeamsPortalClient({ teams = [], players = [], settings =
                         src={team.logo}
                         alt={team.name}
                         className="max-h-full max-w-full object-contain filter drop-shadow-sm"
+                        onError={(e) => {
+                          if (e.target.src.includes("-v2.png")) {
+                            e.target.src = e.target.src.replace("-v2.png", ".png");
+                          }
+                        }}
                       />
                     ) : (
                       <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400">
@@ -217,6 +222,11 @@ export default function TeamsPortalClient({ teams = [], players = [], settings =
                       src={currentTeam.logo}
                       alt={currentTeam.name}
                       className="max-h-full max-w-full object-contain"
+                      onError={(e) => {
+                        if (e.target.src.includes("-v2.png")) {
+                          e.target.src = e.target.src.replace("-v2.png", ".png");
+                        }
+                      }}
                     />
                   ) : (
                     <Shield className="w-10 h-10 text-slate-400" />
@@ -248,7 +258,7 @@ export default function TeamsPortalClient({ teams = [], players = [], settings =
                 <div className="space-y-0.5">
                   <span className="text-[10px] uppercase font-bold text-slate-400 block">Owner</span>
                   <div className="font-bold text-slate-900 text-xs sm:text-sm truncate">
-                    {currentTeam.owner || "Mohsin & Ballu"}
+                    {currentTeam.owner || "Franchise Owner"}
                   </div>
                 </div>
 

@@ -14,7 +14,7 @@ export const viewport = {
 
 export const metadata = {
   title: "Goregaon Premier League (GPL) - Radhe Radhe Chashak",
-  description: "Official website of Goregaon Premier League organised by Mohsin Patel & Balram Gupta (Ballu). Ward 51-54 Goregaon East.",
+  description: "Official website of Goregaon Premier League organised by Sandeep Jadhav (Founder, Radhe Radhe Foundation). Ward 51-54 Goregaon East.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,

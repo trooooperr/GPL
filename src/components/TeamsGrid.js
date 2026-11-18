@@ -34,6 +34,11 @@ export default function TeamsGrid({ teams = [] }) {
                   src={team.logo || "/images/teams/team-csk.png"}
                   alt={team.name}
                   className="max-h-[92%] max-w-[92%] object-contain filter drop-shadow-md group-hover:scale-110 transition-transform duration-300"
+                  onError={(e) => {
+                    if (e.target.src.includes("-v2.png")) {
+                      e.target.src = e.target.src.replace("-v2.png", ".png");
+                    }
+                  }}
                 />
               </div>
 
@@ -66,6 +71,11 @@ export default function TeamsGrid({ teams = [] }) {
                     src={selectedTeam.logo || "/images/teams/team-csk.png"}
                     alt={selectedTeam.name}
                     className="max-h-full max-w-full object-contain"
+                    onError={(e) => {
+                      if (e.target.src.includes("-v2.png")) {
+                        e.target.src = e.target.src.replace("-v2.png", ".png");
+                      }
+                    }}
                   />
                 </div>
                 <div>
