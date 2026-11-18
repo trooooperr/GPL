@@ -20,6 +20,7 @@ export async function GET(request) {
     if (filterType === "approved") query.paymentStatus = "Approved";
     else if (filterType === "pending") query.paymentStatus = "Pending";
     else if (filterType === "rejected") query.paymentStatus = "Rejected";
+    else if (filterType === "sizing") query.teamId = { $ne: null, $nin: ["", "unassign", null] };
 
     const [players, teams] = await Promise.all([
       MongoRegistration.find(
@@ -41,24 +42,36 @@ export async function GET(request) {
     let filename = "GPL_Player_Roster.csv";
 
     if (filterType === "sizing") {
-      filename = "GPL_Uniform_Kit_Sizing_Sheet.csv";
+      filename = "GPL_Uniform_Kit_Sizing_Team_Wise.csv";
       headers = [
+        "Team Name",
         "Player ID",
         "Player Name",
         "Mobile Phone",
         "T-Shirt Size",
         "Track Pant Size",
         "Ward",
-        "Assigned Team"
+        "Cricket Speciality"
       ];
-      rows = (players || []).map((p) => [
+
+      // Sort sold players team-wise, then by player name
+      const sortedSoldPlayers = (players || []).slice().sort((a, b) => {
+        const teamA = teamMap.get(a.teamId) || a.teamId || "";
+        const teamB = teamMap.get(b.teamId) || b.teamId || "";
+        const teamCmp = teamA.localeCompare(teamB);
+        if (teamCmp !== 0) return teamCmp;
+        return (a.name || "").localeCompare(b.name || "");
+      });
+
+      rows = sortedSoldPlayers.map((p) => [
+        escapeCsv(p.teamId ? (teamMap.get(p.teamId) || p.teamId) : "Unassigned"),
         escapeCsv(p.regNumber || p.id),
         escapeCsv(p.name),
         escapeCsv(p.phone),
         escapeCsv(p.tshirtSize),
         escapeCsv(p.trackSize),
         escapeCsv(p.ward),
-        escapeCsv(p.teamId ? (teamMap.get(p.teamId) || p.teamId) : "Unassigned")
+        escapeCsv(p.speciality)
       ]);
     } else {
       if (filterType === "approved") {

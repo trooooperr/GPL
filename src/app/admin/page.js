@@ -81,6 +81,7 @@ export default function AdminDashboard() {
     registrationOpen: true
   });
   const [sizing, setSizing] = useState(null);
+  const [sizingTeamFilter, setSizingTeamFilter] = useState("ALL");
 
   const [adminQrPreview, setAdminQrPreview] = useState("");
 
@@ -195,9 +196,11 @@ export default function AdminDashboard() {
         setPlayers(playersList);
         if (dataPlayers.stats) setStats(dataPlayers.stats);
 
+        // Compute sizing matrix strictly for SOLD players
+        const soldPlayers = playersList.filter((p) => p.teamId && p.teamId !== "unassign" && p.teamId !== "");
         const tshirts = {};
         const tracks = {};
-        playersList.forEach((p) => {
+        soldPlayers.forEach((p) => {
           const ts = p.tshirtSize || "Not specified";
           const trk = p.trackSize || "Not specified";
           tshirts[ts] = (tshirts[ts] || 0) + 1;
@@ -206,7 +209,7 @@ export default function AdminDashboard() {
         setSizing({
           tshirts,
           tracks,
-          total: playersList.length
+          total: soldPlayers.length
         });
       }
       if (dataTeams.success) setTeams(dataTeams.teams || []);
@@ -257,10 +260,11 @@ export default function AdminDashboard() {
             setPlayers(playersList);
             if (dataPlayers.stats) setStats(dataPlayers.stats);
 
-            // Compute sizing matrix instantly in-memory without extra DB query
+            // Compute sizing matrix strictly for SOLD players
+            const soldPlayers = playersList.filter((p) => p.teamId && p.teamId !== "unassign" && p.teamId !== "");
             const tshirts = {};
             const tracks = {};
-            playersList.forEach((p) => {
+            soldPlayers.forEach((p) => {
               const ts = p.tshirtSize || "Not specified";
               const trk = p.trackSize || "Not specified";
               tshirts[ts] = (tshirts[ts] || 0) + 1;
@@ -269,7 +273,7 @@ export default function AdminDashboard() {
             setSizing({
               tshirts,
               tracks,
-              total: playersList.length
+              total: soldPlayers.length
             });
           }
 
@@ -2621,78 +2625,292 @@ export default function AdminDashboard() {
         )}
 
         {/* ========================================================================= */}
-        {/* TAB 3: VENDOR KIT SIZING MATRIX */}
+        {/* TAB 3: VENDOR KIT SIZING MATRIX (SOLD PLAYERS ONLY & TEAM-WISE) */}
         {/* ========================================================================= */}
-        {activeTab === "sizing" && (
-          <div className="space-y-4 sm:space-y-6">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-              <div>
-                <h2 className="text-lg sm:text-xl font-bold text-[#081a36]">Vendor Apparel &amp; Kit Orders</h2>
-                <p className="text-xs text-slate-500">Live breakdown of player uniform sizes for tracksuits and jerseys</p>
+        {activeTab === "sizing" && (() => {
+          const soldPlayers = (players || []).filter((p) => p.teamId && p.teamId !== "unassign" && p.teamId !== "");
+          const filteredTeams = sizingTeamFilter === "ALL"
+            ? teams
+            : teams.filter((t) => t.id === sizingTeamFilter || t.name === sizingTeamFilter);
+
+          return (
+            <div className="space-y-4 sm:space-y-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-lg sm:text-xl font-bold text-[#081a36]">Vendor Apparel &amp; Kit Orders</h2>
+                    <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-bold">
+                      Sold Players Only ({soldPlayers.length})
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Live breakdown of uniform sizes for drafted players, organized overall and team-by-team
+                  </p>
+                </div>
+                <a
+                  href="/api/admin/export?filter=sizing"
+                  download
+                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#0041b9] hover:bg-[#003494] text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm transition-colors cursor-pointer"
+                >
+                  <Download className="w-4 h-4" />
+                  <span>Export Team-Wise Kit CSV</span>
+                </a>
               </div>
-              <a
-                href="/api/admin/export"
-                download
-                className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#0041b9] text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm cursor-pointer"
-              >
-                <Download className="w-4 h-4" />
-                <span>Export Sizing Sheet</span>
-              </a>
+
+              {/* Team Selector Filter Pills */}
+              <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+                <button
+                  type="button"
+                  onClick={() => setSizingTeamFilter("ALL")}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
+                    sizingTeamFilter === "ALL"
+                      ? "bg-[#081a36] text-white shadow-xs"
+                      : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
+                  }`}
+                >
+                  All Teams ({soldPlayers.length})
+                </button>
+                {teams.map((t) => {
+                  const count = soldPlayers.filter((p) => p.teamId === t.id || p.teamId === t.name).length;
+                  const isSelected = sizingTeamFilter === t.id;
+                  return (
+                    <button
+                      key={t.id}
+                      type="button"
+                      onClick={() => setSizingTeamFilter(t.id)}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap flex items-center gap-1.5 transition-all cursor-pointer ${
+                        isSelected
+                          ? "bg-[#0041b9] text-white shadow-xs"
+                          : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
+                      }`}
+                    >
+                      <span>{t.shortCode || t.name}</span>
+                      <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${isSelected ? "bg-white/20 text-white" : "bg-slate-100 text-slate-500 font-mono"}`}>
+                        {count}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Overall Sizing Summary */}
+              {sizing && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                  {/* T-Shirt Breakdown */}
+                  <div className="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-bold text-sm text-[#081a36] uppercase tracking-wider">
+                        Overall T-Shirt Sizes (Sold Players)
+                      </h3>
+                      <span className="font-mono text-xs font-bold text-slate-500">{soldPlayers.length} Total</span>
+                    </div>
+                    {Object.keys(sizing.tshirts || {}).length === 0 ? (
+                      <p className="text-xs text-slate-400 py-3 text-center">No sold players yet</p>
+                    ) : (
+                      <table className="w-full text-xs text-left">
+                        <thead className="bg-slate-50 text-slate-500 uppercase font-bold">
+                          <tr>
+                            <th className="py-2.5 px-3">Size</th>
+                            <th className="py-2.5 px-3 text-right">Quantity</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                          {Object.entries(sizing.tshirts || {}).map(([size, count]) => (
+                            <tr key={size}>
+                              <td className="py-2 px-3 font-bold text-slate-800">{size}</td>
+                              <td className="py-2 px-3 text-right font-mono font-bold text-blue-600">{count}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    )}
+                  </div>
+
+                  {/* Track Pant Breakdown */}
+                  <div className="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-bold text-sm text-[#081a36] uppercase tracking-wider">
+                        Overall Track Pant Sizes (Sold Players)
+                      </h3>
+                      <span className="font-mono text-xs font-bold text-slate-500">{soldPlayers.length} Total</span>
+                    </div>
+                    {Object.keys(sizing.tracks || {}).length === 0 ? (
+                      <p className="text-xs text-slate-400 py-3 text-center">No sold players yet</p>
+                    ) : (
+                      <table className="w-full text-xs text-left">
+                        <thead className="bg-slate-50 text-slate-500 uppercase font-bold">
+                          <tr>
+                            <th className="py-2.5 px-3">Waist Size</th>
+                            <th className="py-2.5 px-3 text-right">Quantity</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                          {Object.entries(sizing.tracks || {}).map(([size, count]) => (
+                            <tr key={size}>
+                              <td className="py-2 px-3 font-bold text-slate-800">{size}&quot;</td>
+                              <td className="py-2 px-3 text-right font-mono font-bold text-blue-600">{count}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Team-Wise Sizing Breakdown */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-base font-bold text-[#081a36]">
+                    Team-Wise Kit Rosters &amp; Breakdown
+                  </h3>
+                  <span className="text-xs text-slate-500">
+                    Showing {filteredTeams.length} {filteredTeams.length === 1 ? "Team" : "Teams"}
+                  </span>
+                </div>
+
+                <div className="space-y-4">
+                  {filteredTeams.map((team) => {
+                    const teamSoldPlayers = soldPlayers.filter(
+                      (p) => p.teamId === team.id || p.teamId === team.name
+                    );
+
+                    // Team-specific size tallies
+                    const teamTshirts = {};
+                    const teamTracks = {};
+                    teamSoldPlayers.forEach((p) => {
+                      const ts = p.tshirtSize || "Not specified";
+                      const trk = p.trackSize || "Not specified";
+                      teamTshirts[ts] = (teamTshirts[ts] || 0) + 1;
+                      teamTracks[trk] = (teamTracks[trk] || 0) + 1;
+                    });
+
+                    return (
+                      <div
+                        key={team.id}
+                        className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs"
+                      >
+                        {/* Team Header */}
+                        <div className="px-4 py-3 sm:px-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-100 bg-slate-50/50">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center p-1 overflow-hidden shrink-0 shadow-2xs">
+                              <img
+                                src={team.logo || "/images/teams/team-csk.png"}
+                                alt={team.name}
+                                className="w-full h-full object-contain"
+                              />
+                            </div>
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <h4 className="font-black text-sm sm:text-base text-slate-900 leading-none">
+                                  {team.name}
+                                </h4>
+                                <span className="px-2 py-0.5 rounded-md bg-slate-200/80 text-slate-700 text-[10px] font-mono font-bold">
+                                  {team.shortCode}
+                                </span>
+                              </div>
+                              <p className="text-[11px] text-slate-500 mt-0.5">
+                                Captain: {team.captain || "TBD"} &bull; Owner: {team.owner || "TBD"}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-3 self-end sm:self-center">
+                            {/* Mini T-Shirt Summary */}
+                            <div className="flex items-center gap-1 flex-wrap text-[11px]">
+                              <span className="text-slate-400 font-semibold text-[10px]">Jerseys:</span>
+                              {Object.entries(teamTshirts).length === 0 ? (
+                                <span className="text-slate-400 font-mono">-</span>
+                              ) : (
+                                Object.entries(teamTshirts).map(([s, c]) => (
+                                  <span key={s} className="px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 font-mono font-bold text-[10px]">
+                                    {s}: {c}
+                                  </span>
+                                ))
+                              )}
+                            </div>
+
+                            {/* Mini Track Summary */}
+                            <div className="flex items-center gap-1 flex-wrap text-[11px]">
+                              <span className="text-slate-400 font-semibold text-[10px]">Tracks:</span>
+                              {Object.entries(teamTracks).length === 0 ? (
+                                <span className="text-slate-400 font-mono">-</span>
+                              ) : (
+                                Object.entries(teamTracks).map(([s, c]) => (
+                                  <span key={s} className="px-1.5 py-0.5 rounded bg-amber-50 text-amber-800 font-mono font-bold text-[10px]">
+                                    {s}&quot;: {c}
+                                  </span>
+                                ))
+                              )}
+                            </div>
+
+                            <span className="px-2.5 py-1 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold whitespace-nowrap">
+                              {teamSoldPlayers.length}/14 Players
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Team Players Roster Table */}
+                        {teamSoldPlayers.length === 0 ? (
+                          <div className="p-6 text-center text-xs text-slate-400 font-medium">
+                            No players have been drafted into {team.name} yet.
+                          </div>
+                        ) : (
+                          <div className="overflow-x-auto">
+                            <table className="w-full text-xs text-left">
+                              <thead className="bg-slate-50 text-slate-500 uppercase font-bold text-[11px]">
+                                <tr>
+                                  <th className="py-2.5 px-4">Player ID</th>
+                                  <th className="py-2.5 px-4">Player Name</th>
+                                  <th className="py-2.5 px-4">Role</th>
+                                  <th className="py-2.5 px-4 text-center">T-Shirt Size</th>
+                                  <th className="py-2.5 px-4 text-center">Track Pant Size</th>
+                                  <th className="py-2.5 px-4">Ward</th>
+                                  <th className="py-2.5 px-4 text-right">Sold Bid</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-slate-100">
+                                {teamSoldPlayers.map((player) => (
+                                  <tr key={player.id} className="hover:bg-slate-50 transition-colors">
+                                    <td className="py-2.5 px-4 font-mono font-bold text-slate-700">
+                                      #{player.regNumber || player.id}
+                                    </td>
+                                    <td className="py-2.5 px-4 font-bold text-slate-900">
+                                      {player.name}
+                                    </td>
+                                    <td className="py-2.5 px-4 text-slate-600">
+                                      {player.speciality}
+                                    </td>
+                                    <td className="py-2.5 px-4 text-center">
+                                      <span className="px-2 py-0.5 rounded-md bg-blue-100 text-blue-800 font-bold font-mono text-[11px]">
+                                        {player.tshirtSize || "M"}
+                                      </span>
+                                    </td>
+                                    <td className="py-2.5 px-4 text-center">
+                                      <span className="px-2 py-0.5 rounded-md bg-amber-100 text-amber-900 font-bold font-mono text-[11px]">
+                                        {player.trackSize || "32"}&quot;
+                                      </span>
+                                    </td>
+                                    <td className="py-2.5 px-4 text-slate-500 font-medium">
+                                      {player.ward || "Ward 51"}
+                                    </td>
+                                    <td className="py-2.5 px-4 text-right font-mono font-bold text-emerald-700">
+                                      {Number(player.soldPrice || 0).toLocaleString("en-IN")}
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
-
-            {sizing && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                
-                {/* T-Shirt Breakdown */}
-                <div className="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
-                  <h3 className="font-bold text-sm text-[#081a36] uppercase tracking-wider">
-                    T-Shirt Size Distribution
-                  </h3>
-                  <table className="w-full text-xs text-left">
-                    <thead className="bg-slate-50 text-slate-500 uppercase font-bold">
-                      <tr>
-                        <th className="py-2.5 px-3">Size</th>
-                        <th className="py-2.5 px-3 text-right">Quantity</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100">
-                      {Object.entries(sizing.tshirts || {}).map(([size, count]) => (
-                        <tr key={size}>
-                          <td className="py-2 px-3 font-bold text-slate-800">{size}</td>
-                          <td className="py-2 px-3 text-right font-mono font-bold text-blue-600">{count}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-
-                {/* Track Pant Breakdown */}
-                <div className="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
-                  <h3 className="font-bold text-sm text-[#081a36] uppercase tracking-wider">
-                    Track Pant Size Distribution
-                  </h3>
-                  <table className="w-full text-xs text-left">
-                    <thead className="bg-slate-50 text-slate-500 uppercase font-bold">
-                      <tr>
-                        <th className="py-2.5 px-3">Waist Size</th>
-                        <th className="py-2.5 px-3 text-right">Quantity</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100">
-                      {Object.entries(sizing.tracks || {}).map(([size, count]) => (
-                        <tr key={size}>
-                          <td className="py-2 px-3 font-bold text-slate-800">{size}&quot;</td>
-                          <td className="py-2 px-3 text-right font-mono font-bold text-blue-600">{count}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-
-              </div>
-            )}
-          </div>
-        )}
+          );
+        })()}
 
         {/* ========================================================================= */}
         {/* TAB 4: INSTAGRAM & TOURNAMENT SETTINGS */}

@@ -203,13 +203,7 @@ export default function TeamsPortalClient({ teams = [], players = [], settings =
 
         {/* SELECTED TEAM SHOWCASE BANNER */}
         {currentTeam ? (
-          <div
-            className="rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm transition-all"
-            style={{
-              borderLeftWidth: "6px",
-              borderLeftColor: activeThemeColor
-            }}
-          >
+          <div className="rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm transition-all">
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
               
               {/* Franchise Logo + Identity */}

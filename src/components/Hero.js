@@ -22,7 +22,7 @@ export default function Hero({ settings }) {
             </h2>
 
             <p className="text-slate-600 text-sm sm:text-base lg:text-lg leading-relaxed">
-              Radhe Radhe Chashak season this time is coming up with unique concept of <strong>Goregaon Premier league</strong> organised by <strong>Mohsin Patel &amp; Balram Gupta (Ballu)</strong>.
+              Radhe Radhe Chasak season this time is coming up with unique concept of <strong>Goregaon Premier league</strong> organised by <strong>Sandeep Jadhav</strong>. Event Managed by <strong>ROYAL STRIKER GROUP</strong>
             </p>
 
             <div className="pt-1 sm:pt-2 flex items-center gap-3 sm:gap-4">
@@ -89,7 +89,7 @@ export default function Hero({ settings }) {
             </p>
 
             <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] sm:text-xs text-slate-500">
-              <span>Organised by: <strong>Mohsin Patel &amp; Balram Gupta (Ballu)</strong></span>
+              <span>Organised by: <strong>Sandeep Jadhav</strong> &bull; Event Managed by <strong>ROYAL STRIKER GROUP</strong></span>
             </div>
 
             <button

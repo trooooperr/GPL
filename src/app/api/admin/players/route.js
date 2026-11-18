@@ -28,21 +28,30 @@ function mapPlayer(r) {
     }
   }
 
-  const photoUrl = (r.photoUrl && !r.photoUrl.includes("placeholder"))
-    ? (r.photoUrl.startsWith("/api/player-photo") || r.photoUrl.startsWith("http") ? r.photoUrl : `/api/player-photo?id=${r.id}`)
+  const hasPhoto = r.hasPhoto || (r.photoUrl && !r.photoUrl.includes("placeholder"));
+  const photoUrl = hasPhoto
+    ? (typeof r.photoUrl === "string" && (r.photoUrl.startsWith("/api/player-photo") || r.photoUrl.startsWith("http")) ? r.photoUrl : `/api/player-photo?id=${r.id}`)
     : "/images/avatar-placeholder.svg";
 
-  const aadhaarFrontUrl = (r.aadhaarFrontUrl && !r.aadhaarFrontUrl.includes("placeholder"))
-    ? (r.aadhaarFrontUrl.startsWith("/api/player-photo") || r.aadhaarFrontUrl.startsWith("http") ? r.aadhaarFrontUrl : `/api/player-photo?id=${r.id}&t=front`)
+  const hasFront = r.hasFront || (r.aadhaarFrontUrl && !r.aadhaarFrontUrl.includes("placeholder"));
+  const aadhaarFrontUrl = hasFront
+    ? (typeof r.aadhaarFrontUrl === "string" && (r.aadhaarFrontUrl.startsWith("/api/player-photo") || r.aadhaarFrontUrl.startsWith("http")) ? r.aadhaarFrontUrl : `/api/player-photo?id=${r.id}&t=front`)
     : "/images/doc-placeholder.svg";
 
-  const aadhaarBackUrl = (r.aadhaarBackUrl && !r.aadhaarBackUrl.includes("placeholder"))
-    ? (r.aadhaarBackUrl.startsWith("/api/player-photo") || r.aadhaarBackUrl.startsWith("http") ? r.aadhaarBackUrl : `/api/player-photo?id=${r.id}&t=back`)
+  const hasBack = r.hasBack || (r.aadhaarBackUrl && !r.aadhaarBackUrl.includes("placeholder"));
+  const aadhaarBackUrl = hasBack
+    ? (typeof r.aadhaarBackUrl === "string" && (r.aadhaarBackUrl.startsWith("/api/player-photo") || r.aadhaarBackUrl.startsWith("http")) ? r.aadhaarBackUrl : `/api/player-photo?id=${r.id}&t=back`)
     : "/images/doc-placeholder.svg";
 
-  const paymentProofUrl = (r.paymentProofUrl && !r.paymentProofUrl.includes("placeholder"))
-    ? (r.paymentProofUrl.startsWith("/api/player-photo") || r.paymentProofUrl.startsWith("http") ? r.paymentProofUrl : `/api/player-photo?id=${r.id}&t=proof`)
+  const hasProof = r.hasProof || (r.paymentProofUrl && !r.paymentProofUrl.includes("placeholder"));
+  const paymentProofUrl = hasProof
+    ? (typeof r.paymentProofUrl === "string" && (r.paymentProofUrl.startsWith("/api/player-photo") || r.paymentProofUrl.startsWith("http")) ? r.paymentProofUrl : `/api/player-photo?id=${r.id}&t=proof`)
     : "/images/payment-placeholder.svg";
+
+  const hasCard = r.hasCard || (r.cardUrl && !r.cardUrl.includes("placeholder"));
+  const cardUrl = hasCard
+    ? (typeof r.cardUrl === "string" && r.cardUrl.startsWith("/api/player-photo") ? r.cardUrl : `/api/player-photo?id=${r.id}&t=card`)
+    : null;
 
   return {
     id: r.id,
@@ -68,9 +77,7 @@ function mapPlayer(r) {
     aadhaarBackUrl,
     paymentProofUrl,
     teamId: r.teamId || null,
-    cardUrl: (r.hasCard || (r.cardUrl && !r.cardUrl.includes("placeholder")))
-      ? (r.cardUrl && r.cardUrl.startsWith("/api/player-photo") ? r.cardUrl : `/api/player-photo?id=${r.id}&t=card`)
-      : null,
+    cardUrl,
     soldPrice: Number(r.soldPrice) || 0,
     notes: r.notes || "",
     registeredAt: r.registeredAt || r.createdAt || new Date().toISOString(),
@@ -145,28 +152,42 @@ export async function GET(request) {
       { $set: { utrNumber: "", instagramHandle: "" } }
     ).catch(() => {});
 
-    // Query players and teams count concurrently - exclude heavy cardUrl base64 to keep JSON payload lightweight (~4KB vs 17MB)
+    // Query players and teams count concurrently - project lightweight fields BEFORE sorting to bypass MongoDB 32MB in-memory sort limit and keep response lightweight (~16KB vs 20MB)
     const [players, teamsCount] = await Promise.all([
       MongoRegistration.aggregate([
-        { $sort: { createdAt: -1, registeredAt: -1 } },
-        {
-          $addFields: {
-            hasCard: {
-              $cond: [
-                { $and: [{ $ne: ["$cardUrl", null] }, { $ne: ["$cardUrl", ""] }] },
-                true,
-                false
-              ]
-            }
-          }
-        },
         {
           $project: {
-            cardUrl: 0
+            id: 1,
+            regNumber: 1,
+            name: 1,
+            email: 1,
+            phone: 1,
+            dob: 1,
+            age: 1,
+            ward: 1,
+            speciality: 1,
+            tshirtSize: 1,
+            trackSize: 1,
+            utrNumber: 1,
+            instagramHandle: 1,
+            amount: 1,
+            paymentStatus: 1,
+            teamId: 1,
+            soldPrice: 1,
+            notes: 1,
+            registeredAt: 1,
+            createdAt: 1,
+            history: 1,
+            hasPhoto: { $gt: [{ $strLenCP: { $ifNull: ["$photoUrl", ""] } }, 50] },
+            hasFront: { $gt: [{ $strLenCP: { $ifNull: ["$aadhaarFrontUrl", ""] } }, 50] },
+            hasBack: { $gt: [{ $strLenCP: { $ifNull: ["$aadhaarBackUrl", ""] } }, 50] },
+            hasProof: { $gt: [{ $strLenCP: { $ifNull: ["$paymentProofUrl", ""] } }, 50] },
+            hasCard: { $gt: [{ $strLenCP: { $ifNull: ["$cardUrl", ""] } }, 50] }
           }
-        }
+        },
+        { $sort: { createdAt: -1, registeredAt: -1 } }
       ]),
-      MongoTeam.countDocuments().catch(() => 11)
+      MongoTeam.countDocuments().catch(() => 10)
     ]);
 
     const mapped = players.map(mapPlayer);
