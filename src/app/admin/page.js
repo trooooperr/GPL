@@ -2552,7 +2552,6 @@ export default function AdminDashboard() {
                   <div
                     key={team.id}
                     className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-xs space-y-4 flex flex-col justify-between relative overflow-hidden"
-                    style={{ borderTop: `4px solid ${team.themeColor || "#0041b9"}` }}
                   >
                     <div className="flex items-center justify-between gap-3">
                       <div className="flex items-center gap-3 min-w-0">
