@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { rateLimiter, getClientIp } from "@/lib/rate-limit";
 import { sendRegistrationNotificationEmail, sendPlayerRegistrationConfirmationEmail } from "@/lib/email";
 import { connectToDatabase, MongoRegistration, MongoSetting, getNextPlayerId } from "@/lib/mongodb";
@@ -194,15 +194,18 @@ export async function POST(request) {
     const newPlayer = await MongoRegistration.create(candidatePlayer);
     console.log("[Register] Player saved to MongoDB with Atomic ID:", id, name);
 
-    // Send email notification to configured admin email and player confirmation email
-    try {
-      await Promise.allSettled([
-        sendRegistrationNotificationEmail(newPlayer, settings.adminEmail),
-        sendPlayerRegistrationConfirmationEmail(newPlayer)
-      ]);
-    } catch (err) {
-      console.warn("[Register Email Notice]:", err.message);
-    }
+    // Send email notifications asynchronously in the background via Next.js after()
+    // This allows the registration response to return instantly (~100-200ms) without blocking the user
+    after(async () => {
+      try {
+        await Promise.allSettled([
+          sendRegistrationNotificationEmail(newPlayer, settings.adminEmail),
+          sendPlayerRegistrationConfirmationEmail(newPlayer)
+        ]);
+      } catch (err) {
+        console.warn("[Register Email Notice]:", err.message);
+      }
+    });
 
     return NextResponse.json({
       success: true,
