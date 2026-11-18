@@ -84,6 +84,8 @@ export function format4DigitId(id, regNumber) {
   return "1001";
 }
 
+export const OFFICIAL_GPL_EMAIL = "goregaonpremierleague11@gmail.com";
+
 export async function getAdminContactEmail(customEmail = null) {
   if (customEmail && typeof customEmail === "string" && customEmail.includes("@")) {
     return customEmail.trim();
@@ -100,7 +102,7 @@ export async function getAdminContactEmail(customEmail = null) {
   return (
     process.env.ADMIN_NOTIFICATION_EMAIL ||
     process.env.GMAIL_USER ||
-    "goregaonpremierleague11@gmail.com"
+    OFFICIAL_GPL_EMAIL
   );
 }
 
@@ -551,11 +553,11 @@ export async function sendPlayerStatusEmail(player, status, notes = "", cardData
         html: htmlContent,
         attachments
       });
-      logEmailDispatch({ type: "PLAYER_STATUS", recipient: playerEmail, playerId: displayPlayerId, status: "SENT", decision: status, from: adminEmail });
+      logEmailDispatch({ type: "PLAYER_STATUS", recipient: playerEmail, playerId: displayPlayerId, status: "SENT", decision: status, from: OFFICIAL_GPL_EMAIL });
       console.log(`[EMAIL] Player status (${status}) email successfully sent to ${playerEmail} for Player ID ${displayPlayerId}`);
-      return { sent: true, recipient: playerEmail, method: "SMTP", from: adminEmail };
+      return { sent: true, recipient: playerEmail, method: "SMTP", from: OFFICIAL_GPL_EMAIL };
     } else {
-      logEmailDispatch({ type: "PLAYER_STATUS", recipient: playerEmail, playerId: displayPlayerId, status: "RECORDED_NO_SMTP", decision: status, from: adminEmail });
+      logEmailDispatch({ type: "PLAYER_STATUS", recipient: playerEmail, playerId: displayPlayerId, status: "RECORDED_NO_SMTP", decision: status, from: OFFICIAL_GPL_EMAIL });
       return { sent: false, reason: "SMTP not configured" };
     }
   } catch (error) {

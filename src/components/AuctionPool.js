@@ -4,7 +4,8 @@ import { useState, useMemo } from "react";
 import Link from "next/link";
 import { Users, Search, Trophy, Shield, Filter, Award, Sparkles, ArrowRight } from "lucide-react";
 
-export default function AuctionPool({ players = [], teams = [] }) {
+export default function AuctionPool({ players = [], teams = [], stats = {}, settings = {} }) {
+  const poolLimit = stats?.maxCapacity || settings?.maxCapacity || 200;
   const [roleFilter, setRoleFilter] = useState("ALL");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [searchQuery, setSearchQuery] = useState("");
@@ -76,7 +77,7 @@ export default function AuctionPool({ players = [], teams = [] }) {
           <div className="inline-flex items-center gap-3 px-4 py-2 rounded-2xl bg-slate-50 border border-slate-200 text-xs sm:text-sm font-semibold text-slate-700">
             <span className="flex items-center gap-1.5">
               <Users className="w-4 h-4 text-[#059669]" />
-              <strong>{approvedPlayers.length}</strong> Registered / 200 Pool
+              <strong>{approvedPlayers.length}</strong> Registered / {poolLimit} Pool
             </span>
             <span className="text-slate-300">|</span>
             <span className="text-emerald-700 font-bold">{soldCount}/140 Drafted</span>

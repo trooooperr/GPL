@@ -43,7 +43,7 @@ export default function HomeClient({ teams, rules, faqs, awards, settings, stats
       <PrizesSection stats={stats} settings={settings} awards={awards} />
 
       {/* Live Auction Pool / Verified Players Directory */}
-      <AuctionPool players={players} teams={teams} />
+      <AuctionPool players={players} teams={teams} stats={stats} settings={settings} />
 
       {/* 10 Tournament Franchises & Squads */}
       <TeamsGrid teams={teams} />

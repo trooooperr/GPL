@@ -56,6 +56,15 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
   const [remainingSlots, setRemainingSlots] = useState(calcRemaining);
   const [maxCapacity, setMaxCapacity] = useState(calcMaxCap);
 
+  useEffect(() => {
+    if (settings?.maxCapacity || stats?.maxCapacity) {
+      const cap = Number(settings?.maxCapacity || stats?.maxCapacity) || 200;
+      setMaxCapacity(cap);
+      const app = stats?.approved !== undefined ? stats.approved : (stats?.totalRegistered || 0);
+      setRemainingSlots(Math.max(0, cap - app));
+    }
+  }, [settings?.maxCapacity, stats?.maxCapacity, stats?.approved]);
+
   // Dynamic Instagram Handle from database settings
   const IG_HANDLE = (settings.instagramUsername || stats?.instagramUsername || "mi_sandeep_jadhav").replace(/^@/, "");
   const IG_URL = `https://instagram.com/${IG_HANDLE}`;

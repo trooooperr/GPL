@@ -2,7 +2,7 @@
 
 import { Award, Target, Users, MapPin, CheckCircle2 } from "lucide-react";
 
-export default function AboutSection() {
+export default function AboutSection({ maxCapacity = 200 }) {
   const points = [
     "Grassroots Cricket Mission: Discovering and elevating untapped talent from street cricket to stadium glory.",
     "Ward-Focused Selection: Strict representation ensuring true local pride from Ward 51 & Ward 54 (Goregaon East).",
@@ -47,9 +47,9 @@ export default function AboutSection() {
 
                 <div className="flex items-center gap-3 text-xs text-slate-300">
                   <div className="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold">
-                    200
+                    {maxCapacity}
                   </div>
-                  <span>Players registering in official pool (140 drafted across 10 teams × 14, 60 pool reserves)</span>
+                  <span>Players registering in official pool (140 drafted across 10 teams × 14, {Math.max(0, maxCapacity - 140)} pool reserves)</span>
                 </div>
 
                 <div className="flex items-center gap-3 text-xs text-slate-300">
