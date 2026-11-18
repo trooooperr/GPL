@@ -136,6 +136,19 @@ export async function POST(request) {
       }, { status: 400, headers: NO_CACHE_HEADERS });
     }
 
+    // 1b. Check if dynamic total pool capacity (set in Admin Console) is reached
+    const maxPoolCapacity = Number(settings.maxCapacity) || 200;
+    const currentActiveCount = await MongoRegistration.countDocuments({
+      paymentStatus: { $in: ["Approved", "Pending"] }
+    });
+
+    if (currentActiveCount >= maxPoolCapacity) {
+      return NextResponse.json({
+        success: false,
+        message: `Total player registration capacity (${maxPoolCapacity} players) is currently full. Please contact the tournament coordinators.`
+      }, { status: 400, headers: NO_CACHE_HEADERS });
+    }
+
     const cleanPhone = (phone || "").replace(/\D/g, "").slice(0, 10);
 
     // 2. Prevent duplicate active registrations for the same phone number
