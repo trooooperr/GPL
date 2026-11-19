@@ -38,10 +38,10 @@ function logEmailDispatch(entry) {
 }
 
 function getTransporter() {
-  const host = process.env.SMTP_HOST;
+  const host = process.env.SMTP_HOST?.trim();
   const port = process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT) : 587;
-  const user = process.env.SMTP_USER || process.env.GMAIL_USER;
-  const pass = process.env.SMTP_PASS || process.env.GMAIL_APP_PASSWORD || process.env.GMAIL_PASSWORD;
+  const user = (process.env.SMTP_USER || process.env.GMAIL_USER || "").trim();
+  const pass = (process.env.SMTP_PASS || process.env.GMAIL_APP_PASSWORD || process.env.GMAIL_PASSWORD || "").trim().replace(/\s+/g, "");
 
   if (host && user && pass) {
     return {
@@ -55,19 +55,19 @@ function getTransporter() {
     };
   }
 
-  if (process.env.GMAIL_USER && (process.env.GMAIL_APP_PASSWORD || process.env.GMAIL_PASSWORD)) {
+  if (user && pass) {
     return {
       transporter: nodemailer.createTransport({
         service: "gmail",
         auth: {
-          user: process.env.GMAIL_USER,
-          pass: process.env.GMAIL_APP_PASSWORD || process.env.GMAIL_PASSWORD
+          user,
+          pass
         },
         connectionTimeout: 15000,
         socketTimeout: 20000,
         greetingTimeout: 15000
       }),
-      fromEmail: process.env.GMAIL_USER
+      fromEmail: user
     };
   }
 
