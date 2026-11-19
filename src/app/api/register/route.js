@@ -217,8 +217,9 @@ export async function POST(request) {
     // This allows the registration response to return instantly (~100-200ms) without blocking the user
     after(async () => {
       try {
+        const targetAdminEmail = process.env.ADMIN_NOTIFICATION_EMAIL || settings?.adminEmail || "goregoanpremierleague04@gmail.com";
         await Promise.allSettled([
-          sendRegistrationNotificationEmail(newPlayer, settings.adminEmail),
+          sendRegistrationNotificationEmail(newPlayer, targetAdminEmail),
           sendPlayerRegistrationConfirmationEmail(newPlayer)
         ]);
       } catch (err) {

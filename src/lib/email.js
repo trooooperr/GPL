@@ -87,22 +87,25 @@ export function format4DigitId(id, regNumber) {
 export const OFFICIAL_GPL_EMAIL = process.env.GMAIL_USER || process.env.ADMIN_NOTIFICATION_EMAIL || "goregoanpremierleague04@gmail.com";
 
 export async function getAdminContactEmail(customEmail = null) {
-  if (customEmail && typeof customEmail === "string" && customEmail.includes("@")) {
+  if (process.env.ADMIN_NOTIFICATION_EMAIL && process.env.ADMIN_NOTIFICATION_EMAIL.includes("@")) {
+    return process.env.ADMIN_NOTIFICATION_EMAIL.trim();
+  }
+  if (customEmail && typeof customEmail === "string" && customEmail.includes("@") && !customEmail.includes("goregaonpremierleague11")) {
     return customEmail.trim();
   }
   try {
     const { connectToDatabase, MongoSetting } = await import("@/lib/mongodb");
     await connectToDatabase();
     const doc = await MongoSetting.findOne({ key: "global_settings" }).lean();
-    if (doc?.value?.adminEmail && typeof doc.value.adminEmail === "string" && doc.value.adminEmail.includes("@")) {
+    if (doc?.value?.adminEmail && typeof doc.value.adminEmail === "string" && doc.value.adminEmail.includes("@") && !doc.value.adminEmail.includes("goregaonpremierleague11")) {
       return doc.value.adminEmail.trim();
     }
   } catch (e) {}
 
   return (
-    process.env.ADMIN_NOTIFICATION_EMAIL ||
-    process.env.GMAIL_USER ||
-    OFFICIAL_GPL_EMAIL
+    process.env.GMAIL_USER?.trim() ||
+    OFFICIAL_GPL_EMAIL ||
+    "goregoanpremierleague04@gmail.com"
   );
 }
 
