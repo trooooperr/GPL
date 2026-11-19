@@ -4017,7 +4017,7 @@ export default function AdminDashboard() {
       {/* ========================================================================= */}
       {editPlayer && (
         <div className="fixed inset-0 z-[70] bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-4 sm:p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto space-y-4">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-4 sm:p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto space-y-4">
             
             <button
               onClick={() => setEditPlayer(null)}
@@ -4072,6 +4072,103 @@ export default function AdminDashboard() {
                         Remove
                       </button>
                     )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Aadhaar Documents Editor (Front & Back) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                {/* Aadhaar Front */}
+                <div className="flex items-center gap-3 p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+                  <div className="w-12 h-12 rounded-lg bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-xs overflow-hidden border border-slate-300 shrink-0 shadow-2xs">
+                    {editPlayer.aadhaarFrontUrl && !editPlayer.aadhaarFrontUrl.includes("placeholder") ? (
+                      <img src={`${editPlayer.aadhaarFrontUrl}${editPlayer.aadhaarFrontUrl.includes('?') ? '&' : '?'}nc=${editPlayer.id}`} alt="Aadhaar Front" className="w-full h-full object-cover" />
+                    ) : (
+                      <FileText className="w-5 h-5 text-slate-400" />
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0 space-y-1">
+                    <span className="font-bold text-slate-700 block text-xs truncate">Aadhaar Front</span>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <label className="px-2 py-0.5 rounded-md bg-white border border-slate-300 text-slate-700 hover:border-[#0041b9] cursor-pointer text-[10px] font-semibold inline-flex items-center gap-1 shadow-2xs">
+                        <UploadCloud className="w-3 h-3 text-[#0041b9]" />
+                        <span>{editPlayer.aadhaarFrontUrl && !editPlayer.aadhaarFrontUrl.includes("placeholder") ? "Change" : "Upload"}</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="sr-only"
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              const res = await compressImageToDataUrl(file);
+                              if (res.dataUrl) {
+                                setEditPlayer((prev) => ({ ...prev, aadhaarFrontUrl: res.dataUrl }));
+                                showToast("Aadhaar Front selected! Click 'Save Changes' to apply.", "success");
+                              }
+                            }
+                          }}
+                        />
+                      </label>
+                      {editPlayer.aadhaarFrontUrl && !editPlayer.aadhaarFrontUrl.includes("placeholder") && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditPlayer((prev) => ({ ...prev, aadhaarFrontUrl: "" }));
+                            showToast("Aadhaar Front removed. Click 'Save Changes' to apply.", "info");
+                          }}
+                          className="px-1.5 py-0.5 rounded-md bg-red-50 text-red-600 hover:bg-red-100 text-[10px] font-semibold cursor-pointer"
+                        >
+                          Remove
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Aadhaar Back */}
+                <div className="flex items-center gap-3 p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+                  <div className="w-12 h-12 rounded-lg bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-xs overflow-hidden border border-slate-300 shrink-0 shadow-2xs">
+                    {editPlayer.aadhaarBackUrl && !editPlayer.aadhaarBackUrl.includes("placeholder") ? (
+                      <img src={`${editPlayer.aadhaarBackUrl}${editPlayer.aadhaarBackUrl.includes('?') ? '&' : '?'}nc=${editPlayer.id}`} alt="Aadhaar Back" className="w-full h-full object-cover" />
+                    ) : (
+                      <FileText className="w-5 h-5 text-slate-400" />
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0 space-y-1">
+                    <span className="font-bold text-slate-700 block text-xs truncate">Aadhaar Back</span>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <label className="px-2 py-0.5 rounded-md bg-white border border-slate-300 text-slate-700 hover:border-[#0041b9] cursor-pointer text-[10px] font-semibold inline-flex items-center gap-1 shadow-2xs">
+                        <UploadCloud className="w-3 h-3 text-[#0041b9]" />
+                        <span>{editPlayer.aadhaarBackUrl && !editPlayer.aadhaarBackUrl.includes("placeholder") ? "Change" : "Upload"}</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="sr-only"
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              const res = await compressImageToDataUrl(file);
+                              if (res.dataUrl) {
+                                setEditPlayer((prev) => ({ ...prev, aadhaarBackUrl: res.dataUrl }));
+                                showToast("Aadhaar Back selected! Click 'Save Changes' to apply.", "success");
+                              }
+                            }
+                          }}
+                        />
+                      </label>
+                      {editPlayer.aadhaarBackUrl && !editPlayer.aadhaarBackUrl.includes("placeholder") && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditPlayer((prev) => ({ ...prev, aadhaarBackUrl: "" }));
+                            showToast("Aadhaar Back removed. Click 'Save Changes' to apply.", "info");
+                          }}
+                          className="px-1.5 py-0.5 rounded-md bg-red-50 text-red-600 hover:bg-red-100 text-[10px] font-semibold cursor-pointer"
+                        >
+                          Remove
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
