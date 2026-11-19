@@ -6,6 +6,7 @@ import { Users, Search, Trophy, Shield, Filter, Award, Sparkles, ArrowRight } fr
 
 export default function AuctionPool({ players = [], teams = [], stats = {}, settings = {} }) {
   const poolLimit = stats?.maxCapacity || settings?.maxCapacity || 200;
+  const draftTarget = settings?.totalDraftPlayers || stats?.totalDraftPlayers || 150;
   const [roleFilter, setRoleFilter] = useState("ALL");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [searchQuery, setSearchQuery] = useState("");
@@ -80,7 +81,7 @@ export default function AuctionPool({ players = [], teams = [], stats = {}, sett
               <strong>{approvedPlayers.length}</strong> Registered / {poolLimit} Pool
             </span>
             <span className="text-slate-300">|</span>
-            <span className="text-emerald-700 font-bold">{soldCount}/150 Drafted</span>
+            <span className="text-emerald-700 font-bold">{soldCount}/{draftTarget} Drafted</span>
             <span className="text-slate-300">|</span>
             <span className="text-amber-600 font-bold">{unsoldCount} Unsold</span>
           </div>

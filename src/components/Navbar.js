@@ -31,7 +31,7 @@ export default function Navbar({ onOpenStatusModal }) {
 
   const navLinks = [
     { name: "Home", href: "/", icon: Trophy },
-    { name: "Auction Pool", href: "/auction", icon: Gavel, isSpecial: true },
+    { name: "Auction Pool", href: "/teams?pool=true", icon: Gavel, isSpecial: true },
     { name: "Teams & Squads", href: "/teams", icon: Users },
     { name: "About", href: "/#about", icon: Shield },
     { name: "Awards", href: "/#awards", icon: Gift },
@@ -42,16 +42,16 @@ export default function Navbar({ onOpenStatusModal }) {
 
   return (
     <header
-      className={`sticky top-0 z-50 transition-all duration-300 ${
+      className={`sticky top-0 z-50 transition-all duration-300 w-full overflow-x-clip ${
         scrolled
           ? "bg-white/95 backdrop-blur-md shadow-md border-b border-slate-200/80"
           : "bg-white/90 backdrop-blur-sm border-b border-slate-100"
       }`}
     >
-      <div className="w-full max-w-[1560px] mx-auto px-3 sm:px-6 lg:px-8 xl:px-10 h-14 sm:h-16 lg:h-20 flex items-center justify-between gap-3">
+      <div className="w-full max-w-[1560px] mx-auto px-3 sm:px-6 lg:px-8 xl:px-10 h-14 sm:h-16 lg:h-20 flex items-center justify-between gap-2 sm:gap-3">
         
-        {/* Left: Tournament Brand & Logo — No text wrapping on large screens */}
-        <Link href="/" className="flex items-center gap-2.5 sm:gap-3 group shrink-0">
+        {/* Left: Tournament Brand & Logo */}
+        <Link href="/" className="flex items-center gap-2 sm:gap-3 group min-w-0 max-w-[calc(100vw-130px)] sm:max-w-none">
           {/* Logo */}
           <img
             src="/images/gpl-logo.png"
@@ -60,10 +60,10 @@ export default function Navbar({ onOpenStatusModal }) {
           />
 
           {/* Text block */}
-          <div className="shrink-0">
+          <div className="min-w-0">
             {/* Line 1: Name + Season 4 badge */}
-            <div className="flex items-center gap-2 flex-nowrap">
-              <span className="text-xs sm:text-base lg:text-lg font-black text-[#081a36] tracking-tight leading-tight group-hover:text-[#059669] transition-colors whitespace-nowrap">
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-nowrap">
+              <span className="text-xs sm:text-base lg:text-lg font-black text-[#081a36] tracking-tight leading-tight group-hover:text-[#059669] transition-colors whitespace-nowrap truncate sm:overflow-visible">
                 <span className="hidden sm:inline">Goregaon Premier League</span>
                 <span className="sm:hidden">GPL Season 4</span>
               </span>
@@ -76,7 +76,7 @@ export default function Navbar({ onOpenStatusModal }) {
               </span>
             </div>
             {/* Line 2: Subtitle */}
-            <p className="text-[8.5px] sm:text-[10px] lg:text-[11px] font-semibold text-slate-500 uppercase tracking-wider leading-tight mt-0.5 whitespace-nowrap">
+            <p className="text-[8.5px] sm:text-[10px] lg:text-[11px] font-semibold text-slate-500 uppercase tracking-wider leading-tight mt-0.5 whitespace-nowrap truncate sm:overflow-visible">
               Goregaon Purv Vidhan Sabha
             </p>
           </div>
@@ -121,17 +121,8 @@ export default function Navbar({ onOpenStatusModal }) {
           </a>
         </div>
 
-        {/* Mobile Actions: Auction Pill + Search Icon + Register CTA + Hamburger */}
+        {/* Mobile Actions: Search Icon + Register CTA + Hamburger (Auction Pool housed inside drawer to prevent horizontal screen overflow) */}
         <div className="flex items-center gap-1.5 sm:hidden shrink-0">
-          <Link
-            href="/auction"
-            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold text-amber-900 bg-amber-100/90 border border-amber-300 shadow-2xs active:scale-95 transition-all whitespace-nowrap"
-            title="Auction Pool"
-          >
-            <Gavel className="w-3.5 h-3.5 text-amber-700" />
-            <span>Auction</span>
-          </Link>
-
           <button
             type="button"
             onClick={onOpenStatusModal}
@@ -164,7 +155,7 @@ export default function Navbar({ onOpenStatusModal }) {
       {isOpen && (
         <div className="lg:hidden bg-white border-t border-slate-200 px-4 py-4 space-y-2.5 shadow-xl animate-in fade-in duration-200">
           <Link
-            href="/auction"
+            href="/teams?pool=true"
             onClick={() => setIsOpen(false)}
             className="w-full flex items-center justify-between p-3 rounded-xl bg-gradient-to-r from-amber-50 to-amber-100/80 border border-amber-300 text-amber-950 font-bold text-xs shadow-xs"
           >

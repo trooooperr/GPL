@@ -24,7 +24,13 @@ export const metadata = {
   ]
 };
 
-export default async function TeamsPage() {
+export default async function TeamsPage({ searchParams }) {
+  const resolvedParams = searchParams ? await searchParams : {};
+  const isPoolActive =
+    resolvedParams.pool === "true" ||
+    resolvedParams.pool === "1" ||
+    resolvedParams.team === "all";
+
   let teams = INITIAL_TEAMS;
   let settings = INITIAL_SETTINGS;
   let players = [];
@@ -102,6 +108,7 @@ export default async function TeamsPage() {
       teams={teams}
       players={players}
       settings={settings}
+      initialPool={isPoolActive}
     />
   );
 }

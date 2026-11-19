@@ -252,7 +252,7 @@ export default function CheckStatusModal({ isOpen, onClose }) {
             resolve();
           };
           sjImg.onerror = () => resolve();
-          sjImg.src = "/images/sandeep-jadhav-transparent.png";
+          sjImg.src = "/images/sandeep-jadhav-transparent.png?v=7";
         });
       };
       await drawOrganizerPortrait();

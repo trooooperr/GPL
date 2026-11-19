@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import {
   Trophy,
@@ -16,12 +16,21 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import CheckStatusModal from "@/components/CheckStatusModal";
 
-export default function TeamsPortalClient({ teams = [], players = [], settings = {} }) {
+export default function TeamsPortalClient({ teams = [], players = [], settings = {}, initialPool = false }) {
   // Currently selected team ID ('all' for auction pool or team.id)
-  const [selectedTeamId, setSelectedTeamId] = useState(teams[0]?.id || "team-1");
+  const [selectedTeamId, setSelectedTeamId] = useState(initialPool ? "all" : (teams[0]?.id || "team-1"));
   const [selectedRole, setSelectedRole] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [statusModalOpen, setStatusModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("pool") === "true" || params.get("pool") === "1" || params.get("team") === "all") {
+        setSelectedTeamId("all");
+      }
+    }
+  }, []);
 
   // Current active team
   const currentTeam = useMemo(() => {

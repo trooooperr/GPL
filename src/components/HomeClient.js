@@ -6,7 +6,6 @@ import BannerCarousel from "@/components/BannerCarousel";
 import CountdownBanner from "@/components/CountdownBanner";
 import Hero from "@/components/Hero";
 import PrizesSection from "@/components/PrizesSection";
-import AuctionStrip from "@/components/AuctionStrip";
 import TeamsGrid from "@/components/TeamsGrid";
 import RulesSection from "@/components/RulesSection";
 import RegistrationForm from "@/components/RegistrationForm";
@@ -41,9 +40,6 @@ export default function HomeClient({ teams, rules, faqs, awards, settings, stats
 
       {/* Tournament Awards & Cash Prizes */}
       <PrizesSection stats={stats} settings={settings} awards={awards} />
-
-      {/* Live Auction & Match Schedule Strip Banner */}
-      <AuctionStrip stats={stats} settings={settings} />
 
       {/* 10 Tournament Franchises & Squads */}
       <TeamsGrid teams={teams} />
