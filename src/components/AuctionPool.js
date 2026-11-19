@@ -191,10 +191,10 @@ export default function AuctionPool({ players = [], teams = [], stats = {}, sett
                       </div>
 
                       <div className="min-w-0 flex-1">
-                        <h4 className="font-extrabold text-slate-900 text-sm truncate group-hover:text-[#059669] transition-colors">
+                        <h4 className="font-extrabold text-slate-900 text-sm break-words leading-tight group-hover:text-[#059669] transition-colors">
                           {player.name}
                         </h4>
-                        <p className="text-xs text-slate-500 truncate font-medium">
+                        <p className="text-xs text-slate-500 break-words font-medium mt-0.5">
                           {player.speciality}
                         </p>
                       </div>

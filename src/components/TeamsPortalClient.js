@@ -119,7 +119,7 @@ export default function TeamsPortalClient({ teams = [], players = [], settings =
             <span>{teams.length} Teams Active</span>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
             {teams.map((team, idx) => {
               const isSelected = selectedTeamId === team.id;
               const squadCount = players.filter((p) => p.teamId === team.id).length;
@@ -172,7 +172,7 @@ export default function TeamsPortalClient({ teams = [], players = [], settings =
                   </div>
 
                   {/* Team Name */}
-                  <div className="font-bold text-xs sm:text-sm text-slate-900 leading-tight line-clamp-1 mb-1">
+                  <div className="font-bold text-xs sm:text-sm text-slate-900 leading-tight break-words mb-1 min-h-[2.25rem] flex items-center justify-center text-center">
                     {team.name}
                   </div>
 
@@ -266,14 +266,14 @@ export default function TeamsPortalClient({ teams = [], players = [], settings =
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 bg-slate-50 rounded-2xl p-4 border border-slate-200">
                 <div className="space-y-0.5">
                   <span className="text-[10px] uppercase font-bold text-slate-400 block">Owner</span>
-                  <div className="font-bold text-slate-900 text-xs sm:text-sm truncate">
+                  <div className="font-bold text-slate-900 text-xs sm:text-sm break-words">
                     {currentTeam.owner || "Franchise Owner"}
                   </div>
                 </div>
 
                 <div className="space-y-0.5">
                   <span className="text-[10px] uppercase font-bold text-slate-400 block">Captain</span>
-                  <div className="font-bold text-amber-700 text-xs sm:text-sm truncate">
+                  <div className="font-bold text-amber-700 text-xs sm:text-sm break-words">
                     {currentTeam.captain || "To be drafted"}
                   </div>
                 </div>
@@ -432,10 +432,10 @@ export default function TeamsPortalClient({ teams = [], players = [], settings =
                   </div>
 
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-extrabold text-sm text-slate-900 truncate leading-tight group-hover:text-[#0041b9] transition-colors">
+                    <h3 className="font-extrabold text-sm text-slate-900 break-words leading-tight group-hover:text-[#0041b9] transition-colors">
                       {player.name}
                     </h3>
-                    <div className="text-xs text-amber-800 font-semibold truncate mt-0.5">
+                    <div className="text-xs text-amber-800 font-semibold break-words mt-0.5">
                       {player.speciality || "Cricket Player"}
                     </div>
                     <div className="text-[10px] text-slate-500 font-mono mt-1 flex items-center gap-1.5">

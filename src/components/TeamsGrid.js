@@ -90,11 +90,11 @@ export default function TeamsGrid({ teams = [] }) {
               <div className="grid grid-cols-2 gap-2 sm:gap-3 mb-3 sm:mb-4 text-xs">
                 <div className="p-2.5 sm:p-3 rounded-xl bg-slate-50 border border-slate-200">
                   <span className="text-slate-400 block text-[10px] uppercase font-bold">Owner</span>
-                  <span className="font-bold text-slate-800 truncate block">{selectedTeam.owner}</span>
+                  <span className="font-bold text-slate-800 break-words block leading-snug">{selectedTeam.owner}</span>
                 </div>
                 <div className="p-2.5 sm:p-3 rounded-xl bg-slate-50 border border-slate-200">
                   <span className="text-slate-400 block text-[10px] uppercase font-bold">Captain</span>
-                  <span className="font-bold text-slate-800 truncate block">{selectedTeam.captain}</span>
+                  <span className="font-bold text-slate-800 break-words block leading-snug">{selectedTeam.captain}</span>
                 </div>
               </div>
 
