@@ -32,7 +32,7 @@ export default function Navbar({ onOpenStatusModal }) {
   const navLinks = [
     { name: "Home", href: "/", icon: Trophy },
     { name: "Auction Pool", href: "/teams?pool=true", icon: Gavel, isSpecial: true },
-    { name: "Teams & Squads", href: "/teams", icon: Users },
+    { name: "Teams", href: "/teams", icon: Users },
     { name: "About", href: "/#about", icon: Shield },
     { name: "Awards", href: "/#awards", icon: Gift },
     { name: "Rules", href: "/#rules", icon: FileText },
