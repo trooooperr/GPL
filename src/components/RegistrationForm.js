@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Check, AlertCircle, UploadCloud, Loader2, CheckCircle2, Copy, Trophy } from "lucide-react";
+import { Check, AlertCircle, UploadCloud, Loader2, CheckCircle2, Copy, Trophy, X } from "lucide-react";
 import QRCode from "qrcode";
 import PlayerRegistrationCard from "./PlayerRegistrationCard";
 
@@ -68,6 +68,16 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
   // Dynamic Instagram Handle from database settings
   const IG_HANDLE = (settings.instagramUsername || stats?.instagramUsername || "mi_sandeep_jadhav").replace(/^@/, "");
   const IG_URL = `https://instagram.com/${IG_HANDLE}`;
+
+  // Dismiss error popup on Escape key
+  useEffect(() => {
+    if (!errorMsg) return;
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") setErrorMsg("");
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [errorMsg]);
 
   // Generate Dynamic Instagram Profile QR Code
   useEffect(() => {
@@ -505,9 +515,20 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
             className="bg-white/95 backdrop-blur-md rounded-2xl sm:rounded-3xl border border-slate-200/90 shadow-xl p-4 sm:p-8 md:p-10 space-y-5 sm:space-y-6 overflow-hidden"
           >
             {errorMsg && (
-              <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm flex items-center gap-3 animate-shake">
-                <AlertCircle className="w-5 h-5 shrink-0" />
-                <p className="font-semibold">{errorMsg}</p>
+              <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm flex items-center justify-between gap-3 animate-shake">
+                <div className="flex items-center gap-3">
+                  <AlertCircle className="w-5 h-5 shrink-0 text-red-600" />
+                  <p className="font-semibold">{errorMsg}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setErrorMsg("")}
+                  className="p-1 text-red-400 hover:text-red-700 hover:bg-red-100 rounded-lg transition-colors shrink-0 cursor-pointer"
+                  title="Close alert"
+                  aria-label="Close alert"
+                >
+                  <X className="w-4 h-4" />
+                </button>
               </div>
             )}
 
@@ -919,6 +940,61 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
         )}
 
       </div>
+
+      {/* Pop-up Alert Modal (Centered on viewport with close button) */}
+      {errorMsg && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200"
+          onClick={() => setErrorMsg("")}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div
+            className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200 shadow-2xl p-6 sm:p-7 max-w-lg w-full relative space-y-4 animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Top-Right Close Button */}
+            <button
+              type="button"
+              onClick={() => setErrorMsg("")}
+              className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition-colors cursor-pointer"
+              title="Close notification"
+              aria-label="Close notification"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            {/* Modal Header */}
+            <div className="flex items-start gap-3.5 pr-8">
+              <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-center shrink-0 text-amber-600 shadow-xs">
+                <AlertCircle className="w-6 h-6" />
+              </div>
+              <div className="min-w-0">
+                <h3 className="text-lg sm:text-xl font-black text-[#081a36] tracking-tight">
+                  {errorMsg.toLowerCase().includes("already exists") ? "Registration Notice" : "Registration Alert"}
+                </h3>
+                <p className="text-xs text-slate-500 font-medium">Goregaon Premier League Season 4</p>
+              </div>
+            </div>
+
+            {/* Message Box */}
+            <div className="bg-red-50/90 rounded-xl sm:rounded-2xl border border-red-200 p-4 sm:p-5 text-red-950 text-sm sm:text-[15px] leading-relaxed font-semibold">
+              {errorMsg}
+            </div>
+
+            {/* Modal Action Footer */}
+            <div className="pt-2 flex items-center justify-end gap-2.5">
+              <button
+                type="button"
+                onClick={() => setErrorMsg("")}
+                className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-[#081a36] hover:bg-[#0d2854] text-white font-bold text-sm shadow-md transition-all cursor-pointer"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }
