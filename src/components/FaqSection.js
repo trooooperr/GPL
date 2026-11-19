@@ -72,7 +72,7 @@ export default function FaqSection({ faqs: propFaqs = [] }) {
             </p>
           </div>
           <a
-            href="mailto:goregaonpremierleague11@gmail.com"
+            href="mailto:goregoanpremierleague04@gmail.com"
             className="px-5 py-2.5 rounded-xl bg-[#059669] hover:bg-[#047857] text-white font-bold text-xs sm:text-sm shadow-md transition-all shrink-0 flex items-center gap-2"
           >
             <Mail className="w-4 h-4" />

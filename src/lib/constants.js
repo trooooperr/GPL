@@ -12,7 +12,7 @@ export const INITIAL_SETTINGS = {
   registrationOpen: true,
   tournamentTitle: "Goregaon Premier League - Radhe Radhe Chashak",
   venue: "Sambhaji Maidan, Goregaon Purv Vidhan Sabha, Mumbai",
-  adminEmail: "goregaonpremierleague11@gmail.com",
+  adminEmail: "goregoanpremierleague04@gmail.com",
   adminUsername: "admin",
   adminPassword: "GPL@AdminNew2026",
   registrationDeadline: "2026-11-28T09:00"
@@ -60,7 +60,7 @@ export const INITIAL_FAQS = [
   },
   {
     q: "Whom should I contact if I made an error during registration?",
-    a: "Contact the organizing committee headed by Shri Sandeep Jadhav (Founder, Radhe Radhe Foundation), or email us at goregaonpremierleague11@gmail.com with your name, phone number, and registration number for prompt correction."
+    a: "Contact the organizing committee headed by Shri Sandeep Jadhav (Founder, Radhe Radhe Foundation), or email us at goregoanpremierleague04@gmail.com with your name, phone number, and registration number for prompt correction."
   }
 ];
 

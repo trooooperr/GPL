@@ -77,7 +77,7 @@ export default function AdminDashboard() {
     registrationFee: 0,
     maxCapacity: 200,
     totalDraftPlayers: 150,
-    adminEmail: "goregaonpremierleague11@gmail.com",
+    adminEmail: "goregoanpremierleague04@gmail.com",
     registrationDeadline: "2026-11-28T09:00",
     registrationOpen: true
   });
@@ -3048,7 +3048,7 @@ export default function AdminDashboard() {
                 <input
                   type="email"
                   required
-                  value={settings.adminEmail || "goregaonpremierleague11@gmail.com"}
+                  value={settings.adminEmail || "goregoanpremierleague04@gmail.com"}
                   onChange={(e) => setSettings({ ...settings, adminEmail: e.target.value })}
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm focus:ring-2 focus:ring-[#0041b9]"
                 />

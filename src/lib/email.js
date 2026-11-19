@@ -84,7 +84,7 @@ export function format4DigitId(id, regNumber) {
   return "1001";
 }
 
-export const OFFICIAL_GPL_EMAIL = "goregaonpremierleague11@gmail.com";
+export const OFFICIAL_GPL_EMAIL = process.env.GMAIL_USER || process.env.ADMIN_NOTIFICATION_EMAIL || "goregoanpremierleague04@gmail.com";
 
 export async function getAdminContactEmail(customEmail = null) {
   if (customEmail && typeof customEmail === "string" && customEmail.includes("@")) {
@@ -197,7 +197,7 @@ export async function sendRegistrationNotificationEmail(player, customAdminEmail
       await transportInfo.transporter.sendMail({
         from: `"GPL Alert" <${transportInfo.fromEmail}>`,
         to: adminEmail,
-        replyTo: "goregaonpremierleague11@gmail.com",
+        replyTo: OFFICIAL_GPL_EMAIL,
         subject: `🏏 New Registration: ${player.name} (Player ID: ${displayPlayerId})`,
         html: htmlContent
       });
@@ -326,7 +326,7 @@ export async function sendPlayerRegistrationConfirmationEmail(player) {
           <div class="footer">
             Goregaon Premier League Season 4 • Sambhaji Maidan, Goregaon Purv Vidhan Sabha, Mumbai<br/>
             Organised by Sandeep Jadhav (Founder of Radhe Radhe Foundation)<br/>Tournament Managed by Balram Gupta (Ballu) &amp; Mohsin Patel<br/>
-            📧 <a href="mailto:goregaonpremierleague11@gmail.com" style="color: #64748b; text-decoration: none; font-weight: 600;">goregaonpremierleague11@gmail.com</a>
+            📧 <a href="mailto:${OFFICIAL_GPL_EMAIL}" style="color: #64748b; text-decoration: none; font-weight: 600;">${OFFICIAL_GPL_EMAIL}</a>
           </div>
         </div>
       </body>
@@ -365,7 +365,7 @@ export async function sendPlayerStatusEmail(player, status, notes = "", cardData
     }
 
     const displayPlayerId = format4DigitId(player.id, player.regNumber);
-    const adminEmail = (await getAdminContactEmail()) || "goregaonpremierleague11@gmail.com";
+    const adminEmail = (await getAdminContactEmail()) || OFFICIAL_GPL_EMAIL;
 
     // Subject without registration number as requested
     const subject = isApproved
@@ -504,7 +504,7 @@ export async function sendPlayerStatusEmail(player, status, notes = "", cardData
                   </div>`
                 : `<div class="action-box" style="background: #fff1f2; border-color: #fecdd3; color: #9f1239;">
                     <strong>Need Help or Clarification?</strong><br />
-                    If you believe your documents were submitted incorrectly, please contact the GPL tournament organizers at <a href="mailto:goregaonpremierleague11@gmail.com">goregaonpremierleague11@gmail.com</a>.
+                    If you believe your documents were submitted incorrectly, please contact the GPL tournament organizers at <a href="mailto:${OFFICIAL_GPL_EMAIL}">${OFFICIAL_GPL_EMAIL}</a>.
                   </div>`
             }
           </div>
@@ -512,7 +512,7 @@ export async function sendPlayerStatusEmail(player, status, notes = "", cardData
           <div class="footer">
             <strong>Goregaon Premier League • Radhe Radhe Chashak</strong><br />
             Organised by: Sandeep Jadhav (Founder of Radhe Radhe Foundation)<br />Tournament Managed by: Balram Gupta (Ballu) &amp; Mohsin Patel<br />
-            📧 <a href="mailto:goregaonpremierleague11@gmail.com" style="color: #64748b; text-decoration: none; font-weight: 600;">goregaonpremierleague11@gmail.com</a><br />
+            📧 <a href="mailto:${OFFICIAL_GPL_EMAIL}" style="color: #64748b; text-decoration: none; font-weight: 600;">${OFFICIAL_GPL_EMAIL}</a><br />
             This is an automated tournament status dispatch.
           </div>
         </div>
@@ -556,7 +556,7 @@ export async function sendPlayerStatusEmail(player, status, notes = "", cardData
       await transportInfo.transporter.sendMail({
         from: `"GPL Tournament Committee" <${transportInfo.fromEmail}>`,
         to: playerEmail,
-        replyTo: "goregaonpremierleague11@gmail.com",
+        replyTo: OFFICIAL_GPL_EMAIL,
         subject: subject,
         html: htmlContent,
         attachments
@@ -713,7 +713,7 @@ export async function sendTeamAssignmentEmail(player, team, cardDataUrl = null) 
           <div class="footer">
             <strong>Goregaon Premier League &bull; Radhe Radhe Chashak Season 4</strong><br />
             Organised with pride by Sandeep Jadhav (Founder of Radhe Radhe Foundation)<br />Tournament Managed by Balram Gupta (Ballu) &amp; Mohsin Patel<br />
-            📧 <a href="mailto:goregaonpremierleague11@gmail.com" style="color: #64748b; text-decoration: none; font-weight: 600;">goregaonpremierleague11@gmail.com</a>
+            📧 <a href="mailto:${OFFICIAL_GPL_EMAIL}" style="color: #64748b; text-decoration: none; font-weight: 600;">${OFFICIAL_GPL_EMAIL}</a>
           </div>
         </div>
       </body>
@@ -754,7 +754,7 @@ export async function sendTeamAssignmentEmail(player, team, cardDataUrl = null) 
       await transportInfo.transporter.sendMail({
         from: `"GPL Tournament Committee" <${transportInfo.fromEmail}>`,
         to: playerEmail,
-        replyTo: "goregaonpremierleague11@gmail.com",
+        replyTo: OFFICIAL_GPL_EMAIL,
         subject: subject,
         html: htmlContent,
         attachments
@@ -828,7 +828,7 @@ export async function sendAdminPasswordResetOtp(otpCode, adminEmail) {
       await transportInfo.transporter.sendMail({
         from: `"GPL Security" <${transportInfo.fromEmail}>`,
         to: adminEmail,
-        replyTo: "goregaonpremierleague11@gmail.com",
+        replyTo: OFFICIAL_GPL_EMAIL,
         subject: `🔐 GPL Admin Password Reset OTP: ${otpCode}`,
         html: htmlContent
       });
