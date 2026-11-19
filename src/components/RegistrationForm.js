@@ -859,7 +859,7 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
                         setFieldErrors((prev) => ({ ...prev, followButton: "" }));
                       }
                     }}
-                    className={`w-full text-white font-bold py-3.5 px-4 rounded-xl text-sm text-center shadow-md transition-all active:scale-98 flex items-center justify-center gap-2 cursor-pointer ${
+                    className={`w-full text-white font-bold py-3.5 px-4 rounded-xl text-sm text-center shadow-md transition-all active:scale-98 flex items-center justify-center gap-2 cursor-pointer whitespace-nowrap ${
                       hasClickedFollow
                         ? "bg-emerald-600 hover:bg-emerald-700 ring-2 ring-emerald-300"
                         : "bg-gradient-to-r from-[#833ab4] via-[#fd1d1d] to-[#fcb045] hover:opacity-95"
