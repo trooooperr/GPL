@@ -184,14 +184,31 @@ export default function CheckStatusModal({ isOpen, onClose }) {
       ctx.fillText(`Jersey Size: ${player.tshirtSize || "M"} / Track: ${player.trackSize || "M"}`, 300, 375);
 
       // Status Badge
-      const isApproved = player.paymentStatus === "Approved";
-      ctx.fillStyle = isApproved ? "#059669" : "#d97706";
-      ctx.beginPath();
-      ctx.roundRect(300, 410, 260, 44, 8);
-      ctx.fill();
-      ctx.fillStyle = "#ffffff";
+      const status = player.paymentStatus || "Pending";
+      const isApproved = status === "Approved";
+      const isRejected = status === "Rejected";
+      const statusText = isApproved
+        ? "✓ OFFICIAL VERIFIED"
+        : isRejected
+        ? "✗ REGISTRATION REJECTED"
+        : "⏳ VERIFICATION REVIEW";
+      const badgeBg = isApproved ? "#059669" : isRejected ? "#dc2626" : "#d97706";
+
       ctx.font = "bold 18px sans-serif";
-      ctx.fillText(isApproved ? "✓ OFFICIAL VERIFIED" : "⏳ VERIFICATION REVIEW", 320, 438);
+      const textWidth = ctx.measureText(statusText).width;
+      const badgePaddingX = 20;
+      const badgeWidth = Math.round(textWidth + badgePaddingX * 2);
+      const badgeHeight = 44;
+      const badgeX = 300;
+      const badgeY = 410;
+
+      ctx.fillStyle = badgeBg;
+      ctx.beginPath();
+      ctx.roundRect(badgeX, badgeY, badgeWidth, badgeHeight, 8);
+      ctx.fill();
+
+      ctx.fillStyle = "#ffffff";
+      ctx.fillText(statusText, badgeX + badgePaddingX, badgeY + 28);
 
       // Allocated Team Box
       ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
