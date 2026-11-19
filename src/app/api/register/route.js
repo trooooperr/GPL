@@ -112,7 +112,13 @@ export async function POST(request) {
       return null;
     }
 
-    const photoUrl = (await extractImageUrl(bodyData.photo)) || "/images/avatar-placeholder.svg";
+    const photoUrl = await extractImageUrl(bodyData.photo);
+    if (!photoUrl) {
+      return NextResponse.json(
+        { success: false, message: "Profile photo is required." },
+        { status: 400, headers: NO_CACHE_HEADERS }
+      );
+    }
     const aadhaarFrontUrl = (await extractImageUrl(bodyData.aadhaarFront)) || "/images/doc-placeholder.svg";
     const aadhaarBackUrl = (await extractImageUrl(bodyData.aadhaarBack)) || "/images/doc-placeholder.svg";
     const paymentProofUrl = (await extractImageUrl(bodyData.paymentProof)) || "/images/payment-placeholder.svg";

@@ -254,22 +254,27 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
       errors.trackSize = "Please select your Track Pant size.";
     }
 
-    // 7. Aadhaar Front
+    // 7. Profile Photo (Required)
+    if (!files.profilePhoto) {
+      errors.profilePhoto = "Recent passport-size profile photo is required.";
+    }
+
+    // 8. Aadhaar Front
     if (!files.aadhaarFront) {
       errors.aadhaarFront = "Aadhaar Card Front photo is required.";
     }
 
-    // 8. Aadhaar Back
+    // 9. Aadhaar Back
     if (!files.aadhaarBack) {
       errors.aadhaarBack = "Aadhaar Card Back photo is required.";
     }
 
-    // 9. Instagram Follow Button Clicked
+    // 10. Instagram Follow Button Clicked
     if (!hasClickedFollow) {
       errors.followButton = `You must click the "Follow @${IG_HANDLE}" button above to follow our official page before submitting.`;
     }
 
-    // 10. Instagram Follow Proof Screenshot
+    // 11. Instagram Follow Proof Screenshot
     if (!files.paymentProof) {
       errors.paymentProof = "Instagram follow screenshot proof is required.";
     }
@@ -732,10 +737,16 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
             </div>
 
             {/* Profile Photo Upload */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 p-4 rounded-xl border border-slate-200 bg-slate-50/60">
+            <div className={`flex flex-col sm:flex-row items-start sm:items-center gap-5 p-4 rounded-xl border transition-all ${
+              fieldErrors.profilePhoto
+                ? "bg-red-50/50 border-red-300 ring-2 ring-red-100"
+                : "border-slate-200 bg-slate-50/60"
+            }`}>
               {/* Circle preview */}
               <div className="shrink-0 relative">
-                <div className="w-24 h-24 rounded-full border-2 border-dashed border-slate-300 bg-white overflow-hidden flex items-center justify-center shadow-sm">
+                <div className={`w-24 h-24 rounded-full border-2 border-dashed bg-white overflow-hidden flex items-center justify-center shadow-sm ${
+                  fieldErrors.profilePhoto ? "border-red-400" : "border-slate-300"
+                }`}>
                   {photoPreview ? (
                     <img src={photoPreview} alt="Profile preview" className="w-full h-full object-cover" />
                   ) : (
@@ -758,7 +769,7 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
               </div>
               <div className="flex-1 min-w-0">
                 <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Profile Photo <span className="text-slate-400 font-normal">(Optional)</span>
+                  Profile Photo <span className="text-red-500">*</span>
                 </label>
                 <p className="text-[11px] text-slate-500 mb-2">A clear face photo. Max 5 MB. JPG, PNG or WEBP.</p>
                 <label className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 cursor-pointer transition-all hover:border-[#059669] text-xs font-semibold text-slate-700">
@@ -771,6 +782,9 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
                     className="sr-only"
                   />
                 </label>
+                {fieldErrors.profilePhoto && (
+                  <p className="text-[11px] text-red-600 font-medium mt-1.5">{fieldErrors.profilePhoto}</p>
+                )}
               </div>
             </div>
 
