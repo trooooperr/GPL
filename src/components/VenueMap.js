@@ -7,10 +7,10 @@ export default function VenueMap() {
   const [isLoading, setIsLoading] = useState(true);
 
   // Fast direct Google Maps destination URL
-  const googleMapsDirectionsUrl = "https://www.google.com/maps/search/?api=1&query=Sambhaji+Maidan+Goregaon+East+Mumbai";
+  const googleMapsDirectionsUrl = "https://www.google.com/maps/search/?api=1&query=Sambhaji+Maidan+Goregaon+Purv+Vidhan+Sabha+Mumbai";
   
   // High-performance lightweight embed URL
-  const mapEmbedUrl = "https://maps.google.com/maps?q=Sambhaji+Maidan,+Goregaon+East,+Mumbai&t=&z=15&ie=UTF8&iwloc=&output=embed";
+  const mapEmbedUrl = "https://maps.google.com/maps?q=Sambhaji+Maidan,+Goregaon+Purv+Vidhan+Sabha,+Mumbai&t=&z=15&ie=UTF8&iwloc=&output=embed";
 
   return (
     <section id="location" className="py-16 sm:py-24 bg-white border-b border-slate-200">
