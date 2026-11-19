@@ -5,7 +5,7 @@ export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
-    const placeholder = "/images/teams/team-csk.png";
+    const placeholder = "/images/gpl-logo.png";
 
     if (!id) {
       return NextResponse.redirect(new URL(placeholder, request.url));
@@ -41,7 +41,7 @@ export async function GET(request) {
 
     return NextResponse.redirect(new URL(placeholder, request.url));
   } catch (error) {
-    return NextResponse.redirect(new URL("/images/teams/team-csk.png", request.url));
+    return NextResponse.redirect(new URL("/images/gpl-logo.png", request.url));
   }
 }
 

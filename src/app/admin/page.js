@@ -2846,7 +2846,7 @@ export default function AdminDashboard() {
                           <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center p-1 overflow-hidden shrink-0 shadow-2xs">
                               <img
-                                src={team.logo || "/images/teams/team-csk.png"}
+                                src={team.logo || "/images/gpl-logo.png"}
                                 alt={team.name}
                                 className="w-full h-full object-contain"
                                 onError={(e) => {

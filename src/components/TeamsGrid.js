@@ -31,7 +31,7 @@ export default function TeamsGrid({ teams = [] }) {
               {/* Maximized Team Badge Logo with 0 Background Artifacts */}
               <div className="w-full h-full flex items-center justify-center p-1">
                 <img
-                  src={team.logo || "/images/teams/team-csk.png"}
+                  src={team.logo || "/images/gpl-logo.png"}
                   alt={team.name}
                   className="max-h-[92%] max-w-[92%] object-contain filter drop-shadow-md group-hover:scale-110 transition-transform duration-300"
                   onError={(e) => {
@@ -68,7 +68,7 @@ export default function TeamsGrid({ teams = [] }) {
               <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4 pr-6">
                 <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-slate-50 border border-slate-200 p-1.5 shrink-0 flex items-center justify-center">
                   <img
-                    src={selectedTeam.logo || "/images/teams/team-csk.png"}
+                    src={selectedTeam.logo || "/images/gpl-logo.png"}
                     alt={selectedTeam.name}
                     className="max-h-full max-w-full object-contain"
                     onError={(e) => {
