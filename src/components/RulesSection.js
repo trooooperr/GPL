@@ -41,9 +41,12 @@ export default function RulesSection({ rules = [], rulesPosterUrl }) {
           <div className="lg:col-span-6 flex justify-center lg:justify-end">
             <div className="w-full max-w-xl shadow-2xl bg-slate-900 border border-slate-200">
               <img
-                src={rulesPosterUrl || "/images/gpl-auction.jpg"}
+                src={rulesPosterUrl || "/images/rules-poster.jpg"}
                 alt="Radhe Radhe Chashak Registration & Auction Poster"
                 className="w-full h-auto object-cover block"
+                onError={(e) => {
+                  e.target.src = "/images/gpl-auction.jpg";
+                }}
               />
             </div>
           </div>
