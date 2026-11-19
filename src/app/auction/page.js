@@ -13,7 +13,7 @@ export const revalidate = 0;
 export const metadata = {
   title: "Player Auction Pool & Draft Roster - Radhe Radhe Chasak GPL4",
   description:
-    "Official player auction pool of Goregaon Premier League Season 4. Auction on 7th December 2026. Match dates: 16, 17, 23 & 24 January 2027 at Sambhaji Maidan, Goregaon (East).",
+    "Official player auction pool of Goregaon Premier League Season 4. Auction on 7th December 2026. Match dates: 16, 17, 23 & 24 January 2027 at Sambhaji Maidan, Goregaon Purv Vidhan Sabha.",
   keywords: [
     "GPL Auction",
     "GPL Auction Pool",

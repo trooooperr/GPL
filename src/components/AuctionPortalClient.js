@@ -100,7 +100,7 @@ export default function AuctionPortalClient({
               </div>
               <div>
                 <p className="text-[11px] font-bold text-blue-300 uppercase tracking-wider">Venue</p>
-                <p className="text-sm font-black text-white truncate">Sambhaji Maidan, Goregaon (E)</p>
+                <p className="text-sm font-black text-white truncate">Sambhaji Maidan, Goregaon Purv Vidhan Sabha</p>
               </div>
             </div>
 

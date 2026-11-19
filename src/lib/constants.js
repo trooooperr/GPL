@@ -7,10 +7,11 @@ export const INITIAL_SETTINGS = {
     "/images/gpl-card-2.jpg"
   ],
   maxCapacity: 200,
+  totalDraftPlayers: 150,
   defaultTeamPurse: 10000000,
   registrationOpen: true,
   tournamentTitle: "Goregaon Premier League - Radhe Radhe Chashak",
-  venue: "Sambhaji Maidan, Goregaon East, Mumbai",
+  venue: "Sambhaji Maidan, Goregaon Purv Vidhan Sabha, Mumbai",
   adminEmail: "goregaonpremierleague11@gmail.com",
   adminUsername: "admin",
   adminPassword: "GPL@AdminNew2026",
@@ -22,7 +23,7 @@ export const INITIAL_RULES = [
   "Match Will Be on Friday, Saturday & Sunday",
   "Every match will be 5 over match",
   "Under 21 and above 40 – first match (1 over bowling or batting compulsory)",
-  "Player Aadhaar card or voter ID should be from ward 51 or 54 Goregaon East",
+  "Player Aadhaar card or voter ID should be from ward 51 or 54 Goregaon Purv Vidhan Sabha",
   "Umpire decision will be final decision",
   "5 runs penalty if the team is not present on time",
   "Teams who will not take full list of players will face 3 runs penalty in all the league match",
@@ -35,7 +36,7 @@ export const INITIAL_RULES = [
 export const INITIAL_FAQS = [
   {
     q: "Who is eligible to register for Goregaon Premier League (GPL)?",
-    a: "Participation is exclusively open to resident cricketers of Ward 51 and Ward 54 (Goregaon East). A valid Aadhaar card verifying your residential address within these wards is strictly required by the tournament governing committee."
+    a: "Participation is exclusively open to resident cricketers of Ward 51 and Ward 54 (Goregaon Purv Vidhan Sabha). A valid Aadhaar card verifying your residential address within these wards is strictly required by the tournament governing committee."
   },
   {
     q: "What documents do I need to submit during registration?",
@@ -55,7 +56,7 @@ export const INITIAL_FAQS = [
   },
   {
     q: "Where will the tournament matches be held?",
-    a: "All matches of the Radhe Radhe Chashak will be held at Sambhaji Maidan, Goregaon East under floodlights with official umpires, leather/heavy tennis ball rules, and live scoring."
+    a: "All matches of the Radhe Radhe Chashak will be held at Sambhaji Maidan, Goregaon Purv Vidhan Sabha under floodlights with official umpires, leather/heavy tennis ball rules, and live scoring."
   },
   {
     q: "Whom should I contact if I made an error during registration?",

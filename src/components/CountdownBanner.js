@@ -64,7 +64,7 @@ export default function CountdownBanner({ stats, settings, onOpenStatusModal }) 
                 <span>Season 2026 Kickoff</span>
               </span>
               <span className="text-[11px] text-slate-400 font-medium hidden sm:inline">
-                Sambhaji Maidan, Goregaon (E)
+                Sambhaji Maidan, Goregaon Purv Vidhan Sabha
               </span>
             </div>
 

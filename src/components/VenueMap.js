@@ -22,7 +22,7 @@ export default function VenueMap() {
             Tournament Location
           </h2>
           <p className="text-base sm:text-lg text-slate-600 font-medium">
-            Sambhaji Maidan, Near Dindoshi, Goregaon East, Mumbai
+            Sambhaji Maidan, Near Dindoshi, Goregaon Purv Vidhan Sabha, Mumbai
           </p>
         </div>
 
@@ -59,7 +59,7 @@ export default function VenueMap() {
               </div>
               <div className="truncate">
                 <h4 className="text-xs font-bold text-slate-900 truncate">Sambhaji Maidan</h4>
-                <p className="text-[11px] text-slate-500 truncate">Goregaon East, Mumbai</p>
+                <p className="text-[11px] text-slate-500 truncate">Goregaon Purv Vidhan Sabha, Mumbai</p>
               </div>
             </div>
 

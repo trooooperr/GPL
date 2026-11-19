@@ -85,7 +85,7 @@ export default function Hero({ settings }) {
             </p>
 
             <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-              As the organizer, GPL is committed to bridging the gap between street cricket and stadium glory, aiming to bring the raw energy and talent of street cricket onto the grand stage across <strong>Ward 51 &amp; Ward 54, Goregaon East</strong>.
+              As the organizer, GPL is committed to bridging the gap between street cricket and stadium glory, aiming to bring the raw energy and talent of street cricket onto the grand stage across <strong>Ward 51 &amp; Ward 54, Goregaon Purv Vidhan Sabha</strong>.
             </p>
 
             <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] sm:text-xs text-slate-500">

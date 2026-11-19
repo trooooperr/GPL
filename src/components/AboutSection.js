@@ -5,7 +5,7 @@ import { Award, Target, Users, MapPin, CheckCircle2 } from "lucide-react";
 export default function AboutSection({ maxCapacity = 200 }) {
   const points = [
     "Grassroots Cricket Mission: Discovering and elevating untapped talent from street cricket to stadium glory.",
-    "Ward-Focused Selection: Strict representation ensuring true local pride from Ward 51 & Ward 54 (Goregaon East).",
+    "Ward-Focused Selection: Strict representation ensuring true local pride from Ward 51 & Ward 54 (Goregaon Purv Vidhan Sabha).",
     "Professional League Standard: 5-over dynamic matches with live scoring, umpire protocols, and YouTube broadcasting.",
     "Equal Opportunity Rules: Special mandatory over participation for players Under 21 and Above 40."
   ];

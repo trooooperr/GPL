@@ -267,7 +267,7 @@ export default function CheckStatusModal({ isOpen, onClose }) {
 
       ctx.fillStyle = "#fcd34d";
       ctx.font = "bold 18px sans-serif";
-      ctx.fillText("Venue: Sambhaji Maidan, Goregaon East, Mumbai", 50, 850);
+      ctx.fillText("Venue: Sambhaji Maidan, Goregaon Purv Vidhan Sabha, Mumbai", 50, 850);
 
       ctx.fillStyle = "#cbd5e1";
       ctx.font = "15px sans-serif";
@@ -440,7 +440,7 @@ export default function CheckStatusModal({ isOpen, onClose }) {
                   </p>
                   <div className="pt-2 text-xs font-semibold text-slate-700 bg-white p-3 rounded-xl border border-slate-200">
                     <div>Organizer: <strong>Sandeep Jadhav (Founder, Radhe Radhe Foundation)</strong></div>
-                    <div className="text-[11px] text-slate-500 mt-1">Ground: Sambhaji Maidan, Goregaon East</div>
+                    <div className="text-[11px] text-slate-500 mt-1">Ground: Sambhaji Maidan, Goregaon Purv Vidhan Sabha</div>
                   </div>
                 </div>
               ) : (

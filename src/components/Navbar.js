@@ -31,7 +31,7 @@ export default function Navbar({ onOpenStatusModal }) {
 
   const navLinks = [
     { name: "Home", href: "/", icon: Trophy },
-    { name: "Auction Pool", href: "/auction", icon: Gavel },
+    { name: "Auction Pool", href: "/auction", icon: Gavel, isSpecial: true },
     { name: "Teams & Squads", href: "/teams", icon: Users },
     { name: "About", href: "/#about", icon: Shield },
     { name: "Awards", href: "/#awards", icon: Gift },
@@ -48,10 +48,10 @@ export default function Navbar({ onOpenStatusModal }) {
           : "bg-white/90 backdrop-blur-sm border-b border-slate-100"
       }`}
     >
-      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-14 sm:h-16 lg:h-20 flex items-center justify-between gap-2">
+      <div className="w-full max-w-[1560px] mx-auto px-3 sm:px-6 lg:px-8 xl:px-10 h-14 sm:h-16 lg:h-20 flex items-center justify-between gap-3">
         
-        {/* Left: Tournament Brand & Logo — Fully responsive and collision-free */}
-        <Link href="/" className="flex items-center gap-2 sm:gap-3 group min-w-0 shrink">
+        {/* Left: Tournament Brand & Logo — No text wrapping on large screens */}
+        <Link href="/" className="flex items-center gap-2.5 sm:gap-3 group shrink-0">
           {/* Logo */}
           <img
             src="/images/gpl-logo.png"
@@ -60,83 +60,75 @@ export default function Navbar({ onOpenStatusModal }) {
           />
 
           {/* Text block */}
-          <div className="min-w-0 overflow-hidden">
+          <div className="shrink-0">
             {/* Line 1: Name + Season 4 badge */}
-            <div className="flex items-center gap-1.5 flex-nowrap">
-              <span className="text-xs sm:text-base lg:text-lg font-black text-[#081a36] tracking-tight leading-tight group-hover:text-[#059669] transition-colors truncate">
+            <div className="flex items-center gap-2 flex-nowrap">
+              <span className="text-xs sm:text-base lg:text-lg font-black text-[#081a36] tracking-tight leading-tight group-hover:text-[#059669] transition-colors whitespace-nowrap">
                 <span className="hidden sm:inline">Goregaon Premier League</span>
                 <span className="sm:hidden">GPL Season 4</span>
               </span>
               {/* Season 4 highlight badge */}
               <span
-                className="hidden min-[480px]:inline-flex items-center gap-0.5 px-1.5 sm:px-2 py-0.5 rounded-md sm:rounded-lg font-black text-[9px] sm:text-xs text-white leading-tight shadow-xs shrink-0"
+                className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-md lg:rounded-lg font-black text-[10px] lg:text-xs text-white leading-tight shadow-xs whitespace-nowrap shrink-0"
                 style={{ background: "linear-gradient(135deg, #f59e0b 0%, #ef4444 60%, #7c3aed 100%)" }}
               >
-                ✦ S4
+                ✦ SEASON 4
               </span>
             </div>
             {/* Line 2: Subtitle */}
-            <p className="text-[8.5px] sm:text-[10px] lg:text-[11px] font-semibold text-slate-500 uppercase tracking-wider leading-tight mt-0.5 truncate">
+            <p className="text-[8.5px] sm:text-[10px] lg:text-[11px] font-semibold text-slate-500 uppercase tracking-wider leading-tight mt-0.5 whitespace-nowrap">
               Goregaon Purv Vidhan Sabha
             </p>
           </div>
         </Link>
 
-        {/* Center: Desktop Navigation Links */}
-        <nav className="hidden xl:flex items-center gap-1 bg-slate-50/80 p-1 rounded-full border border-slate-200/60 shadow-inner">
+        {/* Center: Desktop Navigation Links — Never wraps on desktop */}
+        <nav className="hidden lg:flex items-center gap-1 xl:gap-1.5 bg-slate-50/80 p-1 rounded-full border border-slate-200/60 shadow-inner shrink-0">
           {navLinks.map((link) => (
             <a
               key={link.name}
               href={link.href}
-              className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all duration-200 ${
-                link.name === "Auction Pool"
-                  ? "text-amber-700 bg-amber-50/80 hover:bg-amber-100 hover:text-amber-900 font-extrabold"
+              className={`inline-flex items-center gap-1.5 px-3 xl:px-3.5 py-1.5 rounded-full text-xs xl:text-[13px] font-bold whitespace-nowrap transition-all duration-200 ${
+                link.isSpecial
+                  ? "text-amber-800 bg-amber-100/80 hover:bg-amber-200/90 border border-amber-300/80 shadow-2xs font-extrabold"
                   : "text-slate-700 hover:text-[#059669] hover:bg-white"
               }`}
             >
-              {link.name}
+              {link.isSpecial && <Gavel className="w-3.5 h-3.5 text-amber-600 shrink-0" />}
+              <span>{link.name}</span>
             </a>
           ))}
         </nav>
 
-        {/* Right: Desktop Action Buttons (Auction + Check Status + Register) */}
-        <div className="hidden sm:flex items-center gap-2 shrink-0">
-          <Link
-            href="/auction"
-            className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 hover:text-amber-900 transition-all border border-amber-200/90 shadow-2xs"
-            title="View Live Player Auction Pool"
-          >
-            <Gavel className="w-3.5 h-3.5 text-amber-600" />
-            <span>Auction Pool</span>
-          </Link>
-
+        {/* Right: Desktop Action Buttons (Check Status + Register Now) — No duplicate Auction Pool button */}
+        <div className="hidden sm:flex items-center gap-2.5 shrink-0">
           <button
             type="button"
             onClick={onOpenStatusModal}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-bold text-slate-700 hover:text-[#081a36] hover:bg-slate-100 transition-all border border-slate-200/90 shadow-2xs cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3.5 lg:px-4 py-2.5 rounded-xl text-xs lg:text-[13px] font-bold text-slate-700 hover:text-[#081a36] hover:bg-slate-100 transition-all border border-slate-200/90 shadow-2xs cursor-pointer whitespace-nowrap"
             title="Check verification and auction pool status"
           >
-            <Search className="w-3.5 h-3.5 text-amber-500" />
+            <Search className="w-3.5 h-3.5 text-amber-500 shrink-0" />
             <span>Check Status</span>
           </button>
 
           <a
             href="/#register"
-            className="inline-flex items-center gap-1.5 bg-[#059669] hover:bg-[#047857] text-white px-4 lg:px-5 py-2.5 rounded-xl text-xs font-bold shadow-sm hover:shadow-md transition-all duration-200 active:scale-95"
+            className="inline-flex items-center gap-2 bg-[#059669] hover:bg-[#047857] text-white px-4 lg:px-5 py-2.5 rounded-xl text-xs lg:text-[13px] font-bold shadow-sm hover:shadow-md transition-all duration-200 active:scale-95 whitespace-nowrap"
           >
             <span>Register Now</span>
-            <ArrowRight className="w-3.5 h-3.5" />
+            <ArrowRight className="w-3.5 h-3.5 shrink-0" />
           </a>
         </div>
 
-        {/* Mobile Actions: Auction + Search + Register CTA + Hamburger (Shrink-0 guaranteed visible) */}
-        <div className="flex items-center gap-1 sm:hidden shrink-0">
+        {/* Mobile Actions: Auction Pill + Search Icon + Register CTA + Hamburger */}
+        <div className="flex items-center gap-1.5 sm:hidden shrink-0">
           <Link
             href="/auction"
-            className="inline-flex items-center gap-1 px-2 py-1.5 rounded-lg text-[11px] font-bold text-amber-800 bg-amber-50 border border-amber-200 shadow-2xs active:scale-95 transition-all"
+            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold text-amber-900 bg-amber-100/90 border border-amber-300 shadow-2xs active:scale-95 transition-all whitespace-nowrap"
             title="Auction Pool"
           >
-            <Gavel className="w-3.5 h-3.5 text-amber-600" />
+            <Gavel className="w-3.5 h-3.5 text-amber-700" />
             <span>Auction</span>
           </Link>
 
@@ -152,7 +144,7 @@ export default function Navbar({ onOpenStatusModal }) {
 
           <a
             href="/#register"
-            className="bg-[#059669] hover:bg-[#047857] text-white px-2.5 py-1.5 rounded-lg text-xs font-bold shadow-xs active:scale-95 transition-all"
+            className="bg-[#059669] hover:bg-[#047857] text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-xs active:scale-95 transition-all whitespace-nowrap"
           >
             Register
           </a>
@@ -170,17 +162,17 @@ export default function Navbar({ onOpenStatusModal }) {
 
       {/* Mobile Drawer Menu */}
       {isOpen && (
-        <div className="xl:hidden bg-white border-t border-slate-200 px-4 py-4 space-y-2.5 shadow-xl animate-in fade-in duration-200">
+        <div className="lg:hidden bg-white border-t border-slate-200 px-4 py-4 space-y-2.5 shadow-xl animate-in fade-in duration-200">
           <Link
             href="/auction"
             onClick={() => setIsOpen(false)}
-            className="w-full flex items-center justify-between p-3 rounded-xl bg-gradient-to-r from-amber-50 to-amber-100/60 border border-amber-300 text-amber-950 font-bold text-xs shadow-xs"
+            className="w-full flex items-center justify-between p-3 rounded-xl bg-gradient-to-r from-amber-50 to-amber-100/80 border border-amber-300 text-amber-950 font-bold text-xs shadow-xs"
           >
             <span className="flex items-center gap-2">
               <Gavel className="w-4 h-4 text-amber-600" />
               <span>Live Player Auction Pool</span>
             </span>
-            <span className="text-[10px] uppercase font-mono bg-amber-200/80 text-amber-900 font-black px-2 py-0.5 rounded">
+            <span className="text-[10px] uppercase font-mono bg-amber-200 text-amber-900 font-black px-2 py-0.5 rounded">
               7 Dec 2026
             </span>
           </Link>
@@ -209,7 +201,7 @@ export default function Navbar({ onOpenStatusModal }) {
                   href={link.href}
                   onClick={() => setIsOpen(false)}
                   className={`flex items-center gap-2 px-3 py-2 rounded-xl font-bold text-xs transition-colors ${
-                    link.name === "Auction Pool"
+                    link.isSpecial
                       ? "bg-amber-50 text-amber-800 border border-amber-200"
                       : "text-slate-700 hover:text-[#059669] hover:bg-slate-50"
                   }`}

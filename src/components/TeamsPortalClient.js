@@ -99,7 +99,7 @@ export default function TeamsPortalClient({ teams = [], players = [], settings =
           </h1>
 
           <p className="text-sm sm:text-base text-slate-600 leading-relaxed font-normal">
-            10 verified franchise teams competing at Sambhaji Maidan, Goregaon East. Select a team below to view official franchise owners, team captain, and verified 14-player squad roster.
+            10 verified franchise teams competing at Sambhaji Maidan, Goregaon Purv Vidhan Sabha. Select a team below to view official franchise owners, team captain, and verified 14-player squad roster.
           </p>
         </div>
 

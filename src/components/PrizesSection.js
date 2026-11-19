@@ -4,17 +4,19 @@ import { INITIAL_AWARDS } from "@/lib/constants";
 
 export default function PrizesSection({ stats, settings, awards: propAwards = [] }) {
   const teamsCount = stats?.totalTeams || 10;
-  const totalCapacity = teamsCount * 14;
-
   const rawAwards = propAwards && propAwards.length > 0 ? propAwards : INITIAL_AWARDS;
 
   const features = rawAwards.map((item) => {
-    // Dynamically synchronize stats if default placeholder values are present
-    if (item.title === "Our Teams" && (!item.value || item.value.includes("Teams"))) {
+    // If a custom value was configured in admin console, always preserve and display it directly!
+    if (item.value && String(item.value).trim().length > 0) {
+      return item;
+    }
+    // Only apply defaults when the value is empty or not set
+    if (item.title === "Our Teams") {
       return { ...item, value: `${teamsCount} Teams` };
     }
-    if (item.title === "Registered Players" && (!item.value || item.value.includes("Players"))) {
-      return { ...item, value: `${totalCapacity} Players` };
+    if (item.title === "Registered Players") {
+      return { ...item, value: `${stats?.maxCapacity || 160} Players` };
     }
     return item;
   });

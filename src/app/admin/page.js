@@ -76,6 +76,7 @@ export default function AdminDashboard() {
     instagramUsername: "mi_sandeep_jadhav",
     registrationFee: 0,
     maxCapacity: 200,
+    totalDraftPlayers: 150,
     adminEmail: "goregaonpremierleague11@gmail.com",
     registrationDeadline: "2026-11-28T09:00",
     registrationOpen: true
@@ -450,7 +451,7 @@ export default function AdminDashboard() {
 
   const promptRejectPlayer = (player) => {
     setRejectPlayerModal(player);
-    setRejectReason("Aadhaar card address not from Ward 51 or 54 (Goregaon East)");
+    setRejectReason("Aadhaar card address not from Ward 51 or 54 (Goregaon Purv Vidhan Sabha)");
   };
 
   const handleConfirmReject = async (e) => {
@@ -1310,7 +1311,7 @@ export default function AdminDashboard() {
   const handleConfirmBatchReject = async () => {
     if (selectedIds.length === 0) return;
     const idsToReject = [...selectedIds];
-    const reason = batchRejectReason || "Aadhaar address not from Ward 51/54 (Goregaon East)";
+    const reason = batchRejectReason || "Aadhaar address not from Ward 51/54 (Goregaon Purv Vidhan Sabha)";
     const prevPlayers = players;
     const prevStats = stats;
     const prevTeams = teams;
@@ -3053,8 +3054,8 @@ export default function AdminDashboard() {
                 />
               </div>
 
-              {/* Tournament Registration Capacity & Team Purse */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl bg-slate-50 border border-slate-200">
+              {/* Tournament Registration Capacity, Draft Target & Team Purse */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 rounded-xl bg-slate-50 border border-slate-200">
                 <div>
                   <label className="block text-xs font-bold text-slate-800 mb-1">
                     Total Player Registration Capacity
@@ -3069,7 +3070,24 @@ export default function AdminDashboard() {
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-sm font-bold text-slate-900 focus:ring-2 focus:ring-[#0041b9]"
                   />
                   <p className="text-[11px] text-slate-500 mt-1">
-                    Total pool limit ({settings.maxCapacity || 200} players). Exactly 150 will be drafted across 10 teams (15/team), remaining stay unsold in pool.
+                    Maximum players who can register (Current: {settings.maxCapacity || 200}).
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-800 mb-1">
+                    Total Players for Auction (Draft Target)
+                  </label>
+                  <input
+                    type="number"
+                    min="10"
+                    max="1000"
+                    required
+                    value={settings.totalDraftPlayers !== undefined ? settings.totalDraftPlayers : 150}
+                    onChange={(e) => setSettings({ ...settings, totalDraftPlayers: Math.max(1, parseInt(e.target.value, 10) || 150) })}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-sm font-bold text-slate-900 focus:ring-2 focus:ring-[#0041b9]"
+                  />
+                  <p className="text-[11px] text-slate-500 mt-1">
+                    Draft target across teams (Current: {settings.totalDraftPlayers || 150}).
                   </p>
                 </div>
                 <div>
@@ -3086,7 +3104,7 @@ export default function AdminDashboard() {
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-sm font-mono font-bold text-slate-900 focus:ring-2 focus:ring-[#0041b9]"
                   />
                   <p className="text-[11px] text-slate-500 mt-1">
-                    Default auction purse budget given to each franchise (Current: {Number(settings.defaultTeamPurse || 10000000).toLocaleString("en-IN")}).
+                    Default auction purse budget (Current: ₹{Number(settings.defaultTeamPurse || 10000000).toLocaleString("en-IN")}).
                   </p>
                 </div>
               </div>

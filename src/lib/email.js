@@ -324,7 +324,7 @@ export async function sendPlayerRegistrationConfirmationEmail(player) {
             </div>
           </div>
           <div class="footer">
-            Goregaon Premier League Season 4 • Sambhaji Maidan, Goregaon East, Mumbai<br/>
+            Goregaon Premier League Season 4 • Sambhaji Maidan, Goregaon Purv Vidhan Sabha, Mumbai<br/>
             Organised by Sandeep Jadhav (Founder of Radhe Radhe Foundation)<br/>Tournament Managed by Balram Gupta (Ballu) &amp; Mohsin Patel<br/>
             📧 <a href="mailto:goregaonpremierleague11@gmail.com" style="color: #64748b; text-decoration: none; font-weight: 600;">goregaonpremierleague11@gmail.com</a>
           </div>
@@ -500,7 +500,7 @@ export async function sendPlayerStatusEmail(player, status, notes = "", cardData
                     <strong>📅 Important Tournament Schedule:</strong><br />
                     • <strong>Grand Player Auction:</strong> 7th December 2026<br />
                     • <strong>Tournament Match Dates:</strong> 16, 17, 23 &amp; 24 January 2027<br />
-                    • <strong>Venue:</strong> Sambhaji Maidan, Goregaon East, Mumbai
+                    • <strong>Venue:</strong> Sambhaji Maidan, Goregaon Purv Vidhan Sabha, Mumbai
                   </div>`
                 : `<div class="action-box" style="background: #fff1f2; border-color: #fecdd3; color: #9f1239;">
                     <strong>Need Help or Clarification?</strong><br />
@@ -694,7 +694,7 @@ export async function sendTeamAssignmentEmail(player, team, cardDataUrl = null) 
               </tr>
               <tr>
                 <td class="label">Match Venue:</td>
-                <td class="value">Sambhaji Maidan, Goregaon East, Mumbai</td>
+                <td class="value">Sambhaji Maidan, Goregaon Purv Vidhan Sabha, Mumbai</td>
               </tr>
             </table>
 
@@ -703,7 +703,7 @@ export async function sendTeamAssignmentEmail(player, team, cardDataUrl = null) 
               <p>
                 1. Your team management (${teamOwner}) will connect with you regarding practice matches and team strategy.<br />
                 2. Your official customized team kit (${player.tshirtSize} Jersey / ${player.trackSize} Track Pant) will be handed to you prior to the opening ceremony.<br />
-                3. <strong>Tournament Match Dates:</strong> 16, 17, 23 &amp; 24 January 2027 at Sambhaji Maidan, Goregaon East.<br />
+                3. <strong>Tournament Match Dates:</strong> 16, 17, 23 &amp; 24 January 2027 at Sambhaji Maidan, Goregaon Purv Vidhan Sabha.<br />
                 4. Follow live league announcements and match schedules on the official GPL portal.
               </p>
             </div>
