@@ -131,6 +131,19 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
     if (fieldErrors[field]) {
       setFieldErrors((prev) => ({ ...prev, [field]: "" }));
     }
+
+    if (field === "dob" && value) {
+      const bd = new Date(value);
+      if (!isNaN(bd.getTime())) {
+        const calculatedAge = Math.floor((Date.now() - bd.getTime()) / (365.25 * 24 * 3600 * 1000));
+        if (calculatedAge < 12) {
+          setErrorMsg("Age Restriction: Players must be at least 12 years old to register for Goregaon Premier League (Minimum birth year: 2014).");
+          setFieldErrors((prev) => ({ ...prev, dob: "Players must be at least 12 years old to register (Minimum birth year: 2014)." }));
+        } else {
+          setFieldErrors((prev) => ({ ...prev, dob: "" }));
+        }
+      }
+    }
   };
 
   // Optimized client-side canvas compression: converts phone/desktop image to lightweight ~30-45KB JPEG for ultra-fast submit
@@ -226,7 +239,7 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
       } else {
         const calculatedAge = Math.floor((Date.now() - bd.getTime()) / (365.25 * 24 * 3600 * 1000));
         if (calculatedAge < 12) {
-          errors.dob = "Players must be at least 12 years old to register.";
+          errors.dob = "Players must be at least 12 years old to register (Minimum birth year: 2014).";
         }
       }
     }
@@ -270,6 +283,16 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
     setErrorMsg("");
 
     if (!validateForm()) {
+      if (formData.dob) {
+        const bd = new Date(formData.dob);
+        if (!isNaN(bd.getTime())) {
+          const calculatedAge = Math.floor((Date.now() - bd.getTime()) / (365.25 * 24 * 3600 * 1000));
+          if (calculatedAge < 12) {
+            setErrorMsg("Age Restriction: Players must be at least 12 years old to register for Goregaon Premier League (Minimum birth year: 2014).");
+            return;
+          }
+        }
+      }
       setErrorMsg("Please fill out all required fields correctly before submitting.");
       return;
     }
@@ -512,6 +535,7 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
         ) : (
           <form
             onSubmit={handleSubmit}
+            noValidate
             className="bg-white/95 backdrop-blur-md rounded-2xl sm:rounded-3xl border border-slate-200/90 shadow-xl p-4 sm:p-8 md:p-10 space-y-5 sm:space-y-6 overflow-hidden"
           >
             {errorMsg && (
