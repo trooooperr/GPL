@@ -73,7 +73,7 @@ export default function CountdownBanner({ stats, settings, onOpenStatusModal }) 
                 Radhe Radhe Chasak GPL4
               </h3>
               <span className="text-xs text-slate-300 font-medium">
-                Organized by <strong className="text-white">SANDEEP JADHAV</strong> <span className="text-slate-400 text-[11px] block sm:inline">FOUNDER OF RADHE RADHE FOUNDATION &bull; Regd. No. E-0040526 (GBR)</span>
+                Organized by <strong className="text-white">SANDEEP JADHAV</strong> <span className="text-slate-400 text-[9px] min-[370px]:text-[10px] sm:text-[11px] tracking-tight whitespace-nowrap block sm:inline">FOUNDER OF RADHE RADHE FOUNDATION &bull; Regd. No. E-0040526 (GBR)</span>
               </span>
             </div>
 
