@@ -27,7 +27,7 @@ export default function HomeClient({ teams, rules, faqs, awards, settings, stats
       />
 
       {/* Hero Carousel */}
-      <BannerCarousel />
+      <BannerCarousel bannerUrl={settings?.bannerUrl} />
 
       {/* Dynamic Tournament Countdown & Slot Urgency Bar */}
       <CountdownBanner
@@ -49,7 +49,7 @@ export default function HomeClient({ teams, rules, faqs, awards, settings, stats
       <TeamsGrid teams={teams} />
 
       {/* Official Rules & Regulations */}
-      <RulesSection rules={rules} />
+      <RulesSection rules={rules} rulesPosterUrl={settings?.rulesPosterUrl} />
 
       {/* Player Registration Portal */}
       <RegistrationForm stats={stats} settings={settings} />

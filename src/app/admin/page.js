@@ -747,6 +747,24 @@ export default function AdminDashboard() {
     setSettings({ ...settings, aboutPhotos: newPhotos });
   };
 
+  const handleBannerUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const { dataUrl } = await compressImageToDataUrl(file, 2560, 0.88);
+    if (!dataUrl) return;
+    setSettings((prev) => ({ ...prev, bannerUrl: dataUrl }));
+    showToast("New Hero Banner selected! Click 'Save Tournament Settings' to publish.", "info");
+  };
+
+  const handleRulesPosterUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const { dataUrl } = await compressImageToDataUrl(file, 1600, 0.85);
+    if (!dataUrl) return;
+    setSettings((prev) => ({ ...prev, rulesPosterUrl: dataUrl }));
+    showToast("New Rules Poster selected! Click 'Save Tournament Settings' to publish.", "info");
+  };
+
   // --- TEAM SAVE & LOGO UPLOAD ---
   const handleSaveTeam = async (e) => {
     e.preventDefault();
@@ -3135,6 +3153,90 @@ export default function AdminDashboard() {
                   <p className="text-[11px] text-slate-500">
                     This QR code automatically encodes <code className="bg-slate-200 px-1 py-0.5 rounded font-mono text-[10px] text-slate-800">https://instagram.com/{(settings.instagramUsername || "mi_sandeep_jadhav").replace(/^@/, '')}</code>. Players scan it to follow your profile before uploading screenshot proof.
                   </p>
+                </div>
+              </div>
+
+              {/* Main Hero Top Banner */}
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
+                      <span>🏏</span>
+                      <span>Homepage Hero Top Banner</span>
+                    </h4>
+                    <p className="text-[11px] text-slate-500 mt-0.5">
+                      The large widescreen banner displayed at the very top of the website. High resolution (2K/4K recommended).
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <label className="cursor-pointer text-xs px-3 py-1.5 rounded-lg bg-[#0041b9] text-white hover:bg-[#00369a] font-semibold transition-colors flex items-center gap-1.5 shadow-xs">
+                      <span>Upload HD Banner</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="sr-only"
+                        onChange={handleBannerUpload}
+                      />
+                    </label>
+                    {settings.bannerUrl && settings.bannerUrl !== "/images/gpl-banner.jpg" && (
+                      <button
+                        type="button"
+                        onClick={() => setSettings((prev) => ({ ...prev, bannerUrl: "/images/gpl-banner.jpg" }))}
+                        className="text-xs px-2.5 py-1.5 rounded-lg bg-slate-200 text-slate-700 hover:bg-slate-300 font-semibold transition-colors"
+                      >
+                        Reset Default
+                      </button>
+                    )}
+                  </div>
+                </div>
+                <div className="rounded-xl overflow-hidden border border-slate-300 bg-slate-900 w-full max-h-56 flex items-center justify-center">
+                  <img
+                    src={settings.bannerUrl || "/images/gpl-banner.jpg"}
+                    alt="Homepage Hero Top Banner Preview"
+                    className="w-full h-auto max-h-56 object-contain"
+                  />
+                </div>
+              </div>
+
+              {/* Rules & Regulation Poster */}
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
+                      <span>📜</span>
+                      <span>Rules & Regulations Poster</span>
+                    </h4>
+                    <p className="text-[11px] text-slate-500 mt-0.5">
+                      The official tournament poster displayed alongside the Rules &amp; Regulations section on the homepage.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <label className="cursor-pointer text-xs px-3 py-1.5 rounded-lg bg-[#059669] text-white hover:bg-[#047857] font-semibold transition-colors flex items-center gap-1.5 shadow-xs">
+                      <span>Upload Poster</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="sr-only"
+                        onChange={handleRulesPosterUpload}
+                      />
+                    </label>
+                    {settings.rulesPosterUrl && settings.rulesPosterUrl !== "/images/gpl-auction.jpg" && (
+                      <button
+                        type="button"
+                        onClick={() => setSettings((prev) => ({ ...prev, rulesPosterUrl: "/images/gpl-auction.jpg" }))}
+                        className="text-xs px-2.5 py-1.5 rounded-lg bg-slate-200 text-slate-700 hover:bg-slate-300 font-semibold transition-colors"
+                      >
+                        Reset Default
+                      </button>
+                    )}
+                  </div>
+                </div>
+                <div className="rounded-xl overflow-hidden border border-slate-300 bg-slate-900 w-full max-h-64 flex items-center justify-center">
+                  <img
+                    src={settings.rulesPosterUrl || "/images/gpl-auction.jpg"}
+                    alt="Rules and Regulations Poster Preview"
+                    className="w-full h-auto max-h-64 object-contain"
+                  />
                 </div>
               </div>
 

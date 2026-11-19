@@ -2,7 +2,7 @@
 
 import { Gavel } from "lucide-react";
 
-export default function RulesSection({ rules = [] }) {
+export default function RulesSection({ rules = [], rulesPosterUrl }) {
   const rulesList = Array.isArray(rules) ? rules : [];
 
   return (
@@ -41,7 +41,7 @@ export default function RulesSection({ rules = [] }) {
           <div className="lg:col-span-6 flex justify-center lg:justify-end">
             <div className="w-full max-w-xl shadow-2xl bg-slate-900 border border-slate-200">
               <img
-                src="/images/gpl-auction.jpg"
+                src={rulesPosterUrl || "/images/gpl-auction.jpg"}
                 alt="Radhe Radhe Chashak Registration & Auction Poster"
                 className="w-full h-auto object-cover block"
               />

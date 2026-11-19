@@ -1,5 +1,7 @@
 export const INITIAL_SETTINGS = {
   instagramUsername: "mi_sandeep_jadhav",
+  bannerUrl: "/images/gpl-banner.jpg",
+  rulesPosterUrl: "/images/gpl-auction.jpg",
   aboutPhotos: [
     "/images/gpl-card-1.jpg",
     "/images/gpl-card-2.jpg"
