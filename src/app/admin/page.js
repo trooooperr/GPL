@@ -2167,7 +2167,7 @@ export default function AdminDashboard() {
                               <div className="flex items-center gap-2.5">
                                 <div className="w-8 h-8 rounded-full bg-blue-100 text-[#0041b9] flex items-center justify-center font-bold text-xs shrink-0 overflow-hidden border border-blue-200">
                                   {player.photoUrl && !player.photoUrl.includes('placeholder') ? (
-                                    <img src={player.photoUrl} alt={player.name} className="w-full h-full object-cover" />
+                                    <img src={`${player.photoUrl}${player.photoUrl.includes('?') ? '&' : '?'}nc=${player.id}`} alt={player.name} className="w-full h-full object-cover" />
                                   ) : (
                                     player.name[0]
                                   )}
@@ -2459,7 +2459,7 @@ export default function AdminDashboard() {
                         <div className="w-14 h-14 rounded-xl bg-slate-100 border-2 border-amber-400 overflow-hidden shrink-0 shadow-xs flex items-center justify-center">
                           {player.photoUrl && !player.photoUrl.includes("placeholder") ? (
                             <img
-                              src={player.photoUrl}
+                              src={`${player.photoUrl}${player.photoUrl.includes('?') ? '&' : '?'}nc=${player.id}`}
                               alt={player.name}
                               className="w-full h-full object-cover"
                             />

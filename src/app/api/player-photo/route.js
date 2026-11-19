@@ -1,15 +1,25 @@
 import { NextResponse } from "next/server";
 import { connectToDatabase, MongoRegistration } from "@/lib/mongodb";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
     const docType = searchParams.get("t") || "photo"; // photo | front | back | proof | card
 
-    const placeholder = docType === "photo" 
-      ? "/images/avatar-placeholder.svg" 
+    const placeholder = docType === "photo"
+      ? "/images/avatar-placeholder.svg"
       : (docType === "card" ? "/images/gpl-card-base.png" : "/images/doc-placeholder.svg");
+
+    // Private data — never cache at CDN level
+    const PRIVATE_HEADERS = {
+      "Cache-Control": "private, no-cache, no-store, must-revalidate",
+      "Pragma": "no-cache",
+      "Expires": "0"
+    };
 
     if (!id) {
       return NextResponse.redirect(new URL(placeholder, request.url));
@@ -43,7 +53,7 @@ export async function GET(request) {
         return new Response(buffer, {
           headers: {
             "Content-Type": mime,
-            "Cache-Control": "public, max-age=604800, s-maxage=2592000, stale-while-revalidate=86400"
+            ...PRIVATE_HEADERS
           }
         });
       }
