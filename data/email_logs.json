@@ -1,5 +1,13 @@
 [
   {
+    "id": "EML-1795098265557",
+    "timestamp": "2026-11-19T14:24:25.557Z",
+    "type": "ADMIN_NOTIFICATION",
+    "recipient": "goregoanpremierleague04@gmail.com",
+    "playerId": "9999",
+    "status": "SENT"
+  },
+  {
     "id": "EML-1794922297998",
     "timestamp": "2026-11-17T13:31:37.998Z",
     "type": "TEAM_ASSIGNMENT",

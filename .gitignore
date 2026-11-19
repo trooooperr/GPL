@@ -23,6 +23,7 @@
 # misc
 .DS_Store
 *.pem
+/data/email_logs.json
 
 # debug
 npm-debug.log*
