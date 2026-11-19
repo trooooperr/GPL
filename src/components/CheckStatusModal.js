@@ -252,10 +252,10 @@ export default function CheckStatusModal({ isOpen, onClose }) {
             resolve();
           };
           sjImg.onerror = () => resolve();
-          sjImg.src = "/images/sandeep-jadhav-transparent.png?v=7";
+          sjImg.src = "/images/sandeep-jadhav-transparent.png?v=8";
         });
       };
-      await drawOrganizerPortrait();
+      await drawOrganizerPortrait();                                                
 
       // Footer
       ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";

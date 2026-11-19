@@ -7,12 +7,11 @@ from scipy.ndimage import gaussian_filter
 
 def generate_base_card(
     output_path="/Users/alok/Desktop/goregaon-premier-league/public/images/gpl-card-base.png",
-    path_bg="/tmp/card_assets/media_1794214931887_cf2e7102.jpg",
-    path_sandeep="/tmp/new_sandeep_cutout.png",
-    path_banner="/tmp/clean_banner_isolated.png",
-    path_logo="/tmp/card_assets/media_1794168048818_d0bd893e.jpg",
-    path_header="/tmp/card_assets/media_1794168169623_3a7125f8.png",
-    path_title="/tmp/card_assets/media_1794168855493_afbb62f1.png"
+    path_bg="/Users/alok/.gemini/antigravity/brain/5009713f-e5ef-41db-b3d6-f8528be54e9f/.user_uploaded/media_1794214931887_cf2e7102.jpg",
+    path_sandeep="/Users/alok/.gemini/antigravity/brain/5009713f-e5ef-41db-b3d6-f8528be54e9f/.user_uploaded/media_1794167909794_dd3350ef.jpg",
+    path_logo="/Users/alok/.gemini/antigravity/brain/5009713f-e5ef-41db-b3d6-f8528be54e9f/.user_uploaded/media_1794168048818_d0bd893e.jpg",
+    path_header="/Users/alok/.gemini/antigravity/brain/5009713f-e5ef-41db-b3d6-f8528be54e9f/.user_uploaded/media_1794168169623_3a7125f8.png",
+    path_title="/Users/alok/.gemini/antigravity/brain/5009713f-e5ef-41db-b3d6-f8528be54e9f/.user_uploaded/media_1794168855493_afbb62f1.png"
 ):
     W, H = 935, 1024
 
@@ -78,30 +77,79 @@ def generate_base_card(
     title_y = logo_y + logo_size + int(H * 0.010)
     base.paste(title_scaled, (title_x, title_y), title_scaled)
 
-    # 5. Sandeep Jadhav - Clean new portrait (FIRST)
-    san_clean = Image.open(path_sandeep).convert('RGBA')
+    # 5. Sandeep Jadhav - Clean Head and Shoulders (ZERO lines) & Full Hands/Sleeves/Banner
+    san = Image.open(path_sandeep).convert('RGB')
+    s_arr = np.array(san, dtype=np.float32)
+    SH, SW, _ = s_arr.shape
+    diff = np.max(s_arr, axis=2) - np.min(s_arr, axis=2)
+    mean_lum = np.mean(s_arr, axis=2)
+
+    s_mask = np.zeros((SH, SW), dtype=bool)
+
+    # For y < 480: Clean body bounds (eliminates 100% of horizontal line spikes)
+    for y in range(12, 480):
+        bl = -1
+        for x in range(0, 400):
+            if not (diff[y, x] <= 8 and mean_lum[y, x] >= 200):
+                bl = x; break
+        br = -1
+        for x in range(SW - 1, 400, -1):
+            if not (diff[y, x] <= 8 and mean_lum[y, x] >= 200):
+                br = x; break
+        if bl != -1 and br != -1 and bl < br:
+            s_mask[y, bl:br+1] = True
+
+    # For y >= 480: Solid row scan (preserves 100% full sleeves, hands, watch, banner)
+    for y in range(480, SH):
+        lx = 0
+        for x in range(0, SW // 2):
+            if diff[y, x] > 3 or mean_lum[y, x] < 210:
+                lx = x; break
+        rx = SW - 1
+        for x in range(SW - 1, SW // 2, -1):
+            if diff[y, x] > 3 or mean_lum[y, x] < 210:
+                rx = x; break
+        if lx < rx:
+            s_mask[y, lx:rx+1] = True
+
+    # Remove white checkerboard area below and around the banner (y >= 800)
+    is_cb_bottom = (diff <= 12) & (mean_lum >= 190)
+    visited_bottom = np.zeros((SH, SW), dtype=bool)
+    q_b = deque()
+    for x in range(SW):
+        if is_cb_bottom[SH - 1, x]:
+            visited_bottom[SH - 1, x] = True
+            q_b.append((SH - 1, x))
+    for y in range(800, SH):
+        if is_cb_bottom[y, 0]:
+            visited_bottom[y, 0] = True
+            q_b.append((y, 0))
+        if is_cb_bottom[y, SW - 1]:
+            visited_bottom[y, SW - 1] = True
+            q_b.append((y, SW - 1))
+    while q_b:
+        y, x = q_b.popleft()
+        for dy, dx in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+            ny, nx = y + dy, x + dx
+            if 800 <= ny < SH and 0 <= nx < SW and not visited_bottom[ny, nx]:
+                if is_cb_bottom[ny, nx]:
+                    visited_bottom[ny, nx] = True
+                    q_b.append((ny, nx))
+
+    s_mask[visited_bottom] = False
+
+    s_alpha = gaussian_filter(s_mask.astype(np.float32), sigma=0.8)
+    s_alpha = np.clip(s_alpha * 255, 0, 255).astype(np.uint8)
+    s_alpha[:12, :] = 0
+    s_alpha[visited_bottom] = 0
+
+    san_clean = Image.fromarray(np.dstack([s_arr.astype(np.uint8), s_alpha]))
     san_h = int(H * 0.49)
     san_w = int(san_clean.width * (san_h / san_clean.height))
     san_scaled = san_clean.resize((san_w, san_h), Image.Resampling.LANCZOS)
     san_x = W - san_w + int(W * 0.01)
     san_y = H - san_h - int(H * 0.018)
     base.paste(san_scaled, (san_x, san_y), san_scaled)
-
-    # 6. Official Name & Designation Banner (SECOND - layered ABOVE person)
-    banner_clean = Image.open(path_banner).convert('RGBA')
-    b_w = san_w + 10
-    b_h = int(banner_clean.height * (b_w / banner_clean.width))
-    banner_scaled = banner_clean.resize((b_w, b_h), Image.Resampling.LANCZOS)
-    b_x = W - b_w
-    b_y = H - b_h - int(H * 0.012)
-    base.paste(banner_scaled, (b_x, b_y), banner_scaled)
-
-    os.makedirs(os.path.dirname(output_path), exist_ok=True)
-    base.save(output_path)
-    print(f"Generated base card at: {output_path}")
-
-if __name__ == "__main__":
-    generate_base_card()
 
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     base.save(output_path)
