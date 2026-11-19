@@ -30,27 +30,27 @@ function mapPlayer(r) {
 
   const hasPhoto = r.hasPhoto || (r.photoUrl && !r.photoUrl.includes("placeholder"));
   const photoUrl = hasPhoto
-    ? (typeof r.photoUrl === "string" && (r.photoUrl.startsWith("/api/player-photo") || r.photoUrl.startsWith("http")) ? r.photoUrl : `/api/player-photo?id=${r.id}`)
+    ? (typeof r.photoUrl === "string" && (r.photoUrl.startsWith("/api/player-photo") || r.photoUrl.startsWith("http")) ? r.photoUrl : `/api/player-photo?id=${r.id}&v=4&pid=${r.id}`)
     : "/images/avatar-placeholder.svg";
 
   const hasFront = r.hasFront || (r.aadhaarFrontUrl && !r.aadhaarFrontUrl.includes("placeholder"));
   const aadhaarFrontUrl = hasFront
-    ? (typeof r.aadhaarFrontUrl === "string" && (r.aadhaarFrontUrl.startsWith("/api/player-photo") || r.aadhaarFrontUrl.startsWith("http")) ? r.aadhaarFrontUrl : `/api/player-photo?id=${r.id}&t=front`)
+    ? (typeof r.aadhaarFrontUrl === "string" && (r.aadhaarFrontUrl.startsWith("/api/player-photo") || r.aadhaarFrontUrl.startsWith("http")) ? r.aadhaarFrontUrl : `/api/player-photo?id=${r.id}&t=front&v=4&pid=${r.id}`)
     : "/images/doc-placeholder.svg";
 
   const hasBack = r.hasBack || (r.aadhaarBackUrl && !r.aadhaarBackUrl.includes("placeholder"));
   const aadhaarBackUrl = hasBack
-    ? (typeof r.aadhaarBackUrl === "string" && (r.aadhaarBackUrl.startsWith("/api/player-photo") || r.aadhaarBackUrl.startsWith("http")) ? r.aadhaarBackUrl : `/api/player-photo?id=${r.id}&t=back`)
+    ? (typeof r.aadhaarBackUrl === "string" && (r.aadhaarBackUrl.startsWith("/api/player-photo") || r.aadhaarBackUrl.startsWith("http")) ? r.aadhaarBackUrl : `/api/player-photo?id=${r.id}&t=back&v=4&pid=${r.id}`)
     : "/images/doc-placeholder.svg";
 
   const hasProof = r.hasProof || (r.paymentProofUrl && !r.paymentProofUrl.includes("placeholder"));
   const paymentProofUrl = hasProof
-    ? (typeof r.paymentProofUrl === "string" && (r.paymentProofUrl.startsWith("/api/player-photo") || r.paymentProofUrl.startsWith("http")) ? r.paymentProofUrl : `/api/player-photo?id=${r.id}&t=proof`)
+    ? (typeof r.paymentProofUrl === "string" && (r.paymentProofUrl.startsWith("/api/player-photo") || r.paymentProofUrl.startsWith("http")) ? r.paymentProofUrl : `/api/player-photo?id=${r.id}&t=proof&v=4&pid=${r.id}`)
     : "/images/payment-placeholder.svg";
 
   const hasCard = r.hasCard || (r.cardUrl && !r.cardUrl.includes("placeholder"));
   const cardUrl = hasCard
-    ? (typeof r.cardUrl === "string" && r.cardUrl.startsWith("/api/player-photo") ? r.cardUrl : `/api/player-photo?id=${r.id}&t=card`)
+    ? (typeof r.cardUrl === "string" && r.cardUrl.startsWith("/api/player-photo") ? r.cardUrl : `/api/player-photo?id=${r.id}&t=card&v=4&pid=${r.id}`)
     : null;
 
   return {

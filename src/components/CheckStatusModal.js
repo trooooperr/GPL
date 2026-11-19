@@ -240,23 +240,6 @@ export default function CheckStatusModal({ isOpen, onClose }) {
       ctx.fillText(`VERIFY: GPL4-AUTH-${player.regNumber || "0000"}-${(player.phone || "0000").slice(-4)}`, 400, 765);
       ctx.textAlign = "left";
 
-      // Draw Sandeep Jadhav portrait in bottom right of pass
-      const drawOrganizerPortrait = () => {
-        return new Promise((resolve) => {
-          const sjImg = new Image();
-          sjImg.crossOrigin = "anonymous";
-          sjImg.onload = () => {
-            const sjH = 160;
-            const sjW = Math.round(sjImg.naturalWidth * (sjH / sjImg.naturalHeight));
-            ctx.drawImage(sjImg, 760 - sjW, 975 - sjH, sjW, sjH);
-            resolve();
-          };
-          sjImg.onerror = () => resolve();
-          sjImg.src = "/images/sandeep-jadhav-transparent.png?v=8";
-        });
-      };
-      await drawOrganizerPortrait();                                                
-
       // Footer
       ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
       ctx.lineWidth = 1;

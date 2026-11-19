@@ -3830,7 +3830,7 @@ export default function AdminDashboard() {
                 onClick={() => inspectPlayer.photoUrl && !inspectPlayer.photoUrl.includes('placeholder') && setFullScreenImage({ url: `${inspectPlayer.photoUrl}${inspectPlayer.photoUrl.includes('?') ? '&' : '?'}nc=${inspectPlayer.id}`, title: `Profile Photo - ${inspectPlayer.name}` })}
               >
                 {inspectPlayer.photoUrl && !inspectPlayer.photoUrl.includes('placeholder') ? (
-                  <img src={inspectPlayer.photoUrl} alt={inspectPlayer.name} className="w-full h-full object-cover" />
+                  <img src={`${inspectPlayer.photoUrl}${inspectPlayer.photoUrl.includes('?') ? '&' : '?'}nc=${inspectPlayer.id}`} alt={inspectPlayer.name} className="w-full h-full object-cover" />
                 ) : (
                   inspectPlayer.name[0]
                 )}
@@ -3854,7 +3854,7 @@ export default function AdminDashboard() {
                     onClick={() => setFullScreenImage({ url: `${inspectPlayer.photoUrl}${inspectPlayer.photoUrl.includes('?') ? '&' : '?'}nc=${inspectPlayer.id}`, title: `Profile Photo - ${inspectPlayer.name}` })}
                     className="h-32 sm:h-36 rounded-xl bg-slate-100 border border-slate-200 overflow-hidden flex items-center justify-center cursor-pointer group relative hover:border-[#0041b9]"
                   >
-                    <img src={inspectPlayer.photoUrl} alt="Profile" className="max-h-full max-w-full object-cover" />
+                    <img src={`${inspectPlayer.photoUrl}${inspectPlayer.photoUrl.includes('?') ? '&' : '?'}nc=${inspectPlayer.id}`} alt="Profile" className="max-h-full max-w-full object-cover" />
                     <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-white">
                       <Maximize2 className="w-5 h-5" />
                     </div>

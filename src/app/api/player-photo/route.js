@@ -14,10 +14,11 @@ export async function GET(request) {
       ? "/images/avatar-placeholder.svg"
       : (docType === "card" ? "/images/gpl-card-base.png" : "/images/doc-placeholder.svg");
 
-    // Private data: browser can cache for 1 hour (saves repeat origin hits),
-    // but CDN must NOT cache publicly (s-maxage=0) to prevent user data cross-contamination.
+    // Private documents — never cache in CDN or shared cache to guarantee the exact uploaded image is always served
     const PRIVATE_HEADERS = {
-      "Cache-Control": "private, max-age=3600, s-maxage=0, must-revalidate"
+      "Cache-Control": "private, no-cache, no-store, must-revalidate",
+      "Pragma": "no-cache",
+      "Expires": "0"
     };
 
     if (!id) {
