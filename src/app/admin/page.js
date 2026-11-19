@@ -1390,7 +1390,7 @@ export default function AdminDashboard() {
       prev.map((t) => {
         const without = (t.members || []).filter((mid) => !idsToAssign.includes(mid));
         if (cleanTeamId && t.id === cleanTeamId) {
-          return { ...t, members: [...without, ...idsToAssign].slice(0, 14) };
+          return { ...t, members: [...without, ...idsToAssign].slice(0, 15) };
         }
         return { ...t, members: without };
       })
@@ -2618,7 +2618,7 @@ export default function AdminDashboard() {
                       <div className="flex justify-between pt-1 border-t border-slate-200">
                         <span className="text-slate-400">Squad:</span>
                         <span className="font-mono font-bold text-[#0041b9] flex items-center gap-1">
-                          <span>{players.filter((p) => p.teamId === team.id).length} / 14 Players</span>
+                          <span>{players.filter((p) => p.teamId === team.id).length} / 15 Players</span>
                         </span>
                       </div>
                       <div className="flex justify-between text-[11px] pt-1 border-t border-slate-200">
@@ -2901,7 +2901,7 @@ export default function AdminDashboard() {
                             </div>
 
                             <span className="px-2.5 py-1 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold whitespace-nowrap">
-                              {teamSoldPlayers.length}/14 Players
+                              {teamSoldPlayers.length}/15 Players
                             </span>
                           </div>
                         </div>
@@ -4451,7 +4451,7 @@ export default function AdminDashboard() {
                     <span className="font-mono font-bold text-blue-600">Code: {viewSquadTeam.shortCode}</span>
                     <span>•</span>
                     <span className="font-bold text-emerald-700">
-                      {players.filter((p) => p.teamId === viewSquadTeam.id).length} / 14 Players Assigned
+                      {players.filter((p) => p.teamId === viewSquadTeam.id).length} / 15 Players Assigned
                     </span>
                   </div>
                 </div>
@@ -4835,7 +4835,7 @@ export default function AdminDashboard() {
               const currentBid = Math.max(0, Number(auctionDraftModal.soldPrice) || 0);
               const balanceAfterBid = teamRemainingPurse - currentBid;
               const isOverBudget = balanceAfterBid < 0;
-              const isTeamFull = teamMembersCount >= 14;
+              const isTeamFull = teamMembersCount >= 15;
 
               return (
                 <div className="space-y-4 text-xs">
@@ -4865,7 +4865,7 @@ export default function AdminDashboard() {
                       <div>
                         <div className="font-bold text-slate-900">{targetTeam?.name || "Selected Team"}</div>
                         <div className="text-[11px] text-slate-500 font-mono">
-                          Squad: {teamMembersCount} / 14 Players
+                          Squad: {teamMembersCount} / 15 Players
                         </div>
                       </div>
                     </div>
@@ -4948,7 +4948,7 @@ export default function AdminDashboard() {
                     {isTeamFull && (
                       <p className="text-[11px] text-red-600 font-bold mt-1.5 flex items-center gap-1">
                         <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
-                        <span>Warning: Team already has 14 players!</span>
+                        <span>Warning: Team already has 15 players!</span>
                       </p>
                     )}
                   </div>

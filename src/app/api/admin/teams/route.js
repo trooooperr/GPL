@@ -107,7 +107,7 @@ export async function POST(request) {
 
         const targetTeam = await MongoTeam.findOne({ id: teamId }).lean();
         const currentMembers = targetTeam?.members || [];
-        const availableSlots = Math.max(0, 14 - currentMembers.length);
+        const availableSlots = Math.max(0, 15 - currentMembers.length);
         const toAdd = eligibleIds.slice(0, availableSlots);
 
         if (toAdd.length > 0) {
@@ -140,9 +140,9 @@ export async function POST(request) {
           await MongoTeam.updateMany({}, { $pull: { members: playerId } });
 
           const targetTeam = await MongoTeam.findOne({ id: teamId }).lean();
-          if (targetTeam && (targetTeam.members || []).length >= 14) {
+          if (targetTeam && (targetTeam.members || []).length >= 15) {
             return NextResponse.json(
-              { success: false, error: "Team squad is full (14/14 players)" },
+              { success: false, error: "Team squad is full (15/15 players)" },
               { status: 400, headers: NO_CACHE_HEADERS }
             );
           }

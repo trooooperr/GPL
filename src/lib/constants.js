@@ -48,7 +48,7 @@ export const INITIAL_FAQS = [
   },
   {
     q: "How does the Player Auction & Franchise Draft work?",
-    a: "All approved players enter the official GPL Auction Pool. The 10 tournament franchise owners will bid on approved players in a live draft to assemble balanced 14-player tournament squads."
+    a: "All approved players enter the official GPL Auction Pool. The 10 tournament franchise owners will bid on approved players in a live draft to assemble balanced 15-player tournament squads."
   },
   {
     q: "What tournament kit will players receive?",

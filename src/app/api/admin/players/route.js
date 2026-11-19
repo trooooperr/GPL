@@ -320,9 +320,9 @@ export async function POST(request) {
         }
 
         const team = await MongoTeam.findOne({ id: teamId });
-        if (team && (team.members || []).length >= 14) {
+        if (team && (team.members || []).length >= 15) {
           return NextResponse.json(
-            { success: false, error: "Team is full (14/14 players)" },
+            { success: false, error: "Team is full (15/15 players)" },
             { status: 400, headers: NO_CACHE_HEADERS }
           );
         }

@@ -106,7 +106,7 @@ export default function TeamsGrid({ teams = [] }) {
                     <span className="text-xs font-bold text-[#081a36]">Registered Squad</span>
                   </div>
                   <span className="text-[11px] sm:text-xs font-bold font-mono px-2.5 py-1 rounded-lg bg-[#059669] text-white whitespace-nowrap shrink-0 shadow-sm">
-                    {selectedTeam.memberDetails ? selectedTeam.memberDetails.length : (selectedTeam.members ? selectedTeam.members.length : 0)} / 14 Players
+                    {selectedTeam.memberDetails ? selectedTeam.memberDetails.length : (selectedTeam.members ? selectedTeam.members.length : 0)} / 15 Players
                   </span>
                 </div>
 

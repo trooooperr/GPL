@@ -108,7 +108,7 @@ export default function TeamsPortalClient({ teams = [], players = [], settings =
           </h1>
 
           <p className="text-sm sm:text-base text-slate-600 leading-relaxed font-normal">
-            10 verified franchise teams competing at Sambhaji Maidan, Goregaon Purv Vidhan Sabha. Select a team below to view official franchise owners, team captain, and verified 14-player squad roster.
+            10 verified franchise teams competing at Sambhaji Maidan, Goregaon Purv Vidhan Sabha. Select a team below to view official franchise owners, team captain, and verified 15-player squad roster.
           </p>
         </div>
 
@@ -180,7 +180,7 @@ export default function TeamsPortalClient({ teams = [], players = [], settings =
                   <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-500">
                     <span className="font-mono text-xs font-bold text-slate-700">{team.shortCode || "GPL"}</span>
                     <span>•</span>
-                    <span className="text-[#059669] font-bold">{squadCount}/14</span>
+                    <span className="text-[#059669] font-bold">{squadCount}/15</span>
                   </div>
                   <div className="text-[10px] font-mono font-bold text-emerald-700 mt-0.5">
                     {Math.round(((team.remainingPurse !== undefined ? team.remainingPurse : (team.initialPurse || 10000000) - (team.spentPurse || 0))) / 100000)}L left
@@ -281,7 +281,7 @@ export default function TeamsPortalClient({ teams = [], players = [], settings =
                 <div className="space-y-0.5">
                   <span className="text-[10px] uppercase font-bold text-slate-400 block">Squad</span>
                   <div className="font-mono font-bold text-[#059669] text-xs sm:text-sm">
-                    {displayPlayers.length} / 14 Max
+                    {displayPlayers.length} / 15 Max
                   </div>
                 </div>
 
