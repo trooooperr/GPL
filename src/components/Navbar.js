@@ -154,20 +154,6 @@ export default function Navbar({ onOpenStatusModal }) {
       {/* Mobile Drawer Menu */}
       {isOpen && (
         <div className="lg:hidden bg-white border-t border-slate-200 px-4 py-4 space-y-2.5 shadow-xl animate-in fade-in duration-200">
-          <Link
-            href="/teams?pool=true"
-            onClick={() => setIsOpen(false)}
-            className="w-full flex items-center justify-between p-3 rounded-xl bg-gradient-to-r from-amber-50 to-amber-100/80 border border-amber-300 text-amber-950 font-bold text-xs shadow-xs"
-          >
-            <span className="flex items-center gap-2">
-              <Gavel className="w-4 h-4 text-amber-600" />
-              <span>Live Player Auction Pool</span>
-            </span>
-            <span className="text-[10px] uppercase font-mono bg-amber-200 text-amber-900 font-black px-2 py-0.5 rounded">
-              7 Dec 2026
-            </span>
-          </Link>
-
           <button
             type="button"
             onClick={() => {
