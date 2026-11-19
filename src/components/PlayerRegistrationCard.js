@@ -362,7 +362,8 @@ export async function renderPlayerCardToDataUrl({ player, regNum, photo, status 
     teams,
     teamLogo
   });
-  return canvas.toDataURL("image/png", 0.95);
+  // Use JPEG with 0.85 quality (~85KB) instead of uncompressed PNG (~2.3MB) to prevent MongoDB storage bloat
+  return canvas.toDataURL("image/jpeg", 0.85);
 }
 
 export default function PlayerRegistrationCard({ player, regNum, photo, status, teamName, soldPrice, teams, teamLogo, onClose }) {

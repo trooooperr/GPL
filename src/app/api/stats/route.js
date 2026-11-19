@@ -44,6 +44,11 @@ export async function GET() {
     const totalTeams = totalTeamsCount || 10;
     const cap = settings.maxCapacity || 200;
 
+    // Sanitize settings to never expose admin credentials to public clients
+    const safeSettings = { ...settings };
+    delete safeSettings.adminPassword;
+    delete safeSettings.adminUsername;
+
     return NextResponse.json({
       success: true,
       stats: {
@@ -59,9 +64,13 @@ export async function GET() {
         registrationFee: settings.registrationFee || 100,
         upiId: settings.upiId || "shahbazkhandm@okhdfcbank"
       },
-      settings
+      settings: safeSettings
     }, { headers: NO_CACHE_HEADERS });
   } catch (e) {
+    const safeInitial = { ...INITIAL_SETTINGS };
+    delete safeInitial.adminPassword;
+    delete safeInitial.adminUsername;
+
     return NextResponse.json({
       success: true,
       stats: {
@@ -77,7 +86,7 @@ export async function GET() {
         registrationFee: 100,
         upiId: "shahbazkhandm@okhdfcbank"
       },
-      settings: INITIAL_SETTINGS
+      settings: safeInitial
     }, { headers: NO_CACHE_HEADERS });
   }
 }

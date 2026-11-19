@@ -32,7 +32,7 @@ export async function connectToDatabase() {
     serverSelectionTimeoutMS: 10000, // 10s for Vercel cold starts
     connectTimeoutMS: 10000,
     socketTimeoutMS: 30000,
-    maxPoolSize: 10,
+    maxPoolSize: 3, // Safe for serverless/Vercel on MongoDB Atlas M0 free tier (avoids 500 connection ceiling)
   };
 
   try {
