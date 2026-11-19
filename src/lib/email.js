@@ -115,13 +115,16 @@ export async function sendRegistrationNotificationEmail(player, customAdminEmail
       <!DOCTYPE html>
       <html>
       <head>
+        <meta charset="utf-8" />
+        <meta name="color-scheme" content="light" />
+        <meta name="supported-color-schemes" content="light" />
         <style>
           body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #f8fafc; margin: 0; padding: 20px; }
           .card { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-          .header { background: #f8fafc; padding: 24px; text-align: center; border-bottom: 1px solid #e2e8f0; }
-          .header h1 { margin: 0 0 4px; font-size: 22px; font-weight: 800; color: #0f172a; }
-          .header p { margin: 0; color: #64748b; font-size: 13px; }
-          .badge { display: inline-block; background: #e0e7ff; color: #3730a3; border: 1px solid #c7d2fe; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; margin-top: 12px; letter-spacing: 0.5px; }
+          .header { background: #eff6ff; padding: 24px; text-align: center; border-bottom: 2px solid #dbeafe; }
+          .header h1 { margin: 0 0 4px; font-size: 22px; font-weight: 900; color: #1e3a8a; }
+          .header p { margin: 0; color: #2563eb; font-size: 13px; font-weight: 600; }
+          .badge { display: inline-block; background: #dbeafe; color: #1e40af; border: 1.5px solid #bfdbfe; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; margin-top: 12px; letter-spacing: 0.5px; }
           .body { padding: 24px; }
           .table { width: 100%; border-collapse: collapse; margin-top: 16px; }
           .table td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
@@ -132,10 +135,10 @@ export async function sendRegistrationNotificationEmail(player, customAdminEmail
       </head>
       <body>
         <div class="card">
-          <div class="header">
-            <h1>New Player Registration Received!</h1>
-            <p>Radhe Radhe Chashak • Goregaon Premier League</p>
-            <div class="badge">Player ID: ${displayPlayerId}</div>
+          <div class="header" style="background: #eff6ff; padding: 24px; text-align: center; border-bottom: 2px solid #dbeafe;">
+            <h1 style="margin: 0 0 4px; font-size: 22px; font-weight: 900; color: #1e3a8a !important;">New Player Registration Received!</h1>
+            <p style="margin: 0; color: #2563eb !important; font-size: 13px; font-weight: 600;">Radhe Radhe Chashak &bull; Goregaon Premier League</p>
+            <div class="badge" style="display: inline-block; background: #dbeafe; color: #1e40af !important; border: 1.5px solid #bfdbfe; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; margin-top: 12px; letter-spacing: 0.5px;">Player ID: ${displayPlayerId}</div>
           </div>
           <div class="body">
             <table class="table">
@@ -233,13 +236,15 @@ export async function sendPlayerRegistrationConfirmationEmail(player) {
       <html>
       <head>
         <meta charset="utf-8" />
+        <meta name="color-scheme" content="light" />
+        <meta name="supported-color-schemes" content="light" />
         <style>
           body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #f8fafc; margin: 0; padding: 20px; color: #1e293b; }
           .card { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08); }
-          .header { background: linear-gradient(135deg, #081a36 0%, #0041b9 100%); padding: 32px 24px; text-align: center; color: #ffffff; }
-          .header h1 { margin: 0 0 6px; font-size: 24px; font-weight: 800; color: #ffffff; }
-          .header p { margin: 0; color: #cbd5e1; font-size: 13px; }
-          .badge { display: inline-block; background: #fbbf24; color: #78350f; padding: 6px 18px; border-radius: 999px; font-size: 14px; font-weight: 900; margin-top: 16px; letter-spacing: 1px; }
+          .header { background: #eff6ff; padding: 32px 24px; text-align: center; border-bottom: 2px solid #dbeafe; }
+          .header h1 { margin: 0 0 6px; font-size: 24px; font-weight: 900; color: #1e3a8a; }
+          .header p { margin: 0; color: #2563eb; font-size: 13px; font-weight: 600; }
+          .badge { display: inline-block; background: #dbeafe; color: #1e40af; border: 1.5px solid #bfdbfe; padding: 6px 18px; border-radius: 999px; font-size: 14px; font-weight: 900; margin-top: 16px; letter-spacing: 1px; }
           .body { padding: 28px 24px; }
           .intro { font-size: 14px; color: #334155; line-height: 1.6; margin-bottom: 20px; }
           .status-banner { background: #eff6ff; border: 1.5px solid #bfdbfe; border-radius: 12px; padding: 14px 18px; margin-bottom: 24px; text-align: center; }
@@ -257,10 +262,10 @@ export async function sendPlayerRegistrationConfirmationEmail(player) {
       </head>
       <body>
         <div class="card">
-          <div class="header">
-            <h1>Registration Received!</h1>
-            <p>Goregaon Premier League • Radhe Radhe Chashak Season 4</p>
-            <div class="badge">REG ID: #${displayPlayerId}</div>
+          <div class="header" style="background: #eff6ff; padding: 32px 24px; text-align: center; border-bottom: 2px solid #dbeafe;">
+            <h1 style="margin: 0 0 6px; font-size: 24px; font-weight: 900; color: #1e3a8a !important;">Registration Received!</h1>
+            <p style="margin: 0; color: #2563eb !important; font-size: 13px; font-weight: 600;">Goregaon Premier League &bull; Radhe Radhe Chashak Season 4</p>
+            <div class="badge" style="display: inline-block; background: #dbeafe; color: #1e40af !important; border: 1.5px solid #bfdbfe; padding: 6px 18px; border-radius: 999px; font-size: 14px; font-weight: 900; margin-top: 16px; letter-spacing: 1px;">REG ID: #${displayPlayerId}</div>
           </div>
           <div class="body">
             <p class="intro">
@@ -376,12 +381,14 @@ export async function sendPlayerStatusEmail(player, status, notes = "", cardData
       <html>
       <head>
         <meta charset="utf-8" />
+        <meta name="color-scheme" content="light" />
+        <meta name="supported-color-schemes" content="light" />
         <style>
           body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #f1f5f9; margin: 0; padding: 24px; color: #1e293b; }
           .card { max-width: 620px; margin: 0 auto; background: #ffffff; border-radius: 14px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08); }
-          .header { background: #f8fafc; padding: 28px 24px; text-align: center; border-bottom: 1px solid #e2e8f0; }
-          .header h1 { margin: 0 0 6px; font-size: 24px; font-weight: 800; color: #0f172a; letter-spacing: -0.5px; }
-          .header p { margin: 0; color: #64748b; font-size: 14px; }
+          .header { background: #eff6ff; padding: 28px 24px; text-align: center; border-bottom: 2px solid #dbeafe; }
+          .header h1 { margin: 0 0 6px; font-size: 24px; font-weight: 900; color: #1e3a8a; letter-spacing: -0.5px; }
+          .header p { margin: 0; color: #2563eb; font-size: 14px; font-weight: 600; }
           .status-banner { margin: 24px; padding: 18px; border-radius: 10px; background: ${statusBg}; border: 1.5px solid ${statusBorder}; text-align: center; }
           .status-badge { display: inline-block; font-size: 13px; font-weight: 800; letter-spacing: 1px; color: ${statusBadgeColor}; text-transform: uppercase; }
           .status-text { margin: 8px 0 0; font-size: 15px; font-weight: 600; color: #0f172a; }
@@ -400,9 +407,9 @@ export async function sendPlayerStatusEmail(player, status, notes = "", cardData
       </head>
       <body>
         <div class="card">
-          <div class="header">
-            <h1>Goregaon Premier League</h1>
-            <p>Radhe Radhe Chashak • Season 2026-2027</p>
+          <div class="header" style="background: #eff6ff; padding: 28px 24px; text-align: center; border-bottom: 2px solid #dbeafe;">
+            <h1 style="margin: 0 0 6px; font-size: 24px; font-weight: 900; color: #1e3a8a !important; letter-spacing: -0.5px;">Goregaon Premier League</h1>
+            <p style="margin: 0; color: #2563eb !important; font-size: 14px; font-weight: 600;">Radhe Radhe Chashak &bull; Season 2026-2027</p>
           </div>
 
           <div class="status-banner">
@@ -591,6 +598,8 @@ export async function sendTeamAssignmentEmail(player, team, cardDataUrl = null) 
       <html>
       <head>
         <meta charset="utf-8" />
+        <meta name="color-scheme" content="light" />
+        <meta name="supported-color-schemes" content="light" />
         <style>
           body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #f8fafc; margin: 0; padding: 24px 16px; color: #1e293b; }
           .card { max-width: 620px; margin: 0 auto; background: #ffffff; border-radius: 18px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 12px 30px -8px rgba(0, 0, 0, 0.08); }
@@ -625,10 +634,10 @@ export async function sendTeamAssignmentEmail(player, team, cardDataUrl = null) 
       </head>
       <body>
         <div class="card">
-          <div class="header">
-            <h1>Goregaon Premier League</h1>
-            <p>Radhe Radhe Chashak • Official Player Auction Result</p>
-            <div class="badge">AUCTION SELECTION CONFIRMED</div>
+          <div class="header" style="background: #eff6ff; padding: 32px 24px; text-align: center; border-bottom: 2px solid #dbeafe;">
+            <h1 style="margin: 0 0 6px; font-size: 24px; font-weight: 900; color: #1e3a8a !important; letter-spacing: -0.5px;">Goregaon Premier League</h1>
+            <p style="margin: 0; color: #2563eb !important; font-size: 13px; font-weight: 600;">Radhe Radhe Chashak &bull; Official Player Auction Result</p>
+            <div class="badge" style="display: inline-block; background: #dbeafe; color: #1e40af !important; border: 1.5px solid #bfdbfe; padding: 6px 18px; border-radius: 999px; font-size: 12px; font-weight: 900; margin-top: 14px; text-transform: uppercase; letter-spacing: 0.5px;">AUCTION SELECTION CONFIRMED</div>
           </div>
 
           <div class="body">
@@ -768,12 +777,14 @@ export async function sendAdminPasswordResetOtp(otpCode, adminEmail) {
       <html>
       <head>
         <meta charset="utf-8" />
+        <meta name="color-scheme" content="light" />
+        <meta name="supported-color-schemes" content="light" />
         <style>
           body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #f8fafc; margin: 0; padding: 24px; color: #1e293b; }
           .card { max-width: 520px; margin: 0 auto; background: #ffffff; border-radius: 14px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08); }
-          .header { background: #f8fafc; padding: 26px 20px; text-align: center; border-bottom: 1px solid #e2e8f0; }
-          .header h1 { margin: 0 0 4px; font-size: 22px; font-weight: 800; color: #0f172a; }
-          .header p { margin: 0; color: #64748b; font-size: 13px; }
+          .header { background: #eff6ff; padding: 26px 20px; text-align: center; border-bottom: 2px solid #dbeafe; }
+          .header h1 { margin: 0 0 4px; font-size: 22px; font-weight: 900; color: #1e3a8a; }
+          .header p { margin: 0; color: #2563eb; font-size: 13px; font-weight: 600; }
           .body { padding: 24px; text-align: center; }
           .otp-box { background: #eff6ff; border: 2px dashed #3b82f6; border-radius: 12px; padding: 18px; margin: 20px 0; }
           .otp-title { font-size: 12px; font-weight: 700; color: #1e40af; text-transform: uppercase; letter-spacing: 1px; }
@@ -785,9 +796,9 @@ export async function sendAdminPasswordResetOtp(otpCode, adminEmail) {
       </head>
       <body>
         <div class="card">
-          <div class="header">
-            <h1>GPL Admin Console</h1>
-            <p>Password Reset Verification Request</p>
+          <div class="header" style="background: #eff6ff; padding: 26px 20px; text-align: center; border-bottom: 2px solid #dbeafe;">
+            <h1 style="margin: 0 0 4px; font-size: 22px; font-weight: 900; color: #1e3a8a !important;">GPL Admin Console</h1>
+            <p style="margin: 0; color: #2563eb !important; font-size: 13px; font-weight: 600;">Password Reset Verification Request</p>
           </div>
           <div class="body">
             <p style="font-size: 14px; color: #334155; margin: 0 0 16px;">
