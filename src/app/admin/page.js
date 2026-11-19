@@ -75,7 +75,7 @@ export default function AdminDashboard() {
   const [settings, setSettings] = useState({
     instagramUsername: "mi_sandeep_jadhav",
     registrationFee: 0,
-    maxCapacity: 140,
+    maxCapacity: 200,
     adminEmail: "goregaonpremierleague11@gmail.com",
     registrationDeadline: "2026-11-28T09:00",
     registrationOpen: true
@@ -3069,7 +3069,7 @@ export default function AdminDashboard() {
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-sm font-bold text-slate-900 focus:ring-2 focus:ring-[#0041b9]"
                   />
                   <p className="text-[11px] text-slate-500 mt-1">
-                    Total pool limit ({settings.maxCapacity || 200} players). Exactly 140 will be drafted across 10 teams (14/team), remaining stay unsold in pool.
+                    Total pool limit ({settings.maxCapacity || 200} players). Exactly 150 will be drafted across 10 teams (15/team), remaining stay unsold in pool.
                   </p>
                 </div>
                 <div>

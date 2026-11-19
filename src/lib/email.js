@@ -317,14 +317,15 @@ export async function sendPlayerRegistrationConfirmationEmail(player) {
               <h4>What Happens Next?</h4>
               <p>
                 1. The organizing committee will review your Aadhaar and Ward 51/54 residency criteria.<br/>
-                2. Once your registration is <strong>Approved</strong>, you will receive an approval email with your official Player ID Card, and you will enter the <strong>Grand Player Auction Pool</strong>!<br/>
-                3. You can also verify your live status anytime on the GPL website under <strong>"Check Status"</strong> using your phone number or Registration ID.
+                2. Once your registration is <strong>Approved</strong>, you will receive an approval email with your official Player ID Card, and you will enter the <strong>Grand Player Auction Pool (150 Players Draft)</strong>!<br/>
+                3. <strong>Grand Player Auction:</strong> 7th December 2026 | <strong>Match Dates:</strong> 16, 17, 23 &amp; 24 January 2027<br/>
+                4. You can also verify your live status anytime on the GPL website under <strong>"Check Status"</strong> using your phone number or Registration ID.
               </p>
             </div>
           </div>
           <div class="footer">
             Goregaon Premier League Season 4 • Sambhaji Maidan, Goregaon East, Mumbai<br/>
-            Organised by Sandeep Jadhav (Founder of Radhe Radhe Foundation)<br/>
+            Organised by Sandeep Jadhav (Founder of Radhe Radhe Foundation)<br/>Tournament Managed by Balram Gupta (Ballu) &amp; Mohsin Patel<br/>
             📧 <a href="mailto:goregaonpremierleague11@gmail.com" style="color: #64748b; text-decoration: none; font-weight: 600;">goregaonpremierleague11@gmail.com</a>
           </div>
         </div>
@@ -497,8 +498,8 @@ export async function sendPlayerStatusEmail(player, status, notes = "", cardData
               isApproved
                 ? `<div class="action-box">
                     <strong>📅 Important Tournament Schedule:</strong><br />
-                    • <strong>Mega Player Auction:</strong> December 2026<br />
-                    • <strong>Tournament Match Dates:</strong> January 2027<br />
+                    • <strong>Grand Player Auction:</strong> 7th December 2026<br />
+                    • <strong>Tournament Match Dates:</strong> 16, 17, 23 &amp; 24 January 2027<br />
                     • <strong>Venue:</strong> Sambhaji Maidan, Goregaon East, Mumbai
                   </div>`
                 : `<div class="action-box" style="background: #fff1f2; border-color: #fecdd3; color: #9f1239;">
@@ -510,7 +511,7 @@ export async function sendPlayerStatusEmail(player, status, notes = "", cardData
 
           <div class="footer">
             <strong>Goregaon Premier League • Radhe Radhe Chashak</strong><br />
-            Organised by: Sandeep Jadhav (Founder of Radhe Radhe Foundation)<br />
+            Organised by: Sandeep Jadhav (Founder of Radhe Radhe Foundation)<br />Tournament Managed by: Balram Gupta (Ballu) &amp; Mohsin Patel<br />
             📧 <a href="mailto:goregaonpremierleague11@gmail.com" style="color: #64748b; text-decoration: none; font-weight: 600;">goregaonpremierleague11@gmail.com</a><br />
             This is an automated tournament status dispatch.
           </div>
@@ -702,7 +703,8 @@ export async function sendTeamAssignmentEmail(player, team, cardDataUrl = null) 
               <p>
                 1. Your team management (${teamOwner}) will connect with you regarding practice matches and team strategy.<br />
                 2. Your official customized team kit (${player.tshirtSize} Jersey / ${player.trackSize} Track Pant) will be handed to you prior to the opening ceremony.<br />
-                3. Follow live league announcements and match schedules on the official GPL portal.
+                3. <strong>Tournament Match Dates:</strong> 16, 17, 23 &amp; 24 January 2027 at Sambhaji Maidan, Goregaon East.<br />
+                4. Follow live league announcements and match schedules on the official GPL portal.
               </p>
             </div>
 
@@ -710,7 +712,7 @@ export async function sendTeamAssignmentEmail(player, team, cardDataUrl = null) 
 
           <div class="footer">
             <strong>Goregaon Premier League &bull; Radhe Radhe Chashak Season 4</strong><br />
-            Organised with pride by Sandeep Jadhav (Founder of Radhe Radhe Foundation)<br />
+            Organised with pride by Sandeep Jadhav (Founder of Radhe Radhe Foundation)<br />Tournament Managed by Balram Gupta (Ballu) &amp; Mohsin Patel<br />
             📧 <a href="mailto:goregaonpremierleague11@gmail.com" style="color: #64748b; text-decoration: none; font-weight: 600;">goregaonpremierleague11@gmail.com</a>
           </div>
         </div>

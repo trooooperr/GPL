@@ -19,7 +19,7 @@ export const metadata = {
     "Radhe Radhe Chasak GPL4",
     "Sandeep Jadhav",
     "Radhe Radhe Foundation",
-    "ROYAL STRIKER GROUP",
+    "Tournament Managed by Balram Gupta (Ballu) & Mohsin Patel",
     "Sambhaji Maidan"
   ]
 };

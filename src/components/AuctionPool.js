@@ -80,7 +80,7 @@ export default function AuctionPool({ players = [], teams = [], stats = {}, sett
               <strong>{approvedPlayers.length}</strong> Registered / {poolLimit} Pool
             </span>
             <span className="text-slate-300">|</span>
-            <span className="text-emerald-700 font-bold">{soldCount}/140 Drafted</span>
+            <span className="text-emerald-700 font-bold">{soldCount}/150 Drafted</span>
             <span className="text-slate-300">|</span>
             <span className="text-amber-600 font-bold">{unsoldCount} Unsold</span>
           </div>

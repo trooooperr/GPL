@@ -98,7 +98,7 @@ export async function drawPlayerCardToCanvas(canvas, { player, regNum, photo, st
   };
 
   try {
-    const baseImg = await loadImg("/images/gpl-card-base.png?v=5");
+    const baseImg = await loadImg("/images/gpl-card-base.png?v=6");
     ctx.drawImage(baseImg, 0, 0, W, H);
   } catch (err) {
     console.error("Base image load error:", err);

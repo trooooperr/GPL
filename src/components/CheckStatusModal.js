@@ -240,6 +240,23 @@ export default function CheckStatusModal({ isOpen, onClose }) {
       ctx.fillText(`VERIFY: GPL4-AUTH-${player.regNumber || "0000"}-${(player.phone || "0000").slice(-4)}`, 400, 765);
       ctx.textAlign = "left";
 
+      // Draw Sandeep Jadhav portrait in bottom right of pass
+      const drawOrganizerPortrait = () => {
+        return new Promise((resolve) => {
+          const sjImg = new Image();
+          sjImg.crossOrigin = "anonymous";
+          sjImg.onload = () => {
+            const sjH = 160;
+            const sjW = Math.round(sjImg.naturalWidth * (sjH / sjImg.naturalHeight));
+            ctx.drawImage(sjImg, 760 - sjW, 975 - sjH, sjW, sjH);
+            resolve();
+          };
+          sjImg.onerror = () => resolve();
+          sjImg.src = "/images/sandeep-jadhav-transparent.png";
+        });
+      };
+      await drawOrganizerPortrait();
+
       // Footer
       ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
       ctx.lineWidth = 1;
@@ -249,13 +266,15 @@ export default function CheckStatusModal({ isOpen, onClose }) {
       ctx.stroke();
 
       ctx.fillStyle = "#fcd34d";
-      ctx.font = "bold 20px sans-serif";
-      ctx.fillText("Venue: Sambhaji Maidan, Goregaon East, Mumbai", 50, 855);
+      ctx.font = "bold 18px sans-serif";
+      ctx.fillText("Venue: Sambhaji Maidan, Goregaon East, Mumbai", 50, 850);
 
       ctx.fillStyle = "#cbd5e1";
-      ctx.font = "16px sans-serif";
-      ctx.fillText("Organized by Sandeep Jadhav (Founder, Radhe Radhe Foundation)", 50, 895);
-      ctx.fillText("Non-transferable official accreditation badge for Radhe Radhe Chasak GPL4.", 50, 925);
+      ctx.font = "15px sans-serif";
+      ctx.fillText("Organized by Sandeep Jadhav (Founder, Radhe Radhe Foundation)", 50, 885);
+      ctx.fillText("Tournament Managed by Balram Gupta (Ballu) & Mohsin Patel", 50, 915);
+      ctx.font = "13px sans-serif";
+      ctx.fillText("Official accreditation badge for Radhe Radhe Chasak GPL4.", 50, 945);
 
       // Trigger download
       const link = document.createElement("a");

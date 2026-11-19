@@ -33,7 +33,7 @@ export default function AboutSection({ maxCapacity = 200 }) {
               </h3>
 
               <p className="text-slate-300 text-sm leading-relaxed mb-6">
-                Organized with precision by <strong>Sandeep Jadhav (Founder, Radhe Radhe Foundation)</strong> &bull; Event Managed by <strong>ROYAL STRIKER GROUP</strong>, GPL brings IPL-grade atmosphere to our local grounds.
+                Organized with precision by <strong>Sandeep Jadhav (Founder, Radhe Radhe Foundation)</strong> &bull; Tournament Managed by <strong>Balram Gupta (Ballu) &amp; Mohsin Patel</strong>, GPL brings IPL-grade atmosphere to our local grounds.
               </p>
 
               {/* Badges */}
@@ -49,7 +49,7 @@ export default function AboutSection({ maxCapacity = 200 }) {
                   <div className="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold">
                     {maxCapacity}
                   </div>
-                  <span>Players registering in official pool (140 drafted across 10 teams × 14, {Math.max(0, maxCapacity - 140)} pool reserves)</span>
+                  <span>Players registering in official pool (150 drafted across 10 teams × 15, {Math.max(0, maxCapacity - 150)} pool reserves)</span>
                 </div>
 
                 <div className="flex items-center gap-3 text-xs text-slate-300">

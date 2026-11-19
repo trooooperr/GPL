@@ -16,7 +16,7 @@ export default function Footer() {
           </div>
           <div className="text-xs text-slate-400 text-left leading-tight">
             <strong className="text-white block font-semibold">Goregaon Premier League</strong>
-            Organised by Sandeep Jadhav (Founder, Radhe Radhe Foundation)
+            <span>Organised by Sandeep Jadhav (Founder, Radhe Radhe Foundation) &bull; Tournament Managed by Balram Gupta (Ballu) &amp; Mohsin Patel</span>
           </div>
         </div>
 

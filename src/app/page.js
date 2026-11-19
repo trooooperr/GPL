@@ -22,7 +22,7 @@ export const metadata = {
     "Radhe Radhe Chashak",
     "Sandeep Jadhav",
     "Radhe Radhe Foundation",
-    "ROYAL STRIKER GROUP",
+    "Tournament Managed by Balram Gupta (Ballu) & Mohsin Patel",
     "Ward 51",
     "Ward 54",
     "Sambhaji Maidan"
