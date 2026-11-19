@@ -140,13 +140,6 @@ export default function TeamsGrid({ teams = [] }) {
                 >
                   Close
                 </button>
-                <a
-                  href="/teams"
-                  className="flex-1 py-2.5 rounded-xl bg-[#081a36] hover:bg-[#0d2854] text-white text-xs font-bold transition-all text-center flex items-center justify-center gap-1 shadow-sm"
-                >
-                  <span>Full Squad Page</span>
-                  <span>→</span>
-                </a>
               </div>
 
             </div>
