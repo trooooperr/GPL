@@ -5,10 +5,8 @@ import { INITIAL_SETTINGS } from "@/lib/constants";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-const NO_CACHE_HEADERS = {
-  "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
-  "Pragma": "no-cache",
-  "Expires": "0"
+const STATS_CACHE_HEADERS = {
+  "Cache-Control": "public, s-maxage=10, stale-while-revalidate=30",
 };
 
 export async function GET() {
@@ -65,7 +63,7 @@ export async function GET() {
         upiId: settings.upiId || "shahbazkhandm@okhdfcbank"
       },
       settings: safeSettings
-    }, { headers: NO_CACHE_HEADERS });
+    }, { headers: STATS_CACHE_HEADERS });
   } catch (e) {
     const safeInitial = { ...INITIAL_SETTINGS };
     delete safeInitial.adminPassword;
@@ -87,6 +85,6 @@ export async function GET() {
         upiId: "shahbazkhandm@okhdfcbank"
       },
       settings: safeInitial
-    }, { headers: NO_CACHE_HEADERS });
+    }, { headers: STATS_CACHE_HEADERS });
   }
 }

@@ -7,8 +7,7 @@ import {
 import { INITIAL_TEAMS, INITIAL_SETTINGS } from "@/lib/constants";
 import TeamsPortalClient from "@/components/TeamsPortalClient";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+export const revalidate = 10;
 
 export const metadata = {
   title: "Franchise Teams & Squads - Radhe Radhe Chasak GPL4",

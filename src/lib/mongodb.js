@@ -29,10 +29,11 @@ export async function connectToDatabase() {
 
   const opts = {
     bufferCommands: false, // In serverless, fail fast instead of hanging/buffering
-    serverSelectionTimeoutMS: 10000, // 10s for Vercel cold starts
-    connectTimeoutMS: 10000,
-    socketTimeoutMS: 30000,
-    maxPoolSize: 3, // Safe for serverless/Vercel on MongoDB Atlas M0 free tier (avoids 500 connection ceiling)
+    serverSelectionTimeoutMS: 5000, // 5s for Vercel serverless
+    connectTimeoutMS: 5000,
+    socketTimeoutMS: 20000,
+    maxPoolSize: 1, // Crucial for Vercel serverless: exactly 1 connection per lambda prevents multiplying connections
+    maxIdleTimeMS: 5000, // Drop idle connections after 5s so Atlas connection count doesn't stack up
   };
 
   try {
