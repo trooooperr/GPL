@@ -14,11 +14,15 @@ export async function GET(request) {
       ? "/images/avatar-placeholder.svg"
       : (docType === "card" ? "/images/gpl-card-base.png" : "/images/doc-placeholder.svg");
 
-    // Private documents — never cache in CDN or shared cache to guarantee the exact uploaded image is always served
-    const PRIVATE_HEADERS = {
-      "Cache-Control": "private, no-cache, no-store, must-revalidate",
-      "Pragma": "no-cache",
-      "Expires": "0"
+    // Edge CDN & Browser Caching:
+    // Caches 7 days on Vercel Edge CDN and 24 hours in browser.
+    // Each URL has immutable query params (&v=4&pid=${id}&nc=${id}) guaranteeing fresh loads when updated.
+    // Serving from Vercel Edge CDN eliminates serverless container launches and drops MongoDB connections to near zero.
+    const CACHE_HEADERS = {
+      "Content-Type": mime,
+      "Cache-Control": "public, max-age=86400, s-maxage=604800, stale-while-revalidate=604800",
+      "CDN-Cache-Control": "public, s-maxage=604800",
+      "Vercel-CDN-Cache-Control": "public, s-maxage=604800"
     };
 
     if (!id) {
@@ -51,10 +55,7 @@ export async function GET(request) {
         const buffer = Buffer.from(parts[1], "base64");
 
         return new Response(buffer, {
-          headers: {
-            "Content-Type": mime,
-            ...PRIVATE_HEADERS
-          }
+          headers: CACHE_HEADERS
         });
       }
     }

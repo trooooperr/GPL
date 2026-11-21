@@ -33,6 +33,7 @@ export async function connectToDatabase() {
     connectTimeoutMS: 5000,
     socketTimeoutMS: 20000,
     maxPoolSize: 1, // Crucial for Vercel serverless: exactly 1 connection per lambda prevents multiplying connections
+    minPoolSize: 0, // Never keep idle connections open
     maxIdleTimeMS: 5000, // Drop idle connections after 5s so Atlas connection count doesn't stack up
   };
 
