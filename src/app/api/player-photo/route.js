@@ -14,8 +14,13 @@ export async function GET(request) {
       ? "/images/avatar-placeholder.svg"
       : (docType === "card" ? "/images/gpl-card-base.png" : "/images/doc-placeholder.svg");
 
+    const NO_CACHE_HEADERS = {
+      "Cache-Control": "no-store, no-cache, must-revalidate",
+      "Pragma": "no-cache"
+    };
+
     if (!id) {
-      return NextResponse.redirect(new URL(placeholder, request.url));
+      return NextResponse.redirect(new URL(placeholder, request.url), { headers: NO_CACHE_HEADERS });
     }
 
     await connectToDatabase();
@@ -33,7 +38,7 @@ export async function GET(request) {
 
     const rawUrl = player?.[targetField];
     if (!rawUrl || rawUrl.includes("placeholder")) {
-      return NextResponse.redirect(new URL(placeholder, request.url));
+      return NextResponse.redirect(new URL(placeholder, request.url), { headers: NO_CACHE_HEADERS });
     }
 
     if (rawUrl.startsWith("data:")) {
@@ -58,9 +63,11 @@ export async function GET(request) {
       return NextResponse.redirect(new URL(rawUrl, request.url));
     }
 
-    return NextResponse.redirect(new URL(placeholder, request.url));
+    return NextResponse.redirect(new URL(placeholder, request.url), { headers: NO_CACHE_HEADERS });
   } catch (error) {
-    return NextResponse.redirect(new URL("/images/avatar-placeholder.svg", request.url));
+    return NextResponse.redirect(new URL("/images/avatar-placeholder.svg", request.url), {
+      headers: { "Cache-Control": "no-store, no-cache, must-revalidate" }
+    });
   }
 }
 
