@@ -1975,7 +1975,7 @@ export default function AdminDashboard() {
                     <div className="grid grid-cols-3 gap-1.5 pt-1">
                       <button
                         type="button"
-                        onClick={() => setFullScreenImage({ url: `${player.aadhaarFrontUrl}${player.aadhaarFrontUrl.includes('?') ? '&' : '?'}nc=v5_${player.id}`, title: `Aadhaar Front - ${player.name}` })}
+                        onClick={() => setFullScreenImage({ url: player.aadhaarFrontUrl, title: `Aadhaar Front - ${player.name}` })}
                         className="py-1.5 px-1.5 rounded-lg bg-blue-50 text-[#0041b9] text-[11px] font-semibold border border-blue-100 hover:bg-blue-100 flex items-center justify-center gap-1 transition-colors min-w-0 cursor-pointer"
                       >
                         <FileCheck className="w-3.5 h-3.5 shrink-0" />
@@ -1984,7 +1984,7 @@ export default function AdminDashboard() {
 
                       <button
                         type="button"
-                        onClick={() => setFullScreenImage({ url: `${player.aadhaarBackUrl}${player.aadhaarBackUrl.includes('?') ? '&' : '?'}nc=v5_${player.id}`, title: `Aadhaar Back - ${player.name}` })}
+                        onClick={() => setFullScreenImage({ url: player.aadhaarBackUrl, title: `Aadhaar Back - ${player.name}` })}
                         className="py-1.5 px-1.5 rounded-lg bg-blue-50 text-[#0041b9] text-[11px] font-semibold border border-blue-100 hover:bg-blue-100 flex items-center justify-center gap-1 transition-colors min-w-0 cursor-pointer"
                       >
                         <FileCheck className="w-3.5 h-3.5 shrink-0" />
@@ -1993,7 +1993,7 @@ export default function AdminDashboard() {
 
                       <button
                         type="button"
-                        onClick={() => setFullScreenImage({ url: `${player.paymentProofUrl}${player.paymentProofUrl.includes('?') ? '&' : '?'}nc=v5_${player.id}`, title: `Instagram Follow Proof - ${player.name}` })}
+                        onClick={() => setFullScreenImage({ url: player.paymentProofUrl, title: `Instagram Follow Proof - ${player.name}` })}
                         className="py-1.5 px-1.5 rounded-lg bg-pink-50 text-pink-700 text-[11px] font-semibold border border-pink-100 hover:bg-pink-100 flex items-center justify-center gap-1 transition-colors min-w-0 cursor-pointer"
                       >
                         <InstagramIcon className="w-3.5 h-3.5 shrink-0 text-pink-500" />
@@ -2167,7 +2167,7 @@ export default function AdminDashboard() {
                               <div className="flex items-center gap-2.5">
                                 <div className="w-8 h-8 rounded-full bg-blue-100 text-[#0041b9] flex items-center justify-center font-bold text-xs shrink-0 overflow-hidden border border-blue-200">
                                   {player.photoUrl && !player.photoUrl.includes('placeholder') ? (
-                                    <img src={`${player.photoUrl}${player.photoUrl.includes('?') ? '&' : '?'}nc=v5_${player.id}`} alt={player.name} loading="lazy" className="w-full h-full object-cover" />
+                                    <img src={player.photoUrl} alt={player.name} loading="lazy" className="w-full h-full object-cover" />
                                   ) : (
                                     player.name[0]
                                   )}
@@ -2200,7 +2200,7 @@ export default function AdminDashboard() {
                               <div className="flex items-center gap-1.5">
                                 {player.photoUrl && !player.photoUrl.includes('placeholder') && (
                                   <button
-                                    onClick={() => setFullScreenImage({ url: `${player.photoUrl}${player.photoUrl.includes('?') ? '&' : '?'}nc=v5_${player.id}`, title: `Profile Photo - ${player.name}` })}
+                                    onClick={() => setFullScreenImage({ url: player.photoUrl, title: `Profile Photo - ${player.name}` })}
                                     className="p-1 rounded bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-mono text-[10px] px-1.5 cursor-pointer"
                                     title="Profile Photo"
                                   >
@@ -2208,21 +2208,21 @@ export default function AdminDashboard() {
                                   </button>
                                 )}
                                 <button
-                                  onClick={() => setFullScreenImage({ url: `${player.aadhaarFrontUrl}${player.aadhaarFrontUrl.includes('?') ? '&' : '?'}nc=v5_${player.id}`, title: `Aadhaar Front - ${player.name}` })}
+                                  onClick={() => setFullScreenImage({ url: player.aadhaarFrontUrl, title: `Aadhaar Front - ${player.name}` })}
                                   className="p-1 rounded bg-blue-50 text-[#0041b9] hover:bg-blue-100 font-mono text-[10px] px-1.5 cursor-pointer"
                                   title="Aadhaar Front"
                                 >
                                   AF
                                 </button>
                                 <button
-                                  onClick={() => setFullScreenImage({ url: `${player.aadhaarBackUrl}${player.aadhaarBackUrl.includes('?') ? '&' : '?'}nc=v5_${player.id}`, title: `Aadhaar Back - ${player.name}` })}
+                                  onClick={() => setFullScreenImage({ url: player.aadhaarBackUrl, title: `Aadhaar Back - ${player.name}` })}
                                   className="p-1 rounded bg-blue-50 text-[#0041b9] hover:bg-blue-100 font-mono text-[10px] px-1.5 cursor-pointer"
                                   title="Aadhaar Back"
                                 >
                                   AB
                                 </button>
                                 <button
-                                  onClick={() => setFullScreenImage({ url: `${player.paymentProofUrl}${player.paymentProofUrl.includes('?') ? '&' : '?'}nc=v5_${player.id}`, title: `Instagram Follow Proof - ${player.name}` })}
+                                  onClick={() => setFullScreenImage({ url: player.paymentProofUrl, title: `Instagram Follow Proof - ${player.name}` })}
                                   className="p-1 rounded bg-pink-50 text-pink-700 hover:bg-pink-100 font-mono text-[10px] px-1.5 cursor-pointer"
                                   title="Instagram Follow Proof"
                                 >
@@ -2459,7 +2459,7 @@ export default function AdminDashboard() {
                         <div className="w-14 h-14 rounded-xl bg-slate-100 border-2 border-amber-400 overflow-hidden shrink-0 shadow-xs flex items-center justify-center">
                           {player.photoUrl && !player.photoUrl.includes("placeholder") ? (
                             <img
-                              src={`${player.photoUrl}${player.photoUrl.includes('?') ? '&' : '?'}nc=v5_${player.id}`}
+                              src={player.photoUrl}
                               alt={player.name}
                               loading="lazy"
                               className="w-full h-full object-cover"
@@ -3828,10 +3828,10 @@ export default function AdminDashboard() {
             <div className="flex items-center gap-3">
               <div
                 className="w-12 h-12 rounded-full bg-blue-100 text-[#0041b9] flex items-center justify-center font-bold text-lg overflow-hidden cursor-pointer border-2 border-blue-200 shrink-0"
-                onClick={() => inspectPlayer.photoUrl && !inspectPlayer.photoUrl.includes('placeholder') && setFullScreenImage({ url: `${inspectPlayer.photoUrl}${inspectPlayer.photoUrl.includes('?') ? '&' : '?'}nc=v5_${inspectPlayer.id}`, title: `Profile Photo - ${inspectPlayer.name}` })}
+                onClick={() => inspectPlayer.photoUrl && !inspectPlayer.photoUrl.includes('placeholder') && setFullScreenImage({ url: inspectPlayer.photoUrl, title: `Profile Photo - ${inspectPlayer.name}` })}
               >
                 {inspectPlayer.photoUrl && !inspectPlayer.photoUrl.includes('placeholder') ? (
-                  <img src={`${inspectPlayer.photoUrl}${inspectPlayer.photoUrl.includes('?') ? '&' : '?'}nc=v5_${inspectPlayer.id}`} alt={inspectPlayer.name} className="w-full h-full object-cover" />
+                  <img src={inspectPlayer.photoUrl} alt={inspectPlayer.name} className="w-full h-full object-cover" />
                 ) : (
                   inspectPlayer.name[0]
                 )}
@@ -3852,10 +3852,10 @@ export default function AdminDashboard() {
                 <div className="space-y-1">
                   <span className="text-[10px] font-bold text-slate-500 uppercase block">Profile Photo</span>
                   <div
-                    onClick={() => setFullScreenImage({ url: `${inspectPlayer.photoUrl}${inspectPlayer.photoUrl.includes('?') ? '&' : '?'}nc=v5_${inspectPlayer.id}`, title: `Profile Photo - ${inspectPlayer.name}` })}
+                    onClick={() => setFullScreenImage({ url: inspectPlayer.photoUrl, title: `Profile Photo - ${inspectPlayer.name}` })}
                     className="h-32 sm:h-36 rounded-xl bg-slate-100 border border-slate-200 overflow-hidden flex items-center justify-center cursor-pointer group relative hover:border-[#0041b9]"
                   >
-                    <img src={`${inspectPlayer.photoUrl}${inspectPlayer.photoUrl.includes('?') ? '&' : '?'}nc=v5_${inspectPlayer.id}`} alt="Profile" className="max-h-full max-w-full object-cover" />
+                    <img src={inspectPlayer.photoUrl} alt="Profile" className="max-h-full max-w-full object-cover" />
                     <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-white">
                       <Maximize2 className="w-5 h-5" />
                     </div>
@@ -3867,10 +3867,10 @@ export default function AdminDashboard() {
               <div className="space-y-1">
                 <span className="text-[10px] font-bold text-slate-500 uppercase block">Aadhaar Front</span>
                 <div
-                  onClick={() => setFullScreenImage({ url: `${inspectPlayer.aadhaarFrontUrl}${inspectPlayer.aadhaarFrontUrl.includes('?') ? '&' : '?'}nc=v5_${inspectPlayer.id}`, title: `Aadhaar Card Front - ${inspectPlayer.name}` })}
+                  onClick={() => setFullScreenImage({ url: inspectPlayer.aadhaarFrontUrl, title: `Aadhaar Card Front - ${inspectPlayer.name}` })}
                   className="h-32 sm:h-36 rounded-xl bg-slate-100 border border-slate-200 overflow-hidden flex items-center justify-center cursor-pointer group relative hover:border-[#0041b9]"
                 >
-                  <img src={`${inspectPlayer.aadhaarFrontUrl}${inspectPlayer.aadhaarFrontUrl.includes('?') ? '&' : '?'}nc=v5_${inspectPlayer.id}`} alt="Aadhaar Front" className="max-h-full max-w-full object-contain" />
+                  <img src={inspectPlayer.aadhaarFrontUrl} alt="Aadhaar Front" className="max-h-full max-w-full object-contain" />
                   <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-white">
                     <Maximize2 className="w-5 h-5" />
                   </div>
@@ -3881,10 +3881,10 @@ export default function AdminDashboard() {
               <div className="space-y-1">
                 <span className="text-[10px] font-bold text-slate-500 uppercase block">Aadhaar Back</span>
                 <div
-                  onClick={() => setFullScreenImage({ url: `${inspectPlayer.aadhaarBackUrl}${inspectPlayer.aadhaarBackUrl.includes('?') ? '&' : '?'}nc=v5_${inspectPlayer.id}`, title: `Aadhaar Card Back - ${inspectPlayer.name}` })}
+                  onClick={() => setFullScreenImage({ url: inspectPlayer.aadhaarBackUrl, title: `Aadhaar Card Back - ${inspectPlayer.name}` })}
                   className="h-32 sm:h-36 rounded-xl bg-slate-100 border border-slate-200 overflow-hidden flex items-center justify-center cursor-pointer group relative hover:border-[#0041b9]"
                 >
-                  <img src={`${inspectPlayer.aadhaarBackUrl}${inspectPlayer.aadhaarBackUrl.includes('?') ? '&' : '?'}nc=v5_${inspectPlayer.id}`} alt="Aadhaar Back" className="max-h-full max-w-full object-contain" />
+                  <img src={inspectPlayer.aadhaarBackUrl} alt="Aadhaar Back" className="max-h-full max-w-full object-contain" />
                   <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-white">
                     <Maximize2 className="w-5 h-5" />
                   </div>
@@ -3898,11 +3898,11 @@ export default function AdminDashboard() {
                   <span>Instagram Proof</span>
                 </span>
                 <div
-                  onClick={() => setFullScreenImage({ url: `${inspectPlayer.paymentProofUrl}${inspectPlayer.paymentProofUrl.includes('?') ? '&' : '?'}nc=v5_${inspectPlayer.id}`, title: `Instagram Follow Proof - ${inspectPlayer.name}` })}
+                  onClick={() => setFullScreenImage({ url: inspectPlayer.paymentProofUrl, title: `Instagram Follow Proof - ${inspectPlayer.name}` })}
                   className="h-32 sm:h-36 rounded-xl bg-pink-50/50 border border-pink-200 overflow-hidden flex items-center justify-center cursor-pointer group relative hover:border-pink-500"
                 >
                   {inspectPlayer.paymentProofUrl && !inspectPlayer.paymentProofUrl.includes('placeholder') ? (
-                    <img src={`${inspectPlayer.paymentProofUrl}${inspectPlayer.paymentProofUrl.includes('?') ? '&' : '?'}nc=v5_${inspectPlayer.id}`} alt="Instagram Proof" className="max-h-full max-w-full object-contain" />
+                    <img src={inspectPlayer.paymentProofUrl} alt="Instagram Proof" className="max-h-full max-w-full object-contain" />
                   ) : (
                     <div className="text-center p-2 text-slate-400 text-xs">No screenshot uploaded</div>
                   )}
@@ -4034,7 +4034,7 @@ export default function AdminDashboard() {
               <div className="flex items-center gap-3.5 p-3 rounded-xl bg-slate-50 border border-slate-200">
                 <div className="w-14 h-14 rounded-full bg-blue-100 text-[#0041b9] flex items-center justify-center font-bold text-lg overflow-hidden border-2 border-blue-200 shrink-0 shadow-xs">
                   {editPlayer.photoUrl && !editPlayer.photoUrl.includes("placeholder") ? (
-                    <img src={`${editPlayer.photoUrl}${editPlayer.photoUrl.includes('?') ? '&' : '?'}nc=v5_${editPlayer.id}`} alt={editPlayer.name} className="w-full h-full object-cover" />
+                    <img src={editPlayer.photoUrl} alt={editPlayer.name} className="w-full h-full object-cover" />
                   ) : (
                     editPlayer.name?.[0] || "P"
                   )}
@@ -4083,7 +4083,7 @@ export default function AdminDashboard() {
                 <div className="flex items-center gap-3 p-2.5 rounded-xl bg-slate-50 border border-slate-200">
                   <div className="w-12 h-12 rounded-lg bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-xs overflow-hidden border border-slate-300 shrink-0 shadow-2xs">
                     {editPlayer.aadhaarFrontUrl && !editPlayer.aadhaarFrontUrl.includes("placeholder") ? (
-                      <img src={`${editPlayer.aadhaarFrontUrl}${editPlayer.aadhaarFrontUrl.includes('?') ? '&' : '?'}nc=v5_${editPlayer.id}`} alt="Aadhaar Front" className="w-full h-full object-cover" />
+                      <img src={editPlayer.aadhaarFrontUrl} alt="Aadhaar Front" className="w-full h-full object-cover" />
                     ) : (
                       <FileText className="w-5 h-5 text-slate-400" />
                     )}
@@ -4130,7 +4130,7 @@ export default function AdminDashboard() {
                 <div className="flex items-center gap-3 p-2.5 rounded-xl bg-slate-50 border border-slate-200">
                   <div className="w-12 h-12 rounded-lg bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-xs overflow-hidden border border-slate-300 shrink-0 shadow-2xs">
                     {editPlayer.aadhaarBackUrl && !editPlayer.aadhaarBackUrl.includes("placeholder") ? (
-                      <img src={`${editPlayer.aadhaarBackUrl}${editPlayer.aadhaarBackUrl.includes('?') ? '&' : '?'}nc=v5_${editPlayer.id}`} alt="Aadhaar Back" className="w-full h-full object-cover" />
+                      <img src={editPlayer.aadhaarBackUrl} alt="Aadhaar Back" className="w-full h-full object-cover" />
                     ) : (
                       <FileText className="w-5 h-5 text-slate-400" />
                     )}

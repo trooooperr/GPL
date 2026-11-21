@@ -98,7 +98,7 @@ export default async function Home() {
     const regs = (mongoRegs || []).map((r) => {
       let photoUrl = "/images/avatar-placeholder.svg";
       if (r.photoUrl && !r.photoUrl.includes("placeholder")) {
-        photoUrl = r.photoUrl.startsWith("data:") ? `/api/player-photo?id=${r.id}` : r.photoUrl;
+        photoUrl = r.photoUrl.startsWith("data:") ? `/api/player-photo?id=${r.id}&v=5` : r.photoUrl;
       }
       return {
         id: r.id,

@@ -29,7 +29,9 @@ export async function GET(request) {
         return new Response(buffer, {
           headers: {
             "Content-Type": mime,
-            "Cache-Control": "public, max-age=60, s-maxage=60, stale-while-revalidate=120"
+            "Cache-Control": "public, max-age=2592000, s-maxage=2592000, immutable",
+            "CDN-Cache-Control": "public, s-maxage=2592000",
+            "Vercel-CDN-Cache-Control": "public, s-maxage=2592000"
           }
         });
       }

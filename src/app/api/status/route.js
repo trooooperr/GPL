@@ -58,7 +58,7 @@ export async function GET(request) {
     }
 
     const safePhotoUrl = player.photoUrl && !player.photoUrl.includes("placeholder")
-      ? (player.photoUrl.startsWith("http") || player.photoUrl.startsWith("/api") ? player.photoUrl : `/api/player-photo?id=${player.id}`)
+      ? (player.photoUrl.startsWith("http") || player.photoUrl.startsWith("/api") ? player.photoUrl : `/api/player-photo?id=${player.id}&v=5`)
       : null;
 
     // Return safe public details
