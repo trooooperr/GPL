@@ -321,7 +321,7 @@ export async function sendPlayerRegistrationConfirmationEmail(player) {
               <p>
                 1. The organizing committee will review your Aadhaar and Ward 51/54 residency criteria.<br/>
                 2. Once your registration is <strong>Approved</strong>, you will receive an approval email with your official Player ID Card, and you will enter the <strong>Grand Player Auction Pool (150 Players Draft)</strong>!<br/>
-                3. <strong>Grand Player Auction:</strong> 7th December 2026 | <strong>Match Dates:</strong> 16, 17, 23 &amp; 24 January 2027<br/>
+                3. <strong>Grand Player Auction:</strong> 6th December 2026 | <strong>Match Dates:</strong> 16, 17, 23 &amp; 24 January 2027<br/>
                 4. You can also verify your live status anytime on the GPL website under <strong>"Check Status"</strong> using your phone number or Registration ID.
               </p>
             </div>
@@ -501,7 +501,7 @@ export async function sendPlayerStatusEmail(player, status, notes = "", cardData
               isApproved
                 ? `<div class="action-box">
                     <strong>📅 Important Tournament Schedule:</strong><br />
-                    • <strong>Grand Player Auction:</strong> 7th December 2026<br />
+                    • <strong>Grand Player Auction:</strong> 6th December 2026<br />
                     • <strong>Tournament Match Dates:</strong> 16, 17, 23 &amp; 24 January 2027<br />
                     • <strong>Venue:</strong> Sambhaji Maidan, Goregaon Purv Vidhan Sabha, Mumbai
                   </div>`

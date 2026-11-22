@@ -65,6 +65,12 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
     }
   }, [settings?.maxCapacity, stats?.maxCapacity, stats?.approved]);
 
+  const activeRegistrations = stats?.totalRegistered !== undefined
+    ? Number(stats.totalRegistered)
+    : ((Number(stats?.approved) || 0) + (Number(stats?.pending) || 0));
+  const isCapacityFull = maxCapacity > 0 && activeRegistrations >= maxCapacity;
+  const isRegistrationClosed = settings?.registrationOpen === false || isCapacityFull;
+
   // Dynamic Instagram Handle from database settings
   const IG_HANDLE = (settings.instagramUsername || stats?.instagramUsername || "mi_sandeep_jadhav").replace(/^@/, "");
   const IG_URL = `https://instagram.com/${IG_HANDLE}`;
@@ -371,10 +377,10 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
 
           {/* Remaining Slots Counter Banner */}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white shadow-sm border border-slate-200 text-xs sm:text-sm font-semibold text-slate-800 mt-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span>Available Player Slots:</span>
-            <strong className="text-[#059669] font-mono text-base font-extrabold">
-              {remainingSlots} / {maxCapacity}
+            <span className={`w-2.5 h-2.5 rounded-full ${isCapacityFull ? "bg-red-500" : "bg-emerald-500 animate-pulse"}`} />
+            <span>{isCapacityFull ? "Registration Status:" : "Available Player Slots:"}</span>
+            <strong className={`font-mono text-base font-extrabold ${isCapacityFull ? "text-red-600" : "text-[#059669]"}`}>
+              {isCapacityFull ? `FULL (${maxCapacity}/${maxCapacity})` : `${remainingSlots} / ${maxCapacity}`}
             </strong>
           </div>
         </div>
@@ -522,19 +528,32 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
               </div>
             </div>
           </>
-        ) : settings.registrationOpen === false ? (
+        ) : isRegistrationClosed ? (
           <div className="bg-white/95 backdrop-blur-md rounded-2xl sm:rounded-3xl border border-slate-200/90 shadow-xl p-8 sm:p-12 text-center space-y-4">
-            <div className="w-16 h-16 mx-auto rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600">
-              <AlertCircle className="w-8 h-8" />
+            <div className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center ${
+              isCapacityFull ? "bg-emerald-50 border-2 border-emerald-400 text-emerald-600" : "bg-amber-50 border border-amber-200 text-amber-600"
+            }`}>
+              {isCapacityFull ? <CheckCircle2 className="w-8 h-8" /> : <AlertCircle className="w-8 h-8" />}
             </div>
             <h3 className="text-2xl sm:text-3xl font-black text-[#081a36]">
-              Registrations Are Currently Closed
+              {isCapacityFull ? `Registration Capacity Full (${maxCapacity} Slots Filled)` : "Registrations Are Currently Closed"}
             </h3>
-            <p className="text-slate-600 text-sm sm:text-base max-w-md mx-auto">
-              Online player registrations for Goregaon Premier League are currently closed by the organizing committee. Please contact the tournament coordinators for inquiries.
+            <p className="text-slate-600 text-sm sm:text-base max-w-md mx-auto leading-relaxed">
+              {isCapacityFull
+                ? `All ${maxCapacity} official player registration slots for Goregaon Premier League Season 4 have been successfully filled. Online registration is now closed.`
+                : "Online player registrations for Goregaon Premier League are currently closed by the organizing committee. Please contact the tournament coordinators for inquiries."}
             </p>
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-full text-xs font-semibold text-slate-700">
-              <span>Ward 51 &amp; 54 • Sandeep Jadhav (Radhe Radhe Foundation)</span>
+            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 max-w-sm mx-auto text-xs text-slate-700 font-semibold space-y-1">
+              <div>🏆 <strong>Grand Player Auction:</strong> 6th December 2026</div>
+              <div>🏏 <strong>Tournament Matches:</strong> 16, 17, 23 &amp; 24 January 2027</div>
+            </div>
+            <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
+              <span className="px-3 py-1.5 bg-slate-100 rounded-full text-xs font-semibold text-slate-700">
+                Ward 51 &amp; 54 • Sandeep Jadhav (Radhe Radhe Foundation)
+              </span>
+              <span className="px-3 py-1.5 bg-blue-50 text-[#0041b9] rounded-full text-xs font-bold">
+                Tournament Managed by Balram Gupta (Ballu) &amp; Mohsin Patel
+              </span>
             </div>
           </div>
         ) : (
