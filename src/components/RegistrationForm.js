@@ -374,15 +374,6 @@ export default function RegistrationForm({ stats, settings = {}, onRegistrationS
           <p className="text-slate-600 text-sm sm:text-base">
             Radhe Radhe Chashak • Organised by Sandeep Jadhav (Founder, Radhe Radhe Foundation)
           </p>
-
-          {/* Remaining Slots Counter Banner */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white shadow-sm border border-slate-200 text-xs sm:text-sm font-semibold text-slate-800 mt-2">
-            <span className={`w-2.5 h-2.5 rounded-full ${isCapacityFull ? "bg-red-500" : "bg-emerald-500 animate-pulse"}`} />
-            <span>{isCapacityFull ? "Registration Status:" : "Available Player Slots:"}</span>
-            <strong className={`font-mono text-base font-extrabold ${isCapacityFull ? "text-red-600" : "text-[#059669]"}`}>
-              {isCapacityFull ? `FULL (${maxCapacity}/${maxCapacity})` : `${remainingSlots} / ${maxCapacity}`}
-            </strong>
-          </div>
         </div>
 
         {/* Success View */}
