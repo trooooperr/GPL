@@ -43,9 +43,11 @@ export default function CountdownBanner({ stats, settings, onOpenStatusModal }) 
     return () => clearInterval(interval);
   }, [targetDate]);
 
-  const maxCapacity = stats?.maxCapacity || 200;
-  const approved = stats?.approved || 0;
-  const fillPercentage = Math.min(100, Math.round((approved / maxCapacity) * 100));
+  const maxCapacity = stats?.maxCapacity || 160;
+  const registeredCount = stats?.totalRegistered !== undefined
+    ? Number(stats.totalRegistered)
+    : (stats?.totalRegistrations !== undefined ? Number(stats.totalRegistrations) : ((Number(stats?.approved) || 0) + (Number(stats?.pending) || 0)));
+  const fillPercentage = Math.min(100, Math.round((registeredCount / maxCapacity) * 100));
 
   return (
     <div className="bg-gradient-to-r from-[#081a36] via-[#0d2347] to-[#081a36] text-white border-y border-blue-900/40 relative overflow-hidden">
@@ -86,7 +88,7 @@ export default function CountdownBanner({ stats, settings, onOpenStatusModal }) 
                 />
               </div>
               <span className="text-[11px] text-slate-300 font-medium whitespace-nowrap">
-                Slots: <span className="text-emerald-400 font-mono font-bold">{approved}/{maxCapacity}</span> ({fillPercentage}%)
+                Slots: <span className="text-emerald-400 font-mono font-bold">{registeredCount}/{maxCapacity}</span> ({fillPercentage}%)
               </span>
             </div>
           </div>
@@ -120,9 +122,11 @@ export default function CountdownBanner({ stats, settings, onOpenStatusModal }) 
             <div className="flex items-center gap-2 w-full sm:w-auto shrink-0">
               <a
                 href="#register"
-                className="flex-1 sm:flex-initial px-4 py-2 rounded-xl bg-[#059669] hover:bg-[#047857] text-white font-bold text-xs text-center shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-1.5 whitespace-nowrap"
+                className={`flex-1 sm:flex-initial px-4 py-2 rounded-xl text-white font-bold text-xs text-center shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-1.5 whitespace-nowrap ${
+                  fillPercentage >= 100 ? "bg-amber-600 hover:bg-amber-700" : "bg-[#059669] hover:bg-[#047857]"
+                }`}
               >
-                <span>Register Player</span>
+                <span>{fillPercentage >= 100 ? "Slots Full" : "Register Player"}</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </a>
 
