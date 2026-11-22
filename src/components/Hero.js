@@ -7,7 +7,7 @@ export default function Hero({ settings }) {
   const [showModal, setShowModal] = useState(false);
   const photos = (settings?.aboutPhotos && Array.isArray(settings.aboutPhotos) && settings.aboutPhotos.length > 0)
     ? settings.aboutPhotos
-    : ["/images/gpl-card-1.jpg", "/images/gpl-card-2.jpg"];
+    : ["/images/gpl-card-2.jpg", "/images/gpl-about-poster-clean.jpg"];
 
   return (
     <section id="about" className="bg-white text-slate-900 py-8 sm:py-16 lg:py-20 border-b border-slate-100">
@@ -56,7 +56,7 @@ export default function Hero({ settings }) {
                     loading="lazy"
                     onError={(e) => {
                       e.target.onerror = null;
-                      e.target.src = i === 0 ? "/images/gpl-card-2.jpg" : "/images/gpl-card-1.jpg";
+                      e.target.src = i === 0 ? "/images/gpl-card-2.jpg" : "/images/gpl-about-poster-clean.jpg";
                     }}
                   />
                 </div>

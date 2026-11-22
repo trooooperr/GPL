@@ -3,8 +3,8 @@ export const INITIAL_SETTINGS = {
   bannerUrl: "/images/gpl-banner.jpg",
   rulesPosterUrl: "/images/gpl-auction.jpg",
   aboutPhotos: [
-    "/images/gpl-card-1.jpg",
-    "/images/gpl-card-2.jpg"
+    "/images/gpl-card-2.jpg",
+    "/images/gpl-about-poster-clean.jpg"
   ],
   maxCapacity: 200,
   totalDraftPlayers: 150,
