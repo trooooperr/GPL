@@ -7,7 +7,7 @@ import {
 import { INITIAL_TEAMS, INITIAL_SETTINGS } from "@/lib/constants";
 import TeamsPortalClient from "@/components/TeamsPortalClient";
 
-export const revalidate = 10;
+export const revalidate = 300;
 
 export const metadata = {
   title: "Franchise Teams & Squads - Radhe Radhe Chasak GPL4",

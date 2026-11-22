@@ -2,11 +2,10 @@ import { NextResponse } from "next/server";
 import { connectToDatabase, MongoRegistration, MongoTeam, MongoSetting } from "@/lib/mongodb";
 import { INITIAL_SETTINGS } from "@/lib/constants";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
-
 const STATS_CACHE_HEADERS = {
-  "Cache-Control": "public, s-maxage=10, stale-while-revalidate=30",
+  "Cache-Control": "public, s-maxage=60, stale-while-revalidate=120",
+  "CDN-Cache-Control": "public, s-maxage=60",
+  "Vercel-CDN-Cache-Control": "public, s-maxage=60",
 };
 
 export async function GET() {
