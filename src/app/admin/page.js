@@ -3055,6 +3055,29 @@ export default function AdminDashboard() {
                 />
               </div>
 
+              {/* Registration Open/Closed Status Switch */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 rounded-xl bg-slate-50 border border-slate-200">
+                <div>
+                  <span className="block text-xs font-bold text-slate-900">Registration Portal Status</span>
+                  <p className="text-[11px] text-slate-500 mt-0.5">
+                    {settings.registrationOpen !== false
+                      ? "Registration form is currently OPEN and accepting new player registrations."
+                      : "Registration form is CLOSED. Public visitors see a 'Registrations Closed' banner."}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSettings({ ...settings, registrationOpen: settings.registrationOpen === false ? true : false })}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0 shadow-2xs ${
+                    settings.registrationOpen !== false
+                      ? "bg-emerald-600 hover:bg-emerald-700 text-white"
+                      : "bg-red-600 hover:bg-red-700 text-white"
+                  }`}
+                >
+                  {settings.registrationOpen !== false ? "🟢 Registrations OPEN" : "🔴 Registrations CLOSED"}
+                </button>
+              </div>
+
               {/* Tournament Registration Capacity, Draft Target & Team Purse */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 rounded-xl bg-slate-50 border border-slate-200">
                 <div>
