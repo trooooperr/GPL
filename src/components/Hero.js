@@ -54,6 +54,10 @@ export default function Hero({ settings }) {
                     alt={`GPL About Photo ${i + 1}`}
                     className="w-full h-auto object-cover block"
                     loading="lazy"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = i === 0 ? "/images/gpl-card-2.jpg" : "/images/gpl-card-1.jpg";
+                    }}
                   />
                 </div>
               ))}
