@@ -7,9 +7,13 @@ export default function PrizesSection({ stats, settings, awards: propAwards = []
   const rawAwards = propAwards && propAwards.length > 0 ? propAwards : INITIAL_AWARDS;
 
   const features = rawAwards.map((item) => {
+    // Sanitize value: ensure space between number and "Players" or "Teams" (e.g., "160Players" → "160 Players")
+    const sanitizedValue = (item.value || "").replace(/(\d+)(Players|Teams)/gi, "$1 $2");
+    const itemWithSanitized = { ...item, value: sanitizedValue };
+
     // If a custom value was configured in admin console, always preserve and display it directly!
-    if (item.value && String(item.value).trim().length > 0) {
-      return item;
+    if (sanitizedValue && sanitizedValue.trim().length > 0) {
+      return itemWithSanitized;
     }
     // Only apply defaults when the value is empty or not set
     if (item.title === "Our Teams") {
